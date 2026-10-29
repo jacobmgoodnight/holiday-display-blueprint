@@ -36,6 +36,15 @@ describe('insert a cord or splitter into an existing link',()=>{
   expect(result.status).toBe('draft');
   expect(result.wiringHistory?.length).toBe(2);
  });
+ it('preserves prior edge metadata and notes for review after insertion',()=>{
+  const edge=p.edges.find(e=>e.target==='h-light')!;
+  const changed={...p,edges:p.edges.map(e=>e.id===edge.id?{...e,notes:'Recorded green cord, verify length',metadata:{source:'field notes'}}:e)};
+  const next=insertIntoConnection(changed,edge.id,'splitter','S05');
+  const insertedNode=next.nodes.find(n=>n.name==='S05')!;
+  const upstreamEdge=next.edges.find(e=>e.target===insertedNode.id)!;
+  expect(upstreamEdge.notes).toBe('Recorded green cord, verify length');
+  expect(upstreamEdge.metadata).toEqual({source:'field notes'});
+ });
  it('removes a completed old link task but preserves unrelated checklist',()=>{
   const old=p.edges.find(e=>e.target==='h-light')!;
   const modified={...p,checklist:{...p.checklist,['wire:'+old.id]:{done:true,notes:'Old verified'},['place:h-light']:{done:true}}};
