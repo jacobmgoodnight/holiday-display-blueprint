@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.local
+.env*
+!.env.example
+*.xlsx
+*.xls
+*.zip
+*.backup.json
+private/
+*.png
+*.jpg
+*.jpeg
+*.webp
+.DS_Store
