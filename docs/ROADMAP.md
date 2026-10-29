@@ -1,45 +1,50 @@
-# Roadmap
+# Roadmap — Holiday Display Blueprint
 
-## Shipped in MVP
+_Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
 
-- Multiple seasons/years, draft vs as-installed, copy-to-next-year.
-- Typed nodes/ports, validated edge graph, editable React Flow wiring maps, zones/outlet views, path tracing and outage impact.
-- Graph-generated setup/teardown, saved completion and notes, reference photos, private browser IndexedDB, JSON backups, inventory CSV.
-- XLSX sheet inspection, column mapping, import dry-run feedback and unknown-field preservation.
-- CI for tests/build, GitHub Pages deploy, README and Codex policy.
+## Shipped and testable
 
-## Next: field-ready v0.2
+- **Multi-season local-first records:** Halloween/Christmas years, graphs with directed feeds, output ports, validation, asset details, notes, reference photos, verified/draft states, IndexedDB and JSON backups.
+- **Master references:** private two-season initial master snapshot distributed through the encrypted GitHub Pages recovery file; source-aware Halloween structured-sheet and Christmas narrative-sheet import (new drafts, no auto merge).
+- **Navigable wiring:** left-to-right auto power-flow layout, preserved manual placements, quick O01/O02/O03 focus, searchable source paths, isolate selected branch, outage impact.
+- **Installer experience:** collapsible power trees, exact recorded cord labels, numbered downstream-first setup tasks, shared checklist state, task/component photos, printable outlet-specific sheets.
+- **Phone access:** private URL-fragment key; browser decrypts master snapshot once and links the device to the encrypted cloud sync vault; no app account required.
+- **Encrypted sync:** Supabase encrypted vault with no direct anon/authenticated table grants, local encryption/decryption, periodic polling/online/focus retries, per-project hashes, server compare-and-swap conflicts; works while browsers are open.
+- **Documenting changes:** guided **Where does this plug in?** source/port editor, recorded recent feed history, field verification invalidation after changes.
+- **Excel snapshot export:** current components, power links, setup/teardown steps, review flags, wiring history; read-only reference workbook, not a two-way edit or import.
+- **Automated tests and deployment:** Vitest and TypeScript production build run before GitHub Pages deploy.
 
-1. **Workbook conversion profile** for the actual Halloween master and Christmas wiring sheets: merged-cell heuristics, explicit workbook-specific adapter and full cross-sheet mapping review, after testing privately against supplied files. Keep adapters free of household content in the public repo.
-2. **Workbook image/media anchoring**: map embedded images to components, report orphaned drawings, support independent PNG/photo import.
-3. **Better installation plans**: editable phases and dependency overrides, per-task photos, inspection checkpoints, special teardown instructions; prohibit source energization until all downstream work is ready.
-4. **Full-system print/export**: deterministic fit-to-page multi-page schematic, per-zone sheets, high-resolution PDF vector output and labels.
-5. **Inventory across years**: stable catalog item IDs separate from instance IDs, reorder quantity, repairs, cost summary, photo/bin finder, search all seasons and condition history.
-6. **Stronger electrical model**: explicit male/female connector compatibility, inline taps, circuit groups, port names/ratings, known/unknown watts, manual load ledger and warnings only (never automatic safe certification).
-7. **Mobile offline readiness**: PWA install, cached static assets and reliability tests on iOS Safari; quick camera capture and field task photos.
-8. **House plan overlay**: background opacity/registration, independent named floor/zone layouts, move-on-map mode without affecting the wiring graph.
-9. **Changes between years**: graph diff, equipment movement, visual status legend, verified field evidence and structured change log.
+## Highest-priority next improvements
 
-## Future app integration (do not embed now)
+1. **Safer source reconciliation (large impact).** Match a changed workbook's IDs against the current synced master, present a side-by-side diff of additions, removals and upstream/port changes, require explicit per-change approval, and avoid overwriting field photos/checklist states.
+2. **Field verification checklist.** Distinguish missing upstream connections, unrecorded cord length, connector/gender, uncertain tap/inline female locations, ratings and photos. Provide "needs field check" filters for O01/O02/O03 and a proof/inspection note per component.
+3. **Undo + deeper change history.** Add deliberate undo for accidental edits, historical graph snapshots and "what changed since last installation?" reports; log **all** topology edits (including component deletion) consistently.
+4. **Image association.** Reconcile privately uploaded workbook-embedded photos/drawings with the matching component ID; show unmatched photos for manual assignment. No public household images.
+5. **More reliable shared editing.** Replace whole-project conflict choices with per-item/per-checkbox comparisons; correctly propagate intentional project deletions (tombstones); add end-to-end browser/device integration tests.
+6. **PWA offline launch.** Cache the app shell/assets for true offline use, test iOS Safari install/offline editing, and show last successful cloud sync per device.
+7. **Port labels and circuit sheets.** Allow meaningful output names ("Kasa left", "S04 port 3", "C9 female tap"), hide unrelated splitter branches, and export more readable multi-page vector diagrams with connector labels.
+8. **Cross-season asset IDs.** Stable shared physical-equipment registry with repair history, inventory bin, reusable cord length and new-year installation differences.
+9. **Power-load ledger (not certification).** Record trusted manufacturer watts/amperage, outdoor rating and GFCI inspection evidence; flag unknown/suspect values without making safety claims.
 
-- **Holiday Show Control:** expose a versioned read-only JSON catalog of component IDs and physical controllers. Separate live-control layer; never make automation energize unfamiliar wiring.
-- **Projection Studio:** external linking of projector component IDs to projection playlists/profiles, no actual video editing in this app.
-- **Home inventory:** use a versioned shared equipment schema for asset IDs, location, condition and repair events; keep individual seasonal placement records separate.
+## Known limitations to communicate
 
-## Known MVP limitations
+- **Not two-way Excel sync.** Import creates separate drafts/records; exported workbooks are private *reference snapshots*. The original master Excel files preserve photos and diagrams but should not become competing live records.
+- **Photo media** lives as compressed data URIs inside project backups; large photos may exceed browser storage or the encrypted vault upload cap. Excel export intentionally omits images.
+- **Sync** is periodic while open, not instant multiuser collaborative editing; offline changes retry when the browser returns. Conflicts may require a manual whole-project choice. Project deletion currently needs design/reconciliation before claiming cross-device deletion sync.
+- **Offline launch** is not guaranteed after clearing browser cache; IndexedDB may be cleared by the user/device.
+- **Print** relies on the browser print dialog, with no calibrated engineering schematic or certified plan generation.
+- **Source-import limits:** HTML/Excel shapes and anchored images aren't automatically mapped; the Christmas workbook lacks stable IDs for all connector-level links.
+- **Electrical safety:** No measurement of real current, breaker sharing, safe load, cord damage or GFCI operation. Project "verified" means field documented only.
 
-- Package dependencies could not be fetched in the initial build environment, so **local installation/build verification remains pending** until running `npm install && npm test && npm run build` in a network-enabled environment or GitHub Actions.
-- The workbook importer is a controlled row/column mapper, **not automatic reverse-engineering** of irregular Excel/shape-based wiring diagrams; embedded images not extracted.
-- Only generic connectors / port counts are validated. Male/female polarity and electrical load safety remain future tasks.
-- IndexedDB is per browser/device. Browser storage may be cleared; there is no autosync, authentication or conflict resolution.
-- Photos are stored inline as compressed data URIs in the local project record. A large library could exceed browser storage quotas; separate blob storage would scale better.
-- The print view uses the browser print engine; large diagrams may need manual scale adjustments.
+## Private 2026 plan reconciliation still needed
 
-## Master workbook import (2026-10-29)
-- [x] Detect the structured Halloween and narrative Christmas source worksheets.
-- [x] Preserve Halloween ID/port/source-row metadata, cord tags and unknown or excluded links.
-- [x] Stage new draft projects rather than replacing current plans.
-- [x] Private offline backup of the two 2026 master projects; never publish private source data.
-- [ ] Map anchored workbook pictures onto equipment records and inspect unmatched images.
-- [ ] Review/merge source revisions and show exact year-to-year diffs.
-- [ ] Trace unresolved Christmas prose notes to field-verified connector locations.
+- **Halloween O01**: verify that the imported master represents the later four carved pumpkins with C7 flicker bulbs, the added brown 3-way-end extension, short black run and Skull Stack move.
+- **Halloween O02/O03**: confirm the current outlet-to-prop branches, fog tote changes and exact cord length/port labels.
+- **Christmas O03**: morning-room feeder connects at a female on a **covered-porch C9 strand**. Do not guess which strand or its port yet.
+- **Christmas O01/O02**: field-verify the planned roof C9 feeder, yard figures, beds and fence minis before upgrading project status.
+
+## Future integrations (not automatic yet)
+
+- **Holiday Show Control:** versioned read-only equipment catalog / IDs, no unsafe automatic energization.
+- **Projection Studio:** reference projector media profiles by stable equipment IDs, keep video production in that app.
+- **Home inventory:** optional shared asset IDs and repair records without silently sharing whole private property diagrams.
