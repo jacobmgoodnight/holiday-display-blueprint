@@ -29,7 +29,7 @@ export function ConnectionFinder({project, scope, selected, onSelect}: Props) {
         (a.source?.name || 'zzz').localeCompare(b.source?.name || 'zzz', undefined, {numeric: true}) ||
         a.node.name.localeCompare(b.node.name, undefined, {numeric: true}));
   }, [project, scope, query, allComponents]);
-  return <section className="connection-finder" aria-label="Connection finder">
+  return <section id="connection-finder" className="connection-finder" aria-label="Connection finder">
     <div className="finder-heading">
       <strong><Route size={16}/> Where does it plug in?</strong>
       <span>{entries.length} items</span>
