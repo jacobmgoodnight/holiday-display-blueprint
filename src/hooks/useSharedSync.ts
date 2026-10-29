@@ -1,6 +1,6 @@
 import {useCallback,useEffect,useRef,useState,type Dispatch,type SetStateAction} from 'react';
 import type {Project} from '../lib/model';
-import {db,restoreBackup,createBackup} from '../lib/storage';
+import {restoreBackup,createBackup} from '../lib/storage';
 import {syncCredentials,getDeviceSyncKey,forgetDeviceSyncKey,readBaseline,saveBaseline,hashProjects,planMerge,pullCloud,pushCloud,type CloudCredentials} from '../lib/cloudSync';
 
 export type SyncStatus='off'|'connecting'|'synced'|'saving'|'offline'|'conflict';
