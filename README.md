@@ -2,7 +2,7 @@
 
 **The wiring map you wish you had at teardown.** A local-first holiday-display planner for real seasonal installations: model actual outlet-to-decoration connections, trace what powers each device, plan installation, track inventory, and back up your work.
 
-> **MVP / preview:** The bundled Halloween and Christmas diagrams are **illustrative drafts**, not verified electrical plans. No house photos, precise locations, personal inventory or actual installation details are included in this public source repository. The example Christmas O03 chain models the user-confirmed logical detail: *a short green SPT-1 morning-room feeder plugs into the female end of a covered-porch C9 strand*, not into a white SPT-1 feeder. Exact strand identity, ratings and as-built status remain unverified.
+> **MVP / preview:** The bundled Halloween and Christmas diagrams are **illustrative drafts**, not verified electrical plans. No house photos, precise locations, personal inventory or actual installation details are included in this source repository. The example Christmas O03 chain models the user-confirmed logical detail: *a short green SPT-1 morning-room feeder plugs into the female end of a covered-porch C9 strand*, not into a white SPT-1 feeder. Exact strand identity, ratings and as-built status remain unverified.
 
 ## Quick start
 
@@ -48,21 +48,20 @@ All projects and compressed photos are saved in **IndexedDB in your own browser 
 
 **A public GitHub Pages site is public software, not private cloud storage.** It does *not* publish your locally imported data. JSON backups do include potentially sensitive photos/location information and should never be committed to a public repository. `.gitignore` excludes spreadsheets, common photo extensions, private folders, and `*.backup.json`.
 
-## GitHub Pages
+## GitHub Pages (optional, explicit opt-in)
 
-1. Create a new empty repository named `holiday-display-blueprint` under `jacobmgoodnight`. Do not initialize with a README.
-2. In this folder, run:
+The source is already on the `main` branch at <https://github.com/jacobmgoodnight/holiday-display-blueprint>.
 
-```bash
-git init -b main
-git add .
-git commit -m "feat: ship local-first Holiday Display Blueprint MVP"
-git remote add origin https://github.com/jacobmgoodnight/holiday-display-blueprint.git
-git push -u origin main
-```
+**Pages is not enabled by default.** GitHub Pages may publish the application publicly even when the source repository is private, and private-repository eligibility depends on your GitHub plan. Do **not** use Pages as cloud storage for house photos: browser data stays local and is never included in the site bundle.
 
-3. Repository **Settings → Pages → Build and deployment → Source: GitHub Actions**. The provided workflow tests, builds and deploys `main` at `https://jacobmgoodnight.github.io/holiday-display-blueprint/`. Keep **Actions** permissions that allow Pages deployment.
-4. For future changes, create a feature branch and open a pull request. The connector could not create a new repository itself; no PR is claimed to exist until the repository and branches exist.
+To deploy deliberately:
+
+1. In repository **Settings → Pages**, choose **Build and deployment → Source: GitHub Actions**. If that option is unavailable, check your plan's private-repo Pages eligibility or choose to make the repository public only after reviewing privacy implications.
+2. In **Settings → Secrets and variables → Actions → Variables**, create a repository variable named `ENABLE_PAGES` with value `true`.
+3. Open **Actions → Test and build → Run workflow** on `main`. The workflow verifies, builds and deploys to `https://jacobmgoodnight.github.io/holiday-display-blueprint/` if Pages has been configured.
+4. Without that variable, CI runs all tests and the production build, but **skips** the optional deployment job.
+
+You can keep the application private and run it locally via `npm run dev` without enabling Pages. This MVP does not require any cloud service.
 
 ## Electrical safety limitations
 
