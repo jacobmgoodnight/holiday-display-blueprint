@@ -20,6 +20,25 @@ npm test
 npm run build
 ```
 
+### Phone: bring your real master plans across privately
+
+The GitHub Pages site serves the **same app** everywhere, but each browser has its own **IndexedDB** data. Seeing the two examples on your phone does **not** mean the imported master project is missing from your desktop.
+
+1. On the computer where your 2026 Halloween and Christmas Master projects already appear, select **Backup** or **More actions → Move plans between devices → Back up projects on this device**. This downloads one private JSON file for all local projects (including attached photos and checklist progress).
+2. Send that file privately to your phone with OneDrive, iCloud Drive, Google Drive, AirDrop, or a trusted local file transfer. Do not publish it in GitHub, a public gist, or Pages assets.
+3. On your phone, visit [Holiday Display Blueprint](https://jacobmgoodnight.github.io/holiday-display-blueprint/). The **Only examples on this device** banner appears when you still have only sample projects. Tap **Bring masters here** → **Choose private JSON backup**, then select the file from Files or your drive app.
+4. Review the project names. Imported backups add projects by ID and replace a matching ID **only after your confirmation**; other local projects remain. Export a fresh backup before transferring in the opposite direction.
+
+**Important:** This is a **manual snapshot**, not live sync or shared cloud storage. Photos included are only those already attached in Blueprint. Extra workbook-embedded photos held in a separate private archive must be attached locally if desired. Never assume two devices have the same edits without a fresh transfer.
+
+### Photo-assisted, outlet-specific printed installation guide
+
+Select **Wiring diagram → O01/O02/O03 → Simplified install view**. The installer view now shows any attached component or task photo beside its numbered steps and includes recorded equipment notes.
+
+Use **Print this view** to expand all branches automatically, show the selected circuit's components and numbered tasks, and open your browser's print dialog. You can print the sheet or choose **Save as PDF** (where supported). For a whole-house guide choose **Whole system** first; for the easiest yard reference print one outlet at a time.
+
+The printout contains household wiring and photos from **your browser**, so treat printed copies and PDF files as private. The public repository contains no private installation data.
+
 ### Simplified installation guide
 
 In **Wiring diagram**, choose **Simplified install view** and select your O01/O02/O03 outlet from **Focus circuit**.
