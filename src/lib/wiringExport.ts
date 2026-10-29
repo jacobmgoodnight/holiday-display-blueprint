@@ -10,7 +10,6 @@ const rows=(headings:string[],records:(string|number|boolean)[][])=>{
  if(records.length)sheet['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:records.length,c:headings.length-1}})};
  return sheet;
 };
-const cell=(x:unknown):string|number|boolean=>typeof x==='string'||typeof x==='number'||typeof x==='boolean'?x:'';
 export function createWiringReferenceWorkbook(project:Project):XLSX.WorkBook{
  const wb=XLSX.utils.book_new();
  const current=new Map(project.nodes.map(n=>[n.id,n]));
