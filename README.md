@@ -20,6 +20,18 @@ npm test
 npm run build
 ```
 
+### Needs Verification dashboard and safe wiring reversal
+
+In **Wiring diagram**, select your O01, O02, O03 circuit (or **Whole system**), then open **Needs verification**. This field checklist scans the **full saved power graph** even while viewing one outlet, so filtered views do not falsely flag a connected component as disconnected.
+
+- **Connection issues** flag missing power feeds, chains that never reach a documented outlet, and graph validation errors. They are documentation findings, not electrical inspection results.
+- **Field checks** flag components not confirmed in person, missing lengths on extension/SPT-1 cords, and unknown consumer watt estimates. The **Mark field-checked** button asks you to confirm the actual equipment in the yard and does not mark the electrical system safe.
+- **Optional details** (hidden by default) cover missing equipment photos, connector type, and manufacturer rating data. Search and category buttons make the list usable on phones.
+- **Locate** opens the corresponding component and highlights its upstream diagram path.
+- **Reverse last feed change** is available inside the verification view. It can undo the *latest recorded guided connection/disconnection* only while the recorded post-change connection still matches the actual graph and the old source output remains available. Reversals stay **Draft**: they **never** restore old checkmarks or verified flags. Undo does not yet cover deletes, renames, moving diagram nodes, or simultaneous cloud edits. Export a private backup before major rewiring.
+
+The **Needs verification** count summarizes urgent and field-check reminders, not automatic safety certification. Unknown data stay unknown until you inspect the real equipment. The original Excel archive remains untouched.
+
 ### Finding your way around
 
 **Phone and narrow tablet:** Tap the clearly labeled **Menu** button in the upper-right header. It opens **Navigation & tools**, including Wiring diagram, Installation steps, Teardown steps, Inventory, outlet/zone views, and **Quick actions** for simplified installation, diagram editing, Excel import/export, private backups and manual sync. Tap outside the drawer, tap its close button, select an action, or press Escape to dismiss it. The four bottom tabs are shortcuts for the same workspace sections.
