@@ -37,6 +37,17 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
+ useEffect(()=>{
+  if(!showSidebar&&!showMenu)return;
+  const dismiss=(event:KeyboardEvent)=>{if(event.key==='Escape'){setShowSidebar(false);setShowMenu(false);}};
+  document.addEventListener('keydown',dismiss);
+  return()=>document.removeEventListener('keydown',dismiss);
+ },[showSidebar,showMenu]);
+ useEffect(()=>{
+  if(!showSidebar||!window.matchMedia('(max-width:900px)').matches)return;
+  const previous=document.body.style.overflow;document.body.style.overflow='hidden';
+  return()=>{document.body.style.overflow=previous;};
+ },[showSidebar]);
  useEffect(()=>{let live=true;initialize().then(items=>{if(live){setProjects(items);setActive(items[0]?.id||'');setLoaded(true);}}).catch(e=>{if(live){const fallback=exampleProjects();setProjects(fallback);setActive(fallback[0].id);setLoaded(true);setStorageReady(false);setMessage(`Browser storage unavailable: ${String(e)}. Changes are temporary — export a JSON backup.`);}});return()=>{live=false;};},[]);
  const cloud=useSharedSync({loaded,storageReady,projects,setProjects,onImported:(chosen)=>{
   const outlet=chosen.nodes.find(n=>n.kind==='outlet');
@@ -142,8 +153,8 @@ function AppContent(){
   <header className="topbar"><div className="brand"><div className="brand-icon"><CircuitBoard size={23}/></div><div><strong>HOLIDAY DISPLAY <span>BLUEPRINT</span></strong><small>LOCAL-FIRST DISPLAY PLANNER</small></div></div>
    <div className="project-picker"><label className="visually-hidden" htmlFor="projects">Seasonal project</label><select id="projects" value={active} onChange={e=>chooseProject(e.target.value)}>{[...projects].sort((a,b)=>b.year-a.year||a.season.localeCompare(b.season)).map(p=><option value={p.id} key={p.id}>{projectLabel(p)}</option>)}</select><ChevronDown className="picker-chevron" size={17}/></div>
    <div className="top-actions"><span className="local-pill"><span className="pulse-dot"/> {storageReady?'Local browser storage':'Unsaved session'}</span><button className="button secondary desktop-only" onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setMessage('Backup downloaded. Keep the file private — it may include photos and details.');}}><Download size={16}/> Backup</button>
-   <button className="icon-button mobile-only" onClick={()=>setShowSidebar(s=>!s)} aria-label="Open navigation"><Menu size={22}/></button>
-   <button className="icon-button" aria-label="More actions" onClick={()=>setShowMenu(x=>!x)}><MoreVertical size={20}/></button>{showMenu&&<div className="action-menu">
+   <button type="button" className="icon-button mobile-only mobile-header-menu" aria-label={showSidebar?'Close menu':'Open menu'} aria-controls="mobile-navigation" aria-expanded={showSidebar} onClick={()=>{setShowMenu(false);setShowSidebar(x=>!x)}}>{showSidebar?<X size={21}/>:<Menu size={21}/>}<span>Menu</span></button>
+   <button type="button" className="icon-button desktop-more-button" aria-label="More actions" aria-controls="more-actions-menu" aria-expanded={showMenu} onClick={()=>{setShowSidebar(false);setShowMenu(x=>!x)}}><MoreVertical size={20}/></button>{showMenu&&<div id="more-actions-menu" className="action-menu" aria-label="More actions">
     <button onClick={()=>makeNew(false)}><Plus size={16}/> New blank project</button><button onClick={()=>makeNew(true)}><Copy size={16}/> Copy into next year</button>
     <button onClick={()=>{setShowWizard(true);setShowMenu(false);}}><FileSpreadsheet size={16}/> Import Excel workbook</button>
     <button onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setShowMenu(false);}}><Download size={16}/> Back up all projects (JSON)</button>
@@ -151,7 +162,7 @@ function AppContent(){
     <button onClick={()=>{setShowMenu(false);setShowTransfer(true);}}><Upload size={16}/> Back up / move plans</button>
     {cloud.enabled&&<button onClick={()=>{if(confirm('Disconnect encrypted sync on this device? Local projects will remain here.'))cloud.disconnect();setShowMenu(false);}}><LockKeyhole size={16}/> Stop syncing this device</button>}
     <button onClick={()=>{downloadWiringReference(project);setShowMenu(false);setMessage('Private reference workbook exported. Continue editing in Blueprint.');}}><FileSpreadsheet size={16}/> Export wiring reference (.xlsx)</button>
-    <button onClick={printAll}><Printer size={16}/> Print diagram</button>
+    <button onClick={()=>{setShowMenu(false);printAll()}}><Printer size={16}/> Print diagram</button>
     <button onClick={()=>{if(!confirm('Delete this local project? Export a backup first.'))return;const ids=projects.filter(p=>p.id!==active);if(!ids.length){setMessage('Keep at least one project.');return;}void db.projects.delete(active);setProjects(ids);chooseProject(ids[0].id);}}><Trash2 size={16}/> Delete selected project</button>
    </div>}</div>
   </header>
