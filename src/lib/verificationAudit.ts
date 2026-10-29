@@ -32,7 +32,7 @@ export function getVerificationIssues(project:Project,scope?:ReadonlySet<string>
    issues.push(issue(n.id,'cord','attention','Cord length not recorded','Measure or confirm the actual cable length; do not infer it from the diagram.'));
   }
   if(consumerKinds.has(n.kind)&&(n.expectedWatts===undefined||!Number.isFinite(n.expectedWatts)||n.expectedWatts<0)){
-   issues.push(issue(n.id,'load','attention','Power consumption unknown','Record the manufacturer's actual wattage or leave unknown until verified.'));
+   issues.push(issue(n.id,'load','attention','Power consumption unknown',"Record the manufacturer\'s actual wattage or leave unknown until verified."));
   }
   if(n.kind!=='outlet'&&!n.inputGender&&['cord','spt-1','smart-plug','splitter','inline-tap','light-strand'].includes(n.kind)){
    issues.push(issue(n.id,'connector','optional','Input connector type unknown','Document the plug type when it is relevant to this connection.'));
