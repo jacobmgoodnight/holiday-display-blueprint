@@ -303,7 +303,57 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
       {diagramMode==='map'&&<div role={fullscreen?'dialog':undefined} aria-modal={fullscreen||undefined} aria-label={fullscreen?'Fullscreen wiring workspace':undefined} className={`diagram-layout ${!inspectorOpen?'diagram-wide':''} ${fullscreen?'diagram-fullscreen':''}`}><div className="diagram-card"><div className="canvas-label"><span className="canvas-live-dot"/> {view==='All zones'?'FULL SYSTEM':view.toUpperCase()} <span>· draft wiring view</span></div><div id="diagram-canvas" className="canvas-wrap" style={project.backgroundPhoto?{backgroundImage:`linear-gradient(#f9fafbcc,#f9fafbcc),url(${project.backgroundPhoto})`,backgroundSize:'contain',backgroundPosition:'center',backgroundRepeat:'no-repeat'}:undefined}>
        <ReactFlow<BlueprintFlowNode,Edge> nodes={flowNodes} edges={flowEdges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:0.22}} minZoom={0.08} maxZoom={3} nodesDraggable={workspaceEditable&&layoutMode==='manual'} nodesConnectable={workspaceEditable} edgesReconnectable={false} onNodesChange={changes=>{if(!workspaceEditable||layoutMode!=='manual')return;for(const change of changes){if(change.type==='position'&&change.position){update(p=>({...p,nodes:p.nodes.map(n=>n.id===change.id?{...n,position:change.position!}:n)}));}}}} onNodeClick={(_,n)=>{if(fullscreen&&fullMode==='builder'&&builderSource){selectBuilderTarget(n.id);return;}setSelected(n.id);setTrace(n.data.component.kind==='outlet'?'downstream':'upstream');if(!fullscreen)setInspectorOpen(true);}} onPaneClick={()=>{setSelected(null);setTrace('none');}} onConnect={connection=>{if(workspaceEditable)onConnect(connection);}} onEdgeClick={(_,edge)=>{const target=project.nodes.find(n=>n.id===edge.target);if(target){setSelected(target.id);setTrace('upstream');if(!fullscreen)setInspectorOpen(true);}}} onEdgesDelete={deleted=>{if(!workspaceEditable)return;for(const e of deleted){if(confirm('Disconnect this power feed and mark downstream items for verification?'))changePowerFeed(e.target,null);}}} onNodesDelete={deleted=>{if(deleted.length===1)removeComponent(deleted[0].id);else setMessage('Delete nodes one at a time from the component inspector.')}} deleteKeyCode={null}>
         <Background gap={24} size={1} color="#e1e7ed"/>{!fullscreen&&<Controls showInteractive={false}/>}<MiniMap pannable zoomable nodeColor={n=>n.data?.component&&(n.data.component as Component).kind==='outlet'?'#d68b3e':'#6289aa'} style={{width:130,height:85,display:fullscreen?'none':undefined}}/>
-       </ReactFlow></div><div className="canvas-footer"><span><CheckCircle2 size={14}/> {warningErrors.length?'Graph has errors':'Connection graph valid'}</span><label className="photo-action"><ImagePlus size={15}/> Add property image<input type="file" accept="image/*" onChange={e=>{void attachPhoto(e.target.files?.[0]);e.target.value='';}}/></label></div></div>
+       </ReactFlow>
+       {fullscreen&&<div className="fullscreen-workspace-ui">
+        <div className="fullscreen-topbar">
+         <span className="fullscreen-title"><CircuitBoard size={18}/><strong>{project.season} {project.year}</strong><small>{fullMode==='explore'?'Explore wiring':'Build wiring'}</small></span>
+         <div className="fullscreen-toolgroup" role="group" aria-label="Workspace mode">
+          <button aria-pressed={fullMode==='explore'} className={fullMode==='explore'?'active':''} onClick={()=>{setFullMode('explore');setBuilderSource(null)}}><Eye size={16}/> Explore</button>
+          <button aria-pressed={fullMode==='builder'} className={fullMode==='builder'?'active':''} onClick={()=>{setFullMode('builder');setBuilderSource(null)}}><PenTool size={16}/> Builder</button>
+         </div>
+         <button className="fullscreen-close" aria-label="Exit fullscreen diagram" onClick={()=>{setFullscreen(false);setBuilderSource(null);setFullSearch('')}}><Minimize2 size={18}/> <span>Exit</span></button>
+        </div>
+        <div className="fullscreen-controls">
+         <label>Power circuit <select aria-label="Fullscreen power circuit" value={view} onChange={e=>changeView(e.target.value as View)}>
+          <option value="All zones">Whole system</option>
+          {project.nodes.filter(n=>n.kind==='outlet').map(n=><option value={`Outlet: ${n.id}`} key={n.id}>{n.name}</option>)}
+          {zones.map(z=><option value={z} key={z}>{z}</option>)}</select></label>
+         <div className="fullscreen-zoom" role="group" aria-label="Diagram zoom">
+          <button aria-label="Zoom out diagram" onClick={()=>void zoomOut({duration:180})}><ZoomOut size={18}/></button>
+          <button aria-label="Fit diagram to screen" onClick={()=>void fitView({padding:.2,duration:230})}>Fit</button>
+          <button aria-label="Zoom in diagram" onClick={()=>void zoomIn({duration:180})}><ZoomIn size={18}/></button>
+         </div>
+         <button aria-pressed={pathOnly} disabled={!selected} onClick={()=>setPathOnly(v=>!v)}>{pathOnly?'Show circuit':'Path only'}</button>
+         <div className="fullscreen-search"><Search size={15}/><input aria-label="Find equipment in fullscreen diagram" value={fullSearch} placeholder="Find any item…" onChange={e=>setFullSearch(e.target.value)}/>
+          {fullSearch.trim().length>=2&&<div className="fullscreen-matches" role="list">
+           {fullscreenMatches.map(item=><button key={item.id} role="listitem" onClick={()=>{if(!baseVisibleIds.has(item.id))setView('All zones');setSelected(item.id);setTrace('upstream');setFocusRequest(prev=>({id:item.id,seq:(prev?.seq||0)+1}));setFullSearch('')}}><strong>{item.name}</strong><small>{item.zone}</small></button>)}
+           {fullscreenMatches.length===0&&<p>No matching items</p>}
+          </div>}
+         </div>
+        </div>
+        {fullMode==='explore'?<div className="fullscreen-hint">Drag empty space to pan · scroll or pinch to zoom · tap an item to trace its power</div>:
+         <div className="fullscreen-builder" aria-label="Wiring builder tools">
+          <div className="builder-add-row">
+           <label>New item <select aria-label="New item type" value={addKind} onChange={e=>setAddKind(e.target.value as Kind)}>{categories.map(k=><option key={k.kind} value={k.kind}>{k.label}</option>)}</select></label>
+           <input aria-label="Optional new item name" placeholder="Optional name" value={builderName} maxLength={100} onChange={e=>setBuilderName(e.target.value)}/>
+           <button className="builder-primary" onClick={addBuilderItem}><Plus size={16}/> Add item</button>
+          </div>
+          <div className="builder-edit-row">
+           <label>Layout <select aria-label="Builder diagram layout" value={layoutMode} onChange={e=>setLayoutMode(e.target.value as 'auto'|'manual')}><option value="auto">Auto flow</option><option value="manual">Move items manually</option></select></label>
+           {selectedNode&&<label className="builder-rename">Selected <input aria-label="Rename selected component" value={selectedNode.name} onChange={e=>patchComponent(selectedNode.id,{name:e.target.value})}/></label>}
+           {builderSource?<>
+            <span className="builder-help">From {project.nodes.find(n=>n.id===builderSource)?.name}: select output, then tap the receiving item.</span>
+            <label>Output <select aria-label="Builder source output" value={builderPort} onChange={e=>setBuilderPort(Number(e.target.value))}>{freeOutputPorts(project,builderSource).map(port=><option key={port} value={port}>Output {port+1}</option>)}</select></label>
+            <button onClick={()=>setBuilderSource(null)}>Cancel wire</button>
+           </>:<button disabled={!selectedNode||!selectedNode.outputs||!freeOutputPorts(project,selectedNode.id).length} onClick={chooseBuilderSource}><Link2 size={15}/> Connect from selected</button>}
+           <button disabled={!selectedNode||!project.edges.some(e=>e.target===selectedNode.id)} onClick={()=>{if(selectedNode)changePowerFeed(selectedNode.id,null)}}><Unplug size={15}/> Disconnect</button>
+           <button className="builder-danger" disabled={!selectedNode} onClick={()=>{if(selectedNode)removeComponent(selectedNode.id)}}><Trash2 size={15}/> Remove item</button>
+           {deletedReceipt?.projectId===project.id&&<button onClick={undoDeletion}>Undo remove</button>}
+          </div>
+         </div>}
+        {selectedNode&&fullMode==='explore'&&<div className="fullscreen-selection"><strong>{selectedNode.name}</strong><span>{sourcePath(selectedNode.id,project).map(n=>n.name).join(' → ')}</span><button onClick={()=>{setSelected(null);setTrace('none');setPathOnly(false)}} aria-label="Clear selected path"><X size={15}/></button></div>}
+       </div>}
+       </div><div className="canvas-footer"><span><CheckCircle2 size={14}/> {warningErrors.length?'Graph has errors':'Connection graph valid'}</span><label className="photo-action"><ImagePlus size={15}/> Add property image<input type="file" accept="image/*" onChange={e=>{void attachPhoto(e.target.files?.[0]);e.target.value='';}}/></label></div></div>
        {inspectorOpen&&!fullscreen&&<div className="inspector"><div className="inspector-title"><strong>{selectedNode?'Component details':'Connection tools'}</strong><button className="icon-button" aria-label="Close inspector" onClick={()=>setInspectorOpen(false)}><X size={16}/></button></div>
         <ConnectionFinder key={project.id} project={project} scope={baseVisibleIds} selected={selected} onSelect={jumpToNode}/>
         {selectedNode?<><div className="inspector-component"><div className="inspector-icon"><Box size={22}/></div><div><span className="eyebrow">{selectedNode.kind.replace(/-/g,' ').toUpperCase()}</span><h3>{selectedNode.name}</h3><small>{selectedNode.id}</small></div></div>
