@@ -5,7 +5,7 @@ import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
-import {db,initialize,saveProject,createBackup,parseBackup,restoreBackup,downloadText} from './lib/storage';
+import {db,initialize,createBackup,parseBackup,restoreBackup,downloadText} from './lib/storage';
 import {readPhoto} from './lib/photos';
 import {BlueprintNode,type BlueprintFlowNode} from './components/BlueprintNode';
 import {ExcelWizard} from './components/ExcelWizard';
