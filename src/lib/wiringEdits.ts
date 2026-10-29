@@ -1,15 +1,9 @@
 import {connect,reconnect,downstream} from './graph';
 import {now} from './model';
-import type {Project} from './model';
+import type {Project,WiringEdit} from './model';
 
 /** Only models an explicitly recorded AC power feed; never invents a cable. */
-export type WiringEdit={
- id:string;at:string;action:'connected'|'rewired'|'disconnected';
- targetId:string;targetName:string;
- fromId?:string;fromPort?:number;toId?:string;toPort?:number;
-};
-export type ProjectWithWiringHistory=Project&{wiringHistory?:WiringEdit[]};
-
+export type ProjectWithWiringHistory=Project;
 /** Source IDs/port indexes are kept exactly as documented in the master project.
  * Edits return new objects, invalidate downstream verification, and preserve old
  * history without changing anyone else's connection or manually arranged positions. */
