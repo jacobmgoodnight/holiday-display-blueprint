@@ -12,10 +12,14 @@ export type Component = {
 };
 export type Connection = {id:string;source:string;sourcePort:number;target:string;notes?:string;metadata?:Record<string,unknown>};
 export type ChecklistState = Record<string,{done:boolean;notes?:string;photo?:string}>;
+export type WiringEdit={
+ id:string;at:string;action:'connected'|'rewired'|'disconnected';targetId:string;targetName:string;
+ fromId?:string;fromPort?:number;toId?:string;toPort?:number;
+};
 export type Project = {
   id:string;season:Season;year:number;name:string;status:'draft'|'verified';
   nodes:Component[];edges:Connection[];checklist:ChecklistState;
-  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;
+  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];
 };
 export const outputCount = (kind:Kind):number => ({outlet:2,'smart-plug':2,cord:1,'spt-1':1,splitter:4,'inline-tap':2,'light-strand':1,decoration:0,projector:0,spotlight:0,controller:0,accessory:0})[kind];
 export const categories:{kind:Kind;label:string}[] = [
