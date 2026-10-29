@@ -51,3 +51,16 @@
 @media(max-width:1000px){.diagram-toolbar{flex-wrap:wrap}.tool-actions{flex-wrap:wrap}.diagram-toolbar .layout-picker select{max-width:140px}}
 @media(max-width:720px){.circuit-shortcuts{gap:6px;padding:8px;overflow-x:auto;flex-wrap:nowrap}.circuit-shortcuts>span{white-space:nowrap}.circuit-shortcuts button{white-space:nowrap;padding:8px 11px;flex-shrink:0}.diagram-toolbar{align-items:flex-start;gap:8px}.tool-actions{gap:6px;width:100%}.diagram-toolbar .layout-picker{flex:1}.diagram-toolbar .layout-picker select{max-width:150px}.finder-open{min-width:65px}.connection-finder{padding:12px}.finder-results{max-height:340px}.finder-result{padding:12px}.finder-result-top strong{font-size:13px}.finder-chain{font-size:11px}.diagram-card{height:510px}.canvas-wrap{min-height:400px}}
 @media print{.circuit-shortcuts,.connection-finder{display:none!important}}
+
+/* Browser-only encrypted sync status. Public site carries no secret master key. */
+.sync-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #c8e1d9;background:#ecf8f4;border-radius:10px;color:#265d4e;margin-bottom:12px;font-size:12px}
+.sync-bar span{flex:1;min-width:0}.sync-bar strong{font-weight:850}
+.sync-bar .button{padding:8px 11px;font-size:11px;border-color:#b4cfc7;background:white}
+.sync-bar.sync-connecting,.sync-bar.sync-saving{border-color:#c3d5e4;background:#f0f7fc;color:#476a87}
+.sync-bar.sync-offline,.sync-bar.sync-conflict{border-color:#ecd5a8;background:#fff8e7;color:#976b28}
+.sync-alert{border:1px solid #e9caa9;background:#fff8ec;color:#795629;padding:12px 14px;border-radius:10px;margin-bottom:12px;display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.55}
+.sync-alert>div{flex:1}.sync-alert p{margin:6px 0 10px}
+.sync-alert-actions{display:flex;gap:7px;flex-wrap:wrap}
+.sync-alert-actions .button{font-size:11px;white-space:normal;text-align:center}
+@media(max-width:720px){.sync-bar{flex-wrap:wrap;padding:10px}.sync-bar span{flex-basis:calc(100% - 40px)}.sync-bar button{margin-left:auto}.sync-alert-actions{flex-direction:column}.sync-alert-actions .button{width:100%}}
+@media print{.sync-bar,.sync-alert{display:none!important}}
