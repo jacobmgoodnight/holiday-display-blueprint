@@ -6,7 +6,7 @@ export type Position = {x:number,y:number};
 export type Inventory = {quantity?:number;storage?:string;purchaseDate?:string;price?:number;condition?:'good'|'missing'|'damaged'|'repair';repairHistory?:string};
 export type Component = {
   id:string; assetId?:string; name:string; kind:Kind; zone:Zone; position:Position;
-  outputs:number; inputGender?:'male'|'female'; outputGender?:'male'|'female'; color?:string; lengthFt?:number; cordType?:string;
+  outputs:number; portLabels?:Record<string,string>; inputGender?:'male'|'female'; outputGender?:'male'|'female'; color?:string; lengthFt?:number; cordType?:string;
   ratedWatts?:number; expectedWatts?:number; notes?:string; photo?:string;
   verified?:boolean; inventory?:Inventory; metadata?:Record<string, unknown>;
 };
