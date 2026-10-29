@@ -12,3 +12,5 @@
 .transfer-banner .icon-button{color:#806b48}
 @media(max-width:720px){.transfer-dialog{max-height:90dvh;padding:14px;border-radius:13px}.transfer-header h2{font-size:19px}.transfer-banner{align-items:flex-start;flex-direction:column}.transfer-banner .transfer-banner-actions{width:100%}.transfer-banner .transfer-banner-actions .button{flex:1}.transfer-steps section{padding:11px}}
 @media print{.transfer-banner,.transfer-backdrop{display:none!important}}
+
+.hosted-loading{display:flex;align-items:center;gap:10px;background:#eef7fb;border:1px solid #bbd6e5;color:#24516d;border-radius:10px;padding:14px 16px;font-size:13px;font-weight:800;margin:0 0 12px}
