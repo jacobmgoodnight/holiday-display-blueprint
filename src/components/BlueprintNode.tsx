@@ -1,5 +1,5 @@
 import {Handle,Position,type Node, type NodeProps} from '@xyflow/react';
-import {Cable,Plug,PlugZap,Split,Lightbulb,Boxes,Projector,Spotlight,Radio,Power,Workflow} from 'lucide-react';
+import {Cable,Plug,PlugZap,Split,Lightbulb,Boxes,Projector,Flashlight as Spotlight,Radio,Power,Workflow} from 'lucide-react';
 import type {Component} from '../lib/model';
 export type BlueprintFlowNode=Node<{component:Component;highlight:boolean;dim:boolean},'blueprint'>;
 const icons={outlet:Power,'smart-plug':PlugZap,cord:Cable,'spt-1':Cable,splitter:Split,'inline-tap':Workflow,'light-strand':Lightbulb,decoration:Boxes,projector:Projector,spotlight:Spotlight,controller:Radio,accessory:Plug};
