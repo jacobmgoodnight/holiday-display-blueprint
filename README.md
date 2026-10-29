@@ -20,6 +20,16 @@ npm test
 npm run build
 ```
 
+### Which is the master: Blueprint or the old Excel workbooks?
+
+**Use Holiday Display Blueprint as the live, synced wiring record.** Keep the original Halloween and Christmas Excel masters as **private historical reference files**, especially for original diagrams and embedded photos. Do not simultaneously maintain two editable master copies.
+
+To change a real plug connection: open the correct master project → **Wiring diagram → O01/O02/O03 → Diagram editor → Find** the item. Select the component; its **Where does this plug in?** card lets you choose the exact existing upstream component and numbered output. Saving replaces the existing feed, rather than adding a second input, and validates the power graph. Changed branches revert to **Draft**, downstream component verification is cleared, and the previous connection checklist completion is invalidated. A compact history records guided wiring edits. Recheck actual wiring before marking field verification again.
+
+The **Export Excel reference** button (also in **More actions**) downloads a private `.xlsx` snapshot containing components, power links, setup/teardown steps, review warnings, and wiring-change history. **This export is for reading/archiving, not two-way Excel sync.** Editing the exported workbook will not alter the app; reimporting is not an automatic merge. No images are embedded in this export—use the private JSON backup to retain attached photos.
+
+For the full practical procedure, see **[docs/WIRING_WORKFLOW.md](docs/WIRING_WORKFLOW.md)**.
+
 ### Automatic encrypted phone + desktop synchronization
 
 Holiday Display Blueprint uses GitHub Pages for the **public application**, and an isolated Supabase encrypted vault for your **private project data**. Your real wiring information, photos, and checklist notes are never committed to the public GitHub repository.
@@ -35,16 +45,15 @@ Holiday Display Blueprint uses GitHub Pages for the **public application**, and 
 
 The Supabase storage is isolated in `hdb_sync_vaults` and does not alter other apps or their tables. The deployed project does not require a new paid Supabase project.
 
-### Phone: bring your real master plans across privately
+### Manual transfer / backup (fallback only)
 
-The GitHub Pages site serves the **same app** everywhere, but each browser has its own **IndexedDB** data. Seeing the two examples on your phone does **not** mean the imported master project is missing from your desktop.
+The **private master link** is the preferred way to activate encrypted cloud sync on a new device. A JSON backup is useful for offline recovery, migration, or before resolving sync conflicts:
 
-1. On the computer where your 2026 Halloween and Christmas Master projects already appear, select **Backup** or **More actions → Move plans between devices → Back up projects on this device**. This downloads one private JSON file for all local projects (including attached photos and checklist progress).
-2. Send that file privately to your phone with OneDrive, iCloud Drive, Google Drive, AirDrop, or a trusted local file transfer. Do not publish it in GitHub, a public gist, or Pages assets.
-3. On your phone, visit [Holiday Display Blueprint](https://jacobmgoodnight.github.io/holiday-display-blueprint/). The **Only examples on this device** banner appears when you still have only sample projects. Tap **Bring masters here** → **Choose private JSON backup**, then select the file from Files or your drive app.
-4. Review the project names. Imported backups add projects by ID and replace a matching ID **only after your confirmation**; other local projects remain. Export a fresh backup before transferring in the opposite direction.
+1. From a device with the latest project, choose **Back up all projects (JSON)** (or **Backup** in the desktop header).
+2. Store the file privately, e.g. in your personal OneDrive. It can include photos, checklist notes and house wiring. Do not commit it to GitHub.
+3. On another browser, use **More actions → Restore JSON backup** and confirm any replacement of matching project IDs.
 
-**Alternative manual backup:** The transfer steps below remain available for offline backups or migration. The private master link is the easier automatic sync option. Photos included are only those already attached in Blueprint. Extra workbook-embedded photos held in a separate private archive must be attached locally if desired. Never assume two devices have the same edits without a fresh transfer.
+Device-to-device syncing only occurs after each browser has been explicitly linked with the same private URL fragment. When offline, edits are saved locally and pending sync retries next time the app is open and online.
 
 ### Photo-assisted, outlet-specific printed installation guide
 
@@ -77,10 +86,10 @@ In **Wiring diagram**, choose **Simplified install view** and select your O01/O0
 - **Two season starters:** Halloween and Christmas 2026; create a blank project or copy the existing project to next year (copies remain draft).
 - **Real directed electrical graph:** output-port limits, at most one input per device, no loops, no connections into house outlets, explicit male/female mismatch checks; connections are graph records, independent of icon positions.
 - **Interactive editor:** drag, pan, zoom, connect via output/input handles, delete connections, add components, edit names/zones/colors/lengths, replace an existing feed safely in the graph, and isolate a zone or outlet circuit.
-- **Where does this plug in?** Select a component → **Trace source**. **If unplugged** shows all downstream dependencies.
+- **Field wiring edits:** select a non-outlet component → **Where does this plug in?** → choose the upstream component/output and confirm. This validates port availability, records a change, clears affected verification and rewired checklist progress. **Trace source** and **If unplugged** remain available for review.
 - **Setup and teardown:** generated per graph with downstream wiring before the final source connection; task completion and notes persist locally.
 - **Photos and inventory:** attach compressed reference images, add a property-photo backdrop, record storage bins, quantity, purchase dates, costs, repair notes, condition, and ratings. Link common assets across seasons. CSV inventory export.
-- **Workbook import wizard:** choose sheet/header row, assign ID/name/type/zone or source/target/output columns, preview row results, review rejections, retain unmapped columns as metadata. Import components first, then connections. **Embedded workbook images are not imported** and the original workbook remains untouched.
+- **Workbook import / reference export:** inspect and import structured sheets as separate draft data, and export current plans as readable private Excel reference snapshots. No safe Excel-to-live-master reconciliation exists yet. **Embedded workbook images are not imported**, and original workbooks remain untouched.
 - **Private backup and sync:** JSON export / restore (including photos), browser IndexedDB, and opt-in end-to-end encrypted cross-device sync.
 - **Printing:** browser print view of the wiring map; consider PDF print via system print dialog. A calibrated multi-page schematic is a roadmap item.
 
@@ -94,21 +103,17 @@ The Christmas `Cords & Connections` master is narrative: it has no stable ID-to-
 
 Both imports create new drafts; existing projects are not overwritten. Embedded workbook photos and drawn shapes are not automatically extracted. Attach photos in the local app.
 
-### First time with your real master workbooks
+### Importing historical workbook revisions
 
-1. Create a **blank project** first. Do not use the illustrative fixture as an installed plan.
-2. Choose **Import workbook**, select your local `.xlsx`, and inspect each worksheet. Select the relevant header row and map its columns to component fields. Import one structured component sheet at a time.
-3. For structured connection sheets, map source ID, target ID and (optional) 1-based source-output port. IDs must exactly match the imported component IDs. Each missing/invalid link is reported as skipped; it is never silently added.
-4. Review names, connections and ratings. Attach your own photos locally. Change status to **Verified as-installed** only after inspection; this status never constitutes electrical safety approval.
-5. **Backup all projects** and keep the JSON somewhere secure. Export/import between your computer and phone; browser storage does not synchronize across devices.
+The Halloween importer recognizes the structured `2026 Connections` data; the Christmas source is mostly narrative, so it creates unconnected review items rather than guessing exact plugs. Import creates a **new draft** (or adds manually mapped records), not a verified update of an already-synced master.
 
-For workbooks with irregular merged-cell wiring tables, multiple row headings or diagrams made of shapes, map the sheets manually or normalize them into simple ID-based tables before import. This MVP **does not reconstruct wiring from drawn Excel shapes**.
+If an old workbook contains newer facts, compare them with the live Blueprint project and update each affected source/output in Blueprint. Preserve the workbook privately as evidence; export a fresh Excel reference from Blueprint after verification. Never treat an illustrative example as a current installation record.
 
 ## Data and privacy
 
 All projects and compressed photos are saved in **IndexedDB in your own browser on that device**; browser data can be lost if cleared or in a private browsing window. When private sync is enabled, only encrypted project snapshots are transferred to the cloud vault. All application styling uses local system-font fallbacks. The two fixture projects contain no identifying photos, precise property coordinates or actual home inventory.
 
-**A public GitHub Pages site is public software, not private cloud storage.** It does *not* publish your locally imported data. JSON backups do include potentially sensitive photos/location information and should never be committed to a public repository. `.gitignore` excludes spreadsheets, common photo extensions, private folders, and `*.backup.json`.
+**GitHub Pages serves the public app code and an encrypted recovery snapshot; the live private sync vault is separate.** Plaintext wiring, photos, master Excel workbooks and private backups are not intentionally published. JSON and exported Excel contain household installation details and should never be committed to GitHub. `.gitignore` excludes spreadsheets, common photo extensions, private folders, and `*.backup.json`.
 
 ## GitHub Pages (public site)
 
@@ -116,7 +121,7 @@ The source repository is public and the GitHub Actions workflow automatically bu
 
 **https://jacobmgoodnight.github.io/holiday-display-blueprint/**
 
-**Required one-time GitHub setting:** Open [Settings → Pages](https://github.com/jacobmgoodnight/holiday-display-blueprint/settings/pages) and select **Build and deployment → Source: GitHub Actions**. This setting cannot be changed by the repository source-code workflow itself with its default token. If this setting was already selected, the next push runs the pipeline; otherwise select it and then use **Actions → Test, build, and deploy → Run workflow** on `main`.
+**GitHub Pages is already configured and deployed.** If deployment is ever reconfigured, check [Settings → Pages](https://github.com/jacobmgoodnight/holiday-display-blueprint/settings/pages) for **Build and deployment → Source: GitHub Actions**. Use the Actions page to inspect deploy failures.
 
 No `ENABLE_PAGES` variable is needed. Public-repository pushes to `main` trigger test, build, and deploy, but pull requests only run verification. For safety, the deployment job skips when the repository is private.
 
@@ -134,6 +139,11 @@ A valid wiring graph is **not** an electrical inspection. The application does n
 - `src/lib/graph.ts` — validation, tracing and checklist generation
 - `src/lib/storage.ts` — IndexedDB saves and JSON backup/restore
 - `src/lib/excel.ts` — workbook reader and mapping logic
+- `src/lib/wiringEdits.ts` — checked power-feed changes and wiring history
+- `src/lib/wiringExport.ts` — private Excel reference snapshots (not round-trip editing)
+- `src/hooks/useSharedSync.ts` / `src/lib/cloudSync.ts` — encrypted cross-device synchronization
+- `supabase/functions/holiday-blueprint-sync/` — encrypted vault Edge Function source
+- `docs/WIRING_WORKFLOW.md` — how to update the real plans and archive old spreadsheets
 - `src/fixtures/examples.ts` — anonymous illustrative sample diagrams
 - `src/components/*` — React Flow nodes and import wizard
 - `src/tests/*` — graph integrity and persistence tests
