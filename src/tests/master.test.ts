@@ -12,7 +12,7 @@ const halloween=[make('2026 Connections',[
  ['L02','C01','Final outlet','Spotlight 2','Light','','Porch','','Confirmed',''],
  ['AV01','L02','audio','Signal cable','Audio signal cable (not AC)','','Porch','','Confirmed',''],
  ['D01','TBD','TBD','Planned prop','Planned decoration','','Porch','','Planned','']
-]),make('2026 Cord Tags',[['Cord ID','Source','Connection','Color','Length ft','Purpose','Gauge','Rating','Storage bin','Status','Notes'],['C01','','','Green',12,'','','','Bin C','','']])];
+]),make('2026 Cord Tags',[['Cord ID','Source','Connection','Color','Length ft','Purpose','Gauge','Rating','Storage bin','Status','Notes'],['C01','','','Green','12','','','','Bin C','','']])];
 const christmas=[make('Cords & Connections',[['CHRISTMAS 2026'],['Power zone','From','To / load','Cord, connector, or tap','Evidence','Verify during setup'],['O03','Back porch','Roof C9s','Green SPT-1','Described','Inspect connections']])];
 describe('source-aware master workbook import',()=>{
  it('identifies both seasonal formats',()=>{expect(detectMaster(halloween)).toBe('Halloween');expect(detectMaster(christmas)).toBe('Christmas');});
