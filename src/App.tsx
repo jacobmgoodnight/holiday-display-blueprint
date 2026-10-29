@@ -1,7 +1,7 @@
-import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,Menu,MoreVertical,Package,PlugZap,Plus,Printer,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,Menu,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {connect,reconnect,downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
@@ -13,6 +13,7 @@ import {ConnectionFinder} from './components/ConnectionFinder';
 import {InstallationGuide} from './components/InstallationGuide';
 import {DeviceTransfer} from './components/DeviceTransfer';
 import {hasOnlyExamples} from './lib/deviceTransfer';
+import {readHostedMasterKey,decryptHostedMasters,SHARED_MASTER_FILENAME} from './lib/hostedMasters';
 import './components/deviceTransfer.css';
 import {wireDescription} from './lib/wiringGuide';
 import {powerFlowLayout} from './lib/flowLayout';
@@ -33,7 +34,47 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
+ const hostedAttempted=useRef(false);const [hostedLoading,setHostedLoading]=useState(false);
  useEffect(()=>{let live=true;initialize().then(items=>{if(live){setProjects(items);setActive(items[0]?.id||'');setLoaded(true);}}).catch(e=>{if(live){const fallback=exampleProjects();setProjects(fallback);setActive(fallback[0].id);setLoaded(true);setStorageReady(false);setMessage(`Browser storage unavailable: ${String(e)}. Changes are temporary — export a JSON backup.`);}});return()=>{live=false;};},[]);
+ // A secret in the URL fragment unlocks an encrypted, read-only copy of
+ // the published masters. Fetch from our own GitHub Pages site; never send the
+ // secret to GitHub, and never overwrite real locally edited projects.
+ useEffect(()=>{
+  if(!loaded||hostedAttempted.current)return;
+  const key=readHostedMasterKey(window.location.hash);
+  if(!key)return;
+  hostedAttempted.current=true;
+  // Strip the key from the visible URL immediately to minimize accidental sharing.
+  history.replaceState(history.state,'',location.pathname+location.search);
+  setHostedLoading(true);
+  void (async()=>{
+   try{
+    const response=await fetch(new URL(SHARED_MASTER_FILENAME,window.location.href),{cache:'no-store'});
+    if(!response.ok)throw Error('The GitHub-hosted master file is not available yet');
+    const data=await decryptHostedMasters(await response.json(),key);
+    const sourceProjects=parseBackup(data);
+    const onDevice=await db.projects.toArray();
+    const incoming=sourceProjects.filter(remote=>!onDevice.some(local=>local.id===remote.id&&!local.example));
+    if(incoming.length){
+     // Copy only missing master records and replace example records. Never silently
+     // overwrite a previously imported/edited real master with the same project ID.
+     await restoreBackup({...data as object,projects:incoming});
+     setProjects(await db.projects.toArray());
+     const chosen=incoming.find(p=>p.season==='Halloween')||incoming[0];
+     const firstOutlet=chosen.nodes.find(n=>n.kind==='outlet');
+     setActive(chosen.id);setView(firstOutlet&&chosen.nodes.length>20?`Outlet: ${firstOutlet.id}`:'All zones');
+     setSelected(null);setTrace('none');setPathOnly(false);setDiagramMode('guide');
+     setMessage(`Opened ${incoming.length} securely hosted master plan(s). Changes made here stay on this device.`);
+    }else{
+     const existing=sourceProjects.find(remote=>onDevice.some(local=>local.id===remote.id&&!local.example));
+     if(existing){setActive(existing.id);setMessage('Your real master plans are already stored on this device; they were not overwritten.');}
+     else setMessage('No new master plans found in the hosted snapshot.');
+    }
+   }catch(err){
+    setMessage(`Could not unlock hosted masters: ${err instanceof Error?err.message:String(err)}. Reopen your private share link to retry.`);
+   }finally{setHostedLoading(false);}
+  })();
+ },[loaded]);
  const project=projects.find(p=>p.id===active);
  useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode]);
  const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>p.id===active?fn(p):p));},[active]);
@@ -124,7 +165,8 @@ function AppContent(){
     <div className="safety-note"><ShieldAlert size={19}/><div><strong>Electrical verification required</strong><span>Blueprint does not certify cords, loads, GFCI protection, or circuit safety.</span></div></div>
    </aside>
    <main className="content">
-    {examplesOnly&&!dismissTransfer&&<section className="transfer-banner" role="note" aria-label="See master plans on this device">
+    {hostedLoading&&<div className="hosted-loading" role="status"><LockKeyhole size={18}/> Unlocking your private Halloween and Christmas master plans from GitHub…</div>}
+    {examplesOnly&&!hostedLoading&&!readHostedMasterKey(window.location.hash)&&!dismissTransfer&&<section className="transfer-banner" role="note" aria-label="See master plans on this device">
       <div className="transfer-banner-copy"><Upload size={21}/><div><strong>Only examples on this device</strong><span>Import your private Halloween + Christmas backup from the computer that has your master plans.</span></div></div>
       <div className="transfer-banner-actions"><button className="button secondary" onClick={()=>setShowTransfer(true)}>Bring masters here</button><button className="icon-button" onClick={()=>setDismissTransfer(true)} aria-label="Dismiss master transfer tip"><X size={16}/></button></div>
      </section>}
