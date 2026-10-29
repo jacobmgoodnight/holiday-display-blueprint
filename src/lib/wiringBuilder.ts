@@ -17,10 +17,11 @@ export function insertIntoConnection(p:Project,edgeId:string,kind:Kind,name?:str
  const inserted=makeNode(kind,target.zone,position);
  inserted.name=name?.trim().slice(0,100)||inserted.name;
  inserted.verified=false;
- const a:Connection={id:crypto.randomUUID(),source:old.source,sourcePort:old.sourcePort,target:inserted.id};
+ const a:Connection={id:crypto.randomUUID(),source:old.source,sourcePort:old.sourcePort,target:inserted.id,notes:old.notes,metadata:old.metadata};
  const b:Connection={id:crypto.randomUUID(),source:inserted.id,sourcePort:0,target:old.target};
  const edges=[...p.edges.filter(e=>e.id!==edgeId),a,b];
- const nodes=[...p.nodes,inserted].map(n=>n.id===inserted.id||n.id===old.target||downstream(old.target,p.edges).has(n.id)?{...n,verified:false}:n);
+ const affected=new Set([old.target,...downstream(old.target,p.edges)]);
+ const nodes=[...p.nodes,inserted].map(n=>n.id===inserted.id||affected.has(n.id)?{...n,verified:false}:n);
  const errors=validateGraph(nodes,edges);
  if(errors.length)throw Error('Cannot insert safely: '+errors[0].message);
  const checklist={...p.checklist};
