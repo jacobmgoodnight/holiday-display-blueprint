@@ -1,4 +1,4 @@
-import {useCallback,useEffect,useMemo,useRef,useState,type CSSProperties} from 'react';
+import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,Menu,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
@@ -13,7 +13,7 @@ import {ConnectionFinder} from './components/ConnectionFinder';
 import {InstallationGuide} from './components/InstallationGuide';
 import {DeviceTransfer} from './components/DeviceTransfer';
 import {hasOnlyExamples} from './lib/deviceTransfer';
-import {readHostedMasterKey,decryptHostedMasters,SHARED_MASTER_FILENAME} from './lib/hostedMasters';
+import {useSharedSync} from './hooks/useSharedSync';
 import './components/deviceTransfer.css';
 import {wireDescription} from './lib/wiringGuide';
 import {powerFlowLayout} from './lib/flowLayout';
@@ -34,47 +34,14 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
- const hostedAttempted=useRef(false);const [hostedLoading,setHostedLoading]=useState(false);
  useEffect(()=>{let live=true;initialize().then(items=>{if(live){setProjects(items);setActive(items[0]?.id||'');setLoaded(true);}}).catch(e=>{if(live){const fallback=exampleProjects();setProjects(fallback);setActive(fallback[0].id);setLoaded(true);setStorageReady(false);setMessage(`Browser storage unavailable: ${String(e)}. Changes are temporary — export a JSON backup.`);}});return()=>{live=false;};},[]);
- // A secret in the URL fragment unlocks an encrypted, read-only copy of
- // the published masters. Fetch from our own GitHub Pages site; never send the
- // secret to GitHub, and never overwrite real locally edited projects.
- useEffect(()=>{
-  if(!loaded||hostedAttempted.current)return;
-  const key=readHostedMasterKey(window.location.hash);
-  if(!key)return;
-  hostedAttempted.current=true;
-  // Strip the key from the visible URL immediately to minimize accidental sharing.
-  history.replaceState(history.state,'',location.pathname+location.search);
-  setHostedLoading(true);
-  void (async()=>{
-   try{
-    const response=await fetch(new URL(SHARED_MASTER_FILENAME,window.location.href),{cache:'no-store'});
-    if(!response.ok)throw Error('The GitHub-hosted master file is not available yet');
-    const data=await decryptHostedMasters(await response.json(),key);
-    const sourceProjects=parseBackup(data);
-    const onDevice=await db.projects.toArray();
-    const incoming=sourceProjects.filter(remote=>!onDevice.some(local=>local.id===remote.id&&!local.example));
-    if(incoming.length){
-     // Copy only missing master records and replace example records. Never silently
-     // overwrite a previously imported/edited real master with the same project ID.
-     await restoreBackup({...data as object,projects:incoming});
-     setProjects(await db.projects.toArray());
-     const chosen=incoming.find(p=>p.season==='Halloween')||incoming[0];
-     const firstOutlet=chosen.nodes.find(n=>n.kind==='outlet');
-     setActive(chosen.id);setView(firstOutlet&&chosen.nodes.length>20?`Outlet: ${firstOutlet.id}`:'All zones');
-     setSelected(null);setTrace('none');setPathOnly(false);setDiagramMode('guide');
-     setMessage(`Opened ${incoming.length} securely hosted master plan(s). Changes made here stay on this device.`);
-    }else{
-     const existing=sourceProjects.find(remote=>onDevice.some(local=>local.id===remote.id&&!local.example));
-     if(existing){setActive(existing.id);setMessage('Your real master plans are already stored on this device; they were not overwritten.');}
-     else setMessage('No new master plans found in the hosted snapshot.');
-    }
-   }catch(err){
-    setMessage(`Could not unlock hosted masters: ${err instanceof Error?err.message:String(err)}. Reopen your private share link to retry.`);
-   }finally{setHostedLoading(false);}
-  })();
- },[loaded]);
+ const cloud=useSharedSync({loaded,storageReady,projects,setProjects,onImported:(chosen)=>{
+  const outlet=chosen.nodes.find(n=>n.kind==='outlet');
+  setActive(chosen.id);setTab('diagram');setDiagramMode('guide');
+  setView(outlet&&chosen.nodes.length>20?`Outlet: ${outlet.id}`:'All zones');
+  setSelected(null);setTrace('none');setPathOnly(false);
+  setMessage('Your private master plans are available here and are now synced with other linked devices.');
+ }});
  const project=projects.find(p=>p.id===active);
  useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode]);
  const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>p.id===active?fn(p):p));},[active]);
@@ -150,7 +117,8 @@ function AppContent(){
     <button onClick={()=>{setShowWizard(true);setShowMenu(false);}}><FileSpreadsheet size={16}/> Import Excel workbook</button>
     <button onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setShowMenu(false);}}><Download size={16}/> Back up all projects (JSON)</button>
     <label className="menu-upload"><Upload size={16}/> Restore JSON backup<input type="file" accept=".json" onChange={e=>{void importBackup(e.target.files?.[0]);setShowMenu(false);e.target.value='';}}/></label>
-    <button onClick={()=>{setShowMenu(false);setShowTransfer(true);}}><Upload size={16}/> Move plans between devices</button>
+    <button onClick={()=>{setShowMenu(false);setShowTransfer(true);}}><Upload size={16}/> Back up / move plans</button>
+    {cloud.enabled&&<button onClick={()=>{if(confirm('Disconnect encrypted sync on this device? Local projects will remain here.'))cloud.disconnect();setShowMenu(false);}}><LockKeyhole size={16}/> Stop syncing this device</button>}
     <button onClick={printAll}><Printer size={16}/> Print diagram</button>
     <button onClick={()=>{if(!confirm('Delete this local project? Export a backup first.'))return;const ids=projects.filter(p=>p.id!==active);if(!ids.length){setMessage('Keep at least one project.');return;}void db.projects.delete(active);setProjects(ids);chooseProject(ids[0].id);}}><Trash2 size={16}/> Delete selected project</button>
    </div>}</div>
@@ -165,8 +133,13 @@ function AppContent(){
     <div className="safety-note"><ShieldAlert size={19}/><div><strong>Electrical verification required</strong><span>Blueprint does not certify cords, loads, GFCI protection, or circuit safety.</span></div></div>
    </aside>
    <main className="content">
-    {hostedLoading&&<div className="hosted-loading" role="status"><LockKeyhole size={18}/> Unlocking your private Halloween and Christmas master plans from GitHub…</div>}
-    {examplesOnly&&!hostedLoading&&!readHostedMasterKey(window.location.hash)&&!dismissTransfer&&<section className="transfer-banner" role="note" aria-label="See master plans on this device">
+    {cloud.enabled&&<div className={`sync-bar sync-${cloud.status}`} role="status">
+      <LockKeyhole size={16}/><span><strong>{cloud.status==='synced'?'Private sync on':cloud.status==='conflict'?'Sync needs your choice':cloud.status==='offline'?'Offline — changes saved here':'Checking encrypted cloud…'}</strong>{cloud.lastSynced&&cloud.status==='synced'?` · Last synced ${cloud.lastSynced}`:''}</span>
+      <button className="button secondary" onClick={()=>void cloud.syncNow()} disabled={cloud.status==='saving'}>Sync now</button>
+     </div>}
+    {cloud.status==='offline'&&<div className="sync-alert"><AlertTriangle size={17}/><span>Cloud sync unavailable: {cloud.error}. Changes remain on this device and retry automatically.</span></div>}
+    {cloud.status==='conflict'&&<section className="sync-alert sync-conflict" role="alert"><AlertTriangle size={20}/><div><strong>Both devices changed the same project</strong><p>{cloud.conflicts.join(', ')}. Nothing was overwritten. Choose which version to use, or export a backup first.</p><div className="sync-alert-actions"><button className="button secondary" onClick={()=>{exportPrivateBackup();}}>Back up this device</button><button className="button secondary" onClick={()=>{if(confirm('Replace this device’s conflicting changes with the cloud version? Export a backup first if needed.'))void cloud.syncNow('remote');}}>Use cloud version</button><button className="button primary" onClick={()=>{if(confirm('Replace the conflicting cloud version with this device’s version? This will affect your other synced devices.'))void cloud.syncNow('local');}}>Keep this device</button></div></div></section>}
+    {examplesOnly&&!cloud.enabled&&!dismissTransfer&&<section className="transfer-banner" role="note" aria-label="See master plans on this device">
       <div className="transfer-banner-copy"><Upload size={21}/><div><strong>Only examples on this device</strong><span>Import your private Halloween + Christmas backup from the computer that has your master plans.</span></div></div>
       <div className="transfer-banner-actions"><button className="button secondary" onClick={()=>setShowTransfer(true)}>Bring masters here</button><button className="icon-button" onClick={()=>setDismissTransfer(true)} aria-label="Dismiss master transfer tip"><X size={16}/></button></div>
      </section>}
@@ -218,7 +191,7 @@ function AppContent(){
      </>}
     {(tab==='setup'||tab==='teardown')&&<div className="checklist-layout"><div className="checklist-main"><div className="checklist-summary"><div><span className="eyebrow">{tab==='setup'?'INSTALLATION PLAN':'TEARDOWN PLAN'}</span><h2>{progress} of {tasks.length} complete</h2><p>Tasks are generated from component placement and wiring dependencies.</p></div><div className="progress-ring" style={{'--progress':`${tasks.length?progress/tasks.length*100:0}%`} as CSSProperties}>{tasks.length?Math.round(progress/tasks.length*100):0}%</div></div><div className="progress-track"><div style={{width:`${tasks.length?progress/tasks.length*100:0}%`}}/></div>
       {checklistKinds.map(phase=><section className="task-section" key={phase}><h3>{phase}</h3>{tasks.filter(t=>t.phase===phase).map(renderTask)}</section>)}{!tasks.length&&<div className="empty-state">Add components and wiring connections to automatically generate steps.</div>}
-     </div><aside className="checklist-aside"><div className="mini-card"><strong><Activity size={17}/> In the yard</strong><p>Every checkbox and note saves to this browser. There is no automatic phone-to-desktop sync. Export a backup to transfer the plan between devices.</p></div><button className="button secondary" onClick={()=>{setTab('diagram');setSelected(null);setPathOnly(false);}}><Map size={16}/> Back to wiring</button></aside></div>}
+     </div><aside className="checklist-aside"><div className="mini-card"><strong><Activity size={17}/> In the yard</strong><p>Every checkbox and note saves to this browser. With your private master link connected, updates sync securely across devices when online. Offline changes stay local until synchronized.</p></div><button className="button secondary" onClick={()=>{setTab('diagram');setSelected(null);setPathOnly(false);}}><Map size={16}/> Back to wiring</button></aside></div>}
     {tab==='inventory'&&<div className="inventory-panel"><div className="inventory-toolbar"><div className="searchbox"><Search size={17}/><input aria-label="Search inventory" placeholder="Search equipment, bins, notes..." value={search} onChange={e=>setSearch(e.target.value)}/></div><span>{project.nodes.length} items</span></div><div className="inventory-list">{project.nodes.filter(n=>`${n.name} ${n.kind} ${n.zone} ${n.inventory?.storage} ${n.notes}`.toLowerCase().includes(search.toLowerCase())).map(n=><button className="inventory-row" key={n.id} onClick={()=>{setTab('diagram');setPathOnly(false);setView('All zones');jumpToNode(n.id);}}>{n.photo?<img src={n.photo} alt=""/>:<span className="inventory-blank"><Package size={22}/></span>}<span className="inventory-info"><strong>{n.name}</strong><small>{n.kind} · {n.zone}</small></span><span className="inventory-storage">{n.inventory?.storage||'Storage not set'}<small>{n.inventory?.condition||'Condition not recorded'}</small></span><ArrowRight size={18}/></button>)}</div></div>}
    </main>
   </div>

@@ -20,18 +20,20 @@ npm test
 npm run build
 ```
 
-### Open master plans on any device — one private GitHub link
+### Automatic encrypted phone + desktop synchronization
 
-GitHub Pages serves static files, not shared browser storage. Hosting plain JSON or spreadsheet photos in this **public** repository would expose household installation details. To keep phone setup simple, the site now supports an **encrypted hosted master snapshot**:
+Holiday Display Blueprint uses GitHub Pages for the **public application**, and an isolated Supabase encrypted vault for your **private project data**. Your real wiring information, photos, and checklist notes are never committed to the public GitHub repository.
 
-- GitHub hosts only `public/shared-masters.v1.json` containing gzip-compressed **AES-256-GCM ciphertext**, with a random nonce and authenticated metadata.
-- The secret 256-bit decryption key is delivered **only in the URL fragment** (`#master=...`), so it is not transmitted to GitHub Pages with the file request or included in the repository or build logs. Treat the complete private link like a password; anybody with it can unlock the master data.
-- Open the personal master link once on your phone: the app fetches and decrypts the hosted snapshot in the browser, validates its structure, then imports the Halloween and Christmas master projects locally. It opens the simplified installation guide automatically. No file transfer or login on the phone.
-- Existing locally edited real master projects are **never overwritten automatically**. Master data is still cached in your phone's own browser; later edits on that phone do **not** flow back to GitHub or your desktop.
-- This is a **published master snapshot, not continuous multi-device sync**. Publishing changed source data requires regenerating/replacing the encrypted file using the same key, or sharing a new link if the key is rotated. A lost/leaked link can only be revoked by replacing the hosted encrypted file under a new key. GitHub commit history can retain earlier ciphertext versions, so keep older secret links private too.
-- Your original XLSX master workbooks, extra photo archive, and unencrypted JSON files remain outside the public repo. The initial hosted snapshot has no embedded photos.
+- **Setup once per device:** Open your complete private `#master=...` link. The browser stores the device's key locally (never in the public repo) and opens the Halloween / Christmas master projects. You do not need an account or ongoing file transfers.
+- **Automatic sync:** Changes are encrypted with **AES-256-GCM** in your browser and sent to a private, versioned cloud vault. Changes are checked shortly after editing, every 20 seconds while the app is open, and when the page regains focus or comes online. Other linked devices receive those changes automatically on their next check.
+- **Offline-first:** Every edit still saves to IndexedDB locally. The sync bar indicates an offline condition and retries when the connection returns.
+- **Conflict protection:** The server rejects outdated writes (compare-and-swap revision checks). The app tracks hashes of synced projects; independent edits to the same project on both devices produce a visible choice instead of silently overwriting. Export a backup before using **Keep this device** or **Use cloud version**.
+- **Limited scope:** Starter example projects are not uploaded. The existing hosted `shared-masters.v1.json` is an encrypted **recovery snapshot**, not a live database or source of truth for edits. Future changes use the cloud vault.
+- **Disconnect:** **More actions → Stop syncing this device** forgets the private key in that device's local storage. Already stored local plans are preserved.
+- **Security:** The link contains a 256-bit secret in its URL fragment, which is not transmitted to GitHub on page load. A separately derived capability token authenticates sync requests to the Edge Function over HTTPS. The server holds ciphertext only. Supabase table RLS is enabled and direct anon/authenticated table grants are revoked. Possession of your private link authorizes read/write access; anyone with the full link can access and change these projects.
+- **Limitations:** This is **periodic sync, not realtime multiuser co-editing**. Simultaneous offline edits can require manual conflict resolution. Data on shared devices should be protected by the device's screen lock. Large photo bundles can exceed the sync service's payload limit; the app keeps local data and shows an error.
 
-**Privacy caution:** The URL fragment can appear in copied links, synced browser history, or screenshots. Avoid posting the secret link to social media or public GitHub issues. Cryptography protects the published file if the key remains secret, but it does not make a shared link revocable.
+The Supabase storage is isolated in `hdb_sync_vaults` and does not alter other apps or their tables. The deployed project does not require a new paid Supabase project.
 
 ### Phone: bring your real master plans across privately
 
@@ -42,7 +44,7 @@ The GitHub Pages site serves the **same app** everywhere, but each browser has i
 3. On your phone, visit [Holiday Display Blueprint](https://jacobmgoodnight.github.io/holiday-display-blueprint/). The **Only examples on this device** banner appears when you still have only sample projects. Tap **Bring masters here** → **Choose private JSON backup**, then select the file from Files or your drive app.
 4. Review the project names. Imported backups add projects by ID and replace a matching ID **only after your confirmation**; other local projects remain. Export a fresh backup before transferring in the opposite direction.
 
-**Important:** This is a **manual snapshot**, not live sync or shared cloud storage. Photos included are only those already attached in Blueprint. Extra workbook-embedded photos held in a separate private archive must be attached locally if desired. Never assume two devices have the same edits without a fresh transfer.
+**Alternative manual backup:** The transfer steps below remain available for offline backups or migration. The private master link is the easier automatic sync option. Photos included are only those already attached in Blueprint. Extra workbook-embedded photos held in a separate private archive must be attached locally if desired. Never assume two devices have the same edits without a fresh transfer.
 
 ### Photo-assisted, outlet-specific printed installation guide
 
@@ -79,7 +81,7 @@ In **Wiring diagram**, choose **Simplified install view** and select your O01/O0
 - **Setup and teardown:** generated per graph with downstream wiring before the final source connection; task completion and notes persist locally.
 - **Photos and inventory:** attach compressed reference images, add a property-photo backdrop, record storage bins, quantity, purchase dates, costs, repair notes, condition, and ratings. Link common assets across seasons. CSV inventory export.
 - **Workbook import wizard:** choose sheet/header row, assign ID/name/type/zone or source/target/output columns, preview row results, review rejections, retain unmapped columns as metadata. Import components first, then connections. **Embedded workbook images are not imported** and the original workbook remains untouched.
-- **Private backup:** JSON export / restore (including photos), browser IndexedDB, no authentication or backend.
+- **Private backup and sync:** JSON export / restore (including photos), browser IndexedDB, and opt-in end-to-end encrypted cross-device sync.
 - **Printing:** browser print view of the wiring map; consider PDF print via system print dialog. A calibrated multi-page schematic is a roadmap item.
 
 ### Source-aware master workbook import (local-only)
@@ -104,7 +106,7 @@ For workbooks with irregular merged-cell wiring tables, multiple row headings or
 
 ## Data and privacy
 
-All projects and compressed photos are saved in **IndexedDB in your own browser on that device**; browser data can be lost if cleared or in a private browsing window. No data are transmitted by the application. All application styling uses local system-font fallbacks. The two fixture projects contain no identifying photos, precise property coordinates or actual home inventory.
+All projects and compressed photos are saved in **IndexedDB in your own browser on that device**; browser data can be lost if cleared or in a private browsing window. When private sync is enabled, only encrypted project snapshots are transferred to the cloud vault. All application styling uses local system-font fallbacks. The two fixture projects contain no identifying photos, precise property coordinates or actual home inventory.
 
 **A public GitHub Pages site is public software, not private cloud storage.** It does *not* publish your locally imported data. JSON backups do include potentially sensitive photos/location information and should never be committed to a public repository. `.gitignore` excludes spreadsheets, common photo extensions, private folders, and `*.backup.json`.
 
@@ -120,7 +122,7 @@ No `ENABLE_PAGES` variable is needed. Public-repository pushes to `main` trigger
 
 Check the [Actions runs](https://github.com/jacobmgoodnight/holiday-display-blueprint/actions) to confirm an actual successful deployment before treating the site as live.
 
-**Privacy:** Hosting the public React app does not publish locally imported plans, images, or inventory records; those remain in each browser's IndexedDB. Do not put workbook files, private backups, or house photos in the repository or in public fixtures. Devices do not automatically sync their browser data.
+**Privacy:** Hosting the public React app does not publish locally imported plans, images, or inventory records; those remain in each browser's IndexedDB. Do not put workbook files, private backups, or house photos in the repository or in public fixtures. Devices only sync through the encrypted, explicitly linked private vault—not through public GitHub Pages storage.
 
 ## Electrical safety limitations
 
