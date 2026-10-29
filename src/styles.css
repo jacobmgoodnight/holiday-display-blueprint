@@ -64,3 +64,19 @@
 .sync-alert-actions .button{font-size:11px;white-space:normal;text-align:center}
 @media(max-width:720px){.sync-bar{flex-wrap:wrap;padding:10px}.sync-bar span{flex-basis:calc(100% - 40px)}.sync-bar button{margin-left:auto}.sync-alert-actions{flex-direction:column}.sync-alert-actions .button{width:100%}}
 @media print{.sync-bar,.sync-alert{display:none!important}}
+
+/* Installer's selected-component editor: changing a power feed is a deliberate action. */
+.power-feed-editor{margin:12px;border:1px solid #cadfea;border-radius:11px;padding:13px;background:#f5f9fc}
+.feed-heading{display:flex;align-items:center;gap:7px;color:#294d67;font-size:12px}
+.feed-current{font-size:11px;color:#60788a;line-height:1.55;margin:8px 0 12px}
+.feed-current strong{color:#274a64}
+.feed-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(95px,.40fr);gap:8px}
+.feed-controls label{display:flex;flex-direction:column;gap:6px;min-width:0;color:#486d84;font-size:10px;font-weight:800}
+.feed-controls select{min-width:0;width:100%;padding:10px;border:1px solid #cadce8;border-radius:8px;background:#fff;color:#274457;font-size:11px;min-height:42px}
+.feed-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+.feed-actions .button{padding:9px 11px;font-size:11px;white-space:normal}
+.feed-caution{color:#815e30;font-size:10px;line-height:1.55;margin:11px 0 0;padding:9px;background:#fff8eb;border-left:3px solid #cf9859;border-radius:5px}
+.field-verified{display:flex!important;align-items:flex-start;gap:8px;margin:10px 0;padding:10px;background:#edf7f1;border:1px solid #c8e1d3;border-radius:8px;font-size:11px;line-height:1.55}
+.field-verified input{width:17px!important;height:17px!important;flex:none;accent-color:#38846d}
+@media(max-width:720px){.power-feed-editor{margin:8px;padding:11px}.feed-controls{grid-template-columns:1fr}.feed-actions .button{flex:1;min-height:42px}}
+@media print{.power-feed-editor{display:none!important}}
