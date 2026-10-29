@@ -49,3 +49,45 @@
 @media(max-width:1050px){.ig-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.diagram-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px}.diagram-mode-switch button{padding:10px 6px;font-size:10px}.ig-intro{padding:14px;display:block}.ig-intro h2{font-size:18px}.ig-status{margin-top:12px}.ig-grid{padding:8px;gap:10px}.ig-section{padding:10px}.ig-children{margin-left:7px;padding-left:7px}.ig-item{gap:3px;padding:5px}.ig-item-name strong{font-size:11px}.ig-wire-label{max-width:94px;padding:4px;font-size:9px}.ig-locate{flex-basis:28px}.ig-step label{padding:11px 7px}}
 @media print{.diagram-mode-switch{display:none!important}.install-guide{display:block!important}}
+
+
+/* Component and task reference images come exclusively from locally imported project data. */
+.ig-step-photo{display:block;margin:8px 0 9px 38px;width:min(210px,calc(100% - 45px));max-height:145px;object-fit:contain;object-position:left center;border:1px solid #d7e4ec;background:#f8fafc;border-radius:9px;padding:4px}
+.ig-component-notes{font-size:10px;line-height:1.5;color:#607c8f;background:#f5f8fb;border-left:2px solid #cbdde9;padding:5px 8px;margin:3px 0 6px 39px;overflow-wrap:anywhere}
+.ig-print-heading{margin-top:7px!important;font-weight:750;color:#486983!important}
+.ig-actions .ig-print-button{display:inline-flex;align-items:center;gap:5px;background:#275979;color:#fff;border-color:#275979}
+@media(max-width:720px){.ig-actions{flex-wrap:wrap}.ig-actions .ig-print-button{min-height:42px}.ig-step-photo{max-width:185px}.ig-component-notes{margin-left:21px}}
+/* Browser Print -> Save as PDF. Keep only the selected guide visible and expand all branches when printing. */
+@media print{
+ @page{size:auto;margin:12mm}
+ body:has(.install-guide){background:white!important}
+ body:has(.install-guide) .topbar,
+ body:has(.install-guide) .leftbar,
+ body:has(.install-guide) .page-head,
+ body:has(.install-guide) .stats,
+ body:has(.install-guide) .circuit-shortcuts,
+ body:has(.install-guide) .diagram-mode-switch,
+ body:has(.install-guide) .notice-row,
+ body:has(.install-guide) .mobile-tabbar,
+ body:has(.install-guide) .toast,
+ body:has(.install-guide) .transfer-banner,
+ body:has(.install-guide) .transfer-backdrop{display:none!important}
+ body:has(.install-guide) .workspace,body:has(.install-guide) .content{margin:0!important;padding:0!important;width:100%!important;max-width:none!important;display:block!important}
+ body:has(.install-guide) .install-guide{display:block!important;color:#172a36!important;border:0!important;background:#fff!important;margin:0!important}
+ body:has(.install-guide) .ig-intro{border-bottom:2px solid #bfcdd8!important;padding:0 0 9px!important}
+ body:has(.install-guide) .ig-intro h2{font-size:18pt!important}
+ body:has(.install-guide) .ig-intro p{font-size:9pt!important}
+ body:has(.install-guide) .ig-grid{display:block!important;padding:0!important}
+ body:has(.install-guide) .ig-section{padding:8px 0!important;box-shadow:none!important;border:0!important;break-before:auto}
+ body:has(.install-guide) .ig-section+.ig-section{break-before:page}
+ body:has(.install-guide) .ig-heading{margin:7px 0!important}
+ body:has(.install-guide) .ig-heading h3{font-size:12pt!important}
+ body:has(.install-guide) .ig-actions,.install-guide .ig-fold,.install-guide .ig-locate,
+ .install-guide .ig-step button,.install-guide .ig-no-fold{display:none!important}
+ body:has(.install-guide) .ig-item{border:1px solid #b7cad6!important;padding:4px 6px!important;break-inside:avoid}
+ body:has(.install-guide) .ig-wire-label{color:#172a36!important;border-color:#cad5dd!important}
+ body:has(.install-guide) .ig-branch,body:has(.install-guide) .ig-steps>li{break-inside:avoid}
+ body:has(.install-guide) .ig-step-photo{max-height:105px;width:auto;max-width:180px;page-break-inside:avoid}
+ body:has(.install-guide) .ig-step label{border-color:#b6c8d2!important}
+ body:has(.install-guide) .ig-progress-track{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
