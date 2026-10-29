@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,Menu,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
@@ -15,6 +15,7 @@ import {PowerFeedEditor} from './components/PowerFeedEditor';
 import {editPowerFeed} from './lib/wiringEdits';
 import {downloadWiringReference} from './lib/wiringExport';
 import {DeviceTransfer} from './components/DeviceTransfer';
+import {MobileMenuToggle} from './components/MobileMenuToggle';
 import {hasOnlyExamples} from './lib/deviceTransfer';
 import {useSharedSync} from './hooks/useSharedSync';
 import './components/deviceTransfer.css';
@@ -153,7 +154,7 @@ function AppContent(){
   <header className="topbar"><div className="brand"><div className="brand-icon"><CircuitBoard size={23}/></div><div><strong>HOLIDAY DISPLAY <span>BLUEPRINT</span></strong><small>LOCAL-FIRST DISPLAY PLANNER</small></div></div>
    <div className="project-picker"><label className="visually-hidden" htmlFor="projects">Seasonal project</label><select id="projects" value={active} onChange={e=>chooseProject(e.target.value)}>{[...projects].sort((a,b)=>b.year-a.year||a.season.localeCompare(b.season)).map(p=><option value={p.id} key={p.id}>{projectLabel(p)}</option>)}</select><ChevronDown className="picker-chevron" size={17}/></div>
    <div className="top-actions"><span className="local-pill"><span className="pulse-dot"/> {storageReady?'Local browser storage':'Unsaved session'}</span><button className="button secondary desktop-only" onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setMessage('Backup downloaded. Keep the file private — it may include photos and details.');}}><Download size={16}/> Backup</button>
-   <button type="button" className="icon-button mobile-only mobile-header-menu" aria-label={showSidebar?'Close menu':'Open menu'} aria-controls="mobile-navigation" aria-expanded={showSidebar} onClick={()=>{setShowMenu(false);setShowSidebar(x=>!x)}}>{showSidebar?<X size={21}/>:<Menu size={21}/>}<span>Menu</span></button>
+   <MobileMenuToggle open={showSidebar} onToggle={()=>{setShowMenu(false);setShowSidebar(x=>!x)}}/>
    <button type="button" className="icon-button desktop-more-button" aria-label="More actions" aria-controls="more-actions-menu" aria-expanded={showMenu} onClick={()=>{setShowSidebar(false);setShowMenu(x=>!x)}}><MoreVertical size={20}/></button>{showMenu&&<div id="more-actions-menu" className="action-menu" aria-label="More actions">
     <button onClick={()=>makeNew(false)}><Plus size={16}/> New blank project</button><button onClick={()=>makeNew(true)}><Copy size={16}/> Copy into next year</button>
     <button onClick={()=>{setShowWizard(true);setShowMenu(false);}}><FileSpreadsheet size={16}/> Import Excel workbook</button>
