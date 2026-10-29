@@ -14,6 +14,7 @@ import {InstallationGuide} from './components/InstallationGuide';
 import {FieldMode} from './components/FieldMode';
 import {VerificationAudit} from './components/VerificationAudit';
 import {auditCounts,getVerificationIssues} from './lib/verificationAudit';
+import {reviewInstalledProject} from './lib/verificationReview';
 import {PowerFeedEditor} from './components/PowerFeedEditor';
 import {editPowerFeed,undoLastWiringChange} from './lib/wiringEdits';
 import {downloadWiringReference} from './lib/wiringExport';
@@ -102,7 +103,16 @@ function AppContent(){
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
 
  useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;setCenter(pos.x+105,pos.y+43,{zoom:window.innerWidth < 720 ? 0.85 : 1.1,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,diagramMode,project,focusRequest,layoutMode,autoPositions,setCenter]);
- function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false}))}:blank(project.season,year);
+ function reviewInstallationStatus(value:'draft'|'verified'){
+  if(!project)return;
+  if(value==='draft'){update(p=>({...p,status:'draft'}));return;}
+  const outstanding=getVerificationIssues(project).filter(i=>i.severity==='critical'||i.severity==='attention');
+  const note=window.prompt(outstanding.length?`There are ${outstanding.length} unresolved installation findings. Record what you inspected and which items still need attention. This does not certify electrical safety.`:'Record the physical installation check and any exceptions. This does not certify electrical safety.');
+  if(note===null)return;
+  try{const reviewed=reviewInstalledProject(project,note);if(!window.confirm(`Record this plan as verified-as-installed with ${reviewed.verificationReview?.exceptions.length||0} documented exception(s)? This is not an electrical safety certificate.`))return;update(()=>reviewed);setMessage('As-installed field review recorded with a timestamp. Outstanding issues remain visible in Needs Verification.');}
+  catch(err){setMessage(err instanceof Error?err.message:String(err));}
+ }
+ function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],verificationReview:undefined,createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false}))}:blank(project.season,year);
  setProjects(all=>[...all,p]);setActive(p.id);setSelected(null);setView('All zones');setShowMenu(false);setMessage(duplicate?'Copied plan is a DRAFT — verify every connection before use.':'Created a blank local project.');}
  function addComponent(){if(!project)return;const zone:Zone=zones.includes(view as Zone)?view as Zone:'Front porch';const offset=project.nodes.filter(n=>n.zone===zone).length;const n=makeNode(addKind,zone,{x:80+(offset%5)*240,y:80+Math.floor(offset/5)*150});update(p=>({...p,nodes:[...p.nodes,n]}));setSelected(n.id);setInspectorOpen(true);setMessage('Component added. Connect it with the output handles or the connection form.');}
 
@@ -202,8 +212,9 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
      </nav>
     </div>
     <div className="side-section"><p className="side-label">SEASON OVERVIEW</p><div className="side-season"><span>{project.season==='Halloween'?'🎃':'🎄'}</span><div><strong>{project.season} {project.year}</strong><small>{project.nodes.length} components · {project.edges.length} connections</small></div></div>
-      <label className="status-row">Installation record<select value={project.status} onChange={e=>update(p=>({...p,status:e.target.value as 'draft'|'verified'}))}><option value="draft">Draft · not verified</option><option value="verified">Verified as-installed</option></select></label>
-      {project.example&&<div className="example-notice"><AlertTriangle size={17}/> Example data only. Not an installation record.</div>}
+      <label className="status-row">Installation record<select value={project.status} onChange={e=>reviewInstallationStatus(e.target.value as 'draft'|'verified')}><option value="draft">Draft · not verified</option><option value="verified">Verified as-installed</option></select></label>
+      {project.verificationReview&&<div className="field-review-history"><strong>Last field review: {new Date(project.verificationReview.reviewedAt).toLocaleDateString()}</strong><span>{project.verificationReview.notes}</span><small>{project.verificationReview.exceptions.length} findings documented at review · not electrical certification</small></div>}
+       {project.example&&<div className="example-notice"><AlertTriangle size={17}/> Example data only. Not an installation record.</div>}
     </div>
     {tab==='diagram'&&<div className="side-section"><p className="side-label">DIAGRAM VIEWS</p><div className="nav-list">{(['All zones',...zones] as View[]).map(v=><button className={`nav-link nav-sub ${view===v?'active':''}`} key={v} onClick={()=>{changeView(v);setShowSidebar(false)}}><Layers size={15}/>{v==='All zones'?'Whole property':v}</button>)}{project.nodes.filter(n=>n.kind==='outlet').map(o=><button className={`nav-link nav-sub ${view===`Outlet: ${o.id}`?'active':''}`} key={o.id} onClick={()=>{focusOutlet(o.id);setShowSidebar(false)}}><PlugZap size={15}/>{o.name}</button>)}</div></div>}
     <div className="safety-note"><ShieldAlert size={19}/><div><strong>Electrical verification required</strong><span>Blueprint does not certify cords, loads, GFCI protection, or circuit safety.</span></div></div>
