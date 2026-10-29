@@ -20,8 +20,8 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 ## Highest-priority next improvements
 
 1. **Safer source reconciliation (large impact).** Match a changed workbook's IDs against the current synced master, present a side-by-side diff of additions, removals and upstream/port changes, require explicit per-change approval, and avoid overwriting field photos/checklist states.
-2. **Field verification checklist.** Distinguish missing upstream connections, unrecorded cord length, connector/gender, uncertain tap/inline female locations, ratings and photos. Provide "needs field check" filters for O01/O02/O03 and a proof/inspection note per component.
-3. **Undo + deeper change history.** Add deliberate undo for accidental edits, historical graph snapshots and "what changed since last installation?" reports; log **all** topology edits (including component deletion) consistently.
+2. **Deeper field evidence.** The Needs Verification dashboard now flags missing recorded feeds, cord lengths, load details, optional photos and component field-verification state. Next: require connector-specific field photos/inspection notes for uncertain C9 taps and splitter ports, plus date/inspector provenance.
+3. **Full project undo + deeper history.** The latest guided power-feed change can now be safely reversed, without re-verification. Next: undo component deletions, historical graph snapshots, cloud-aware conflict handling and "what changed since last installation?" reports; log all topology edits consistently.
 4. **Image association.** Reconcile privately uploaded workbook-embedded photos/drawings with the matching component ID; show unmatched photos for manual assignment. No public household images.
 5. **More reliable shared editing.** Replace whole-project conflict choices with per-item/per-checkbox comparisons; correctly propagate intentional project deletions (tombstones); add end-to-end browser/device integration tests.
 6. **PWA offline launch.** Cache the app shell/assets for true offline use, test iOS Safari install/offline editing, and show last successful cloud sync per device.
