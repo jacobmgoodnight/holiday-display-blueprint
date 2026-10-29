@@ -20,6 +20,19 @@ npm test
 npm run build
 ```
 
+### Open master plans on any device — one private GitHub link
+
+GitHub Pages serves static files, not shared browser storage. Hosting plain JSON or spreadsheet photos in this **public** repository would expose household installation details. To keep phone setup simple, the site now supports an **encrypted hosted master snapshot**:
+
+- GitHub hosts only `public/shared-masters.v1.json` containing gzip-compressed **AES-256-GCM ciphertext**, with a random nonce and authenticated metadata.
+- The secret 256-bit decryption key is delivered **only in the URL fragment** (`#master=...`), so it is not transmitted to GitHub Pages with the file request or included in the repository or build logs. Treat the complete private link like a password; anybody with it can unlock the master data.
+- Open the personal master link once on your phone: the app fetches and decrypts the hosted snapshot in the browser, validates its structure, then imports the Halloween and Christmas master projects locally. It opens the simplified installation guide automatically. No file transfer or login on the phone.
+- Existing locally edited real master projects are **never overwritten automatically**. Master data is still cached in your phone's own browser; later edits on that phone do **not** flow back to GitHub or your desktop.
+- This is a **published master snapshot, not continuous multi-device sync**. Publishing changed source data requires regenerating/replacing the encrypted file using the same key, or sharing a new link if the key is rotated. A lost/leaked link can only be revoked by replacing the hosted encrypted file under a new key. GitHub commit history can retain earlier ciphertext versions, so keep older secret links private too.
+- Your original XLSX master workbooks, extra photo archive, and unencrypted JSON files remain outside the public repo. The initial hosted snapshot has no embedded photos.
+
+**Privacy caution:** The URL fragment can appear in copied links, synced browser history, or screenshots. Avoid posting the secret link to social media or public GitHub issues. Cryptography protects the published file if the key remains secret, but it does not make a shared link revocable.
+
 ### Phone: bring your real master plans across privately
 
 The GitHub Pages site serves the **same app** everywhere, but each browser has its own **IndexedDB** data. Seeing the two examples on your phone does **not** mean the imported master project is missing from your desktop.
