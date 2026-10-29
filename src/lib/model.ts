@@ -19,7 +19,7 @@ export type WiringEdit={
 export type Project = {
   id:string;season:Season;year:number;name:string;status:'draft'|'verified';
   nodes:Component[];edges:Connection[];checklist:ChecklistState;
-  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];
+  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];verificationReview?:{reviewedAt:string;notes:string;exceptions:string[]};
 };
 export const outputCount = (kind:Kind):number => ({outlet:2,'smart-plug':2,cord:1,'spt-1':1,splitter:4,'inline-tap':2,'light-strand':1,decoration:0,projector:0,spotlight:0,controller:0,accessory:0})[kind];
 export const categories:{kind:Kind;label:string}[] = [

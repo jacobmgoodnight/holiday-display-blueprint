@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Smartphone,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
@@ -11,8 +11,10 @@ import {BlueprintNode,type BlueprintFlowNode} from './components/BlueprintNode';
 import {ExcelWizard} from './components/ExcelWizard';
 import {ConnectionFinder} from './components/ConnectionFinder';
 import {InstallationGuide} from './components/InstallationGuide';
+import {FieldMode} from './components/FieldMode';
 import {VerificationAudit} from './components/VerificationAudit';
 import {auditCounts,getVerificationIssues} from './lib/verificationAudit';
+import {reviewInstalledProject} from './lib/verificationReview';
 import {PowerFeedEditor} from './components/PowerFeedEditor';
 import {editPowerFeed,undoLastWiringChange} from './lib/wiringEdits';
 import {downloadWiringReference} from './lib/wiringExport';
@@ -28,16 +30,16 @@ import {powerFlowLayout} from './lib/flowLayout';
 import {exampleProjects} from './fixtures/examples';
 import './styles.css';
 const nodeTypes={blueprint:BlueprintNode};
-type Tab='diagram'|'setup'|'teardown'|'inventory';type View='All zones'|Zone|`Outlet: ${string}`;
+type Tab='field'|'diagram'|'setup'|'teardown'|'inventory';type View='All zones'|Zone|`Outlet: ${string}`;
 const zones:Zone[]=['Front porch','Garage & driveway','Backyard','Other'];
-const iconFor:Record<Tab,typeof Map>={diagram:Map,setup:ClipboardCheck,teardown:Unplug,inventory:Package};
+const iconFor:Record<Tab,typeof Map>={field:Smartphone,diagram:Map,setup:ClipboardCheck,teardown:Unplug,inventory:Package};
 function blank(season:Season,year:number):Project{return {id:crypto.randomUUID(),season,year,name:`${season} ${year} · new plan`,status:'draft',nodes:[],edges:[],checklist:{},createdAt:now(),updatedAt:now(),example:false};}
 function projectLabel(p:Project){return `${p.season==='Halloween'?'🎃':'🎄'} ${p.year} · ${p.name.replace(/^(Halloween|Christmas)\s*(\d{4})?\s*[·\-]?\s*/,'').slice(0,36)}`;}
 const csvEscape=(s:unknown)=>`"${String(s??'').replace(/"/g,'""')}"`;
 function AppContent(){
  const {fitView,setCenter}=useReactFlow<BlueprintFlowNode,Edge>();
  const [projects,setProjects]=useState<Project[]>([]);const [active,setActive]=useState('');const [loaded,setLoaded]=useState(false);const [storageReady,setStorageReady]=useState(true);
- const [tab,setTab]=useState<Tab>('diagram');const [view,setView]=useState<View>('All zones');const [selected,setSelected]=useState<string|null>(null);const [trace,setTrace]=useState<'none'|'upstream'|'downstream'|'outage'>('none');
+ const [tab,setTab]=useState<Tab>(()=>window.matchMedia('(max-width:720px)').matches?'field':'diagram');const [view,setView]=useState<View>('All zones');const [selected,setSelected]=useState<string|null>(null);const [trace,setTrace]=useState<'none'|'upstream'|'downstream'|'outage'>('none');
  const [diagramMode,setDiagramMode]=useState<'map'|'guide'|'audit'>('map');const [layoutMode,setLayoutMode]=useState<'auto'|'manual'>('auto');const [pathOnly,setPathOnly]=useState(false);const [focusRequest,setFocusRequest]=useState<{id:string;seq:number}|null>(null);
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
@@ -57,7 +59,7 @@ function AppContent(){
  useEffect(()=>{let live=true;initialize().then(items=>{if(live){setProjects(items);setActive(items[0]?.id||'');setLoaded(true);}}).catch(e=>{if(live){const fallback=exampleProjects();setProjects(fallback);setActive(fallback[0].id);setLoaded(true);setStorageReady(false);setMessage(`Browser storage unavailable: ${String(e)}. Changes are temporary — export a JSON backup.`);}});return()=>{live=false;};},[]);
  const cloud=useSharedSync({loaded,storageReady,projects,setProjects,onImported:(chosen)=>{
   const outlet=chosen.nodes.find(n=>n.kind==='outlet');
-  setActive(chosen.id);setTab('diagram');setDiagramMode('guide');
+  setActive(chosen.id);setTab(window.matchMedia('(max-width:720px)').matches?'field':'diagram');setDiagramMode('guide');
   setView(outlet&&chosen.nodes.length>20?`Outlet: ${outlet.id}`:'All zones');
   setSelected(null);setTrace('none');setPathOnly(false);
   setMessage('Your private master plans are available here and are now synced with other linked devices.');
@@ -101,7 +103,16 @@ function AppContent(){
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
 
  useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;setCenter(pos.x+105,pos.y+43,{zoom:window.innerWidth < 720 ? 0.85 : 1.1,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,diagramMode,project,focusRequest,layoutMode,autoPositions,setCenter]);
- function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false}))}:blank(project.season,year);
+ function reviewInstallationStatus(value:'draft'|'verified'){
+  if(!project)return;
+  if(value==='draft'){update(p=>({...p,status:'draft'}));return;}
+  const outstanding=getVerificationIssues(project).filter(i=>i.severity==='critical'||i.severity==='attention');
+  const note=window.prompt(outstanding.length?`There are ${outstanding.length} unresolved installation findings. Record what you inspected and which items still need attention. This does not certify electrical safety.`:'Record the physical installation check and any exceptions. This does not certify electrical safety.');
+  if(note===null)return;
+  try{const reviewed=reviewInstalledProject(project,note);if(!window.confirm(`Record this plan as verified-as-installed with ${reviewed.verificationReview?.exceptions.length||0} documented exception(s)? This is not an electrical safety certificate.`))return;update(()=>reviewed);setMessage('As-installed field review recorded with a timestamp. Outstanding issues remain visible in Needs Verification.');}
+  catch(err){setMessage(err instanceof Error?err.message:String(err));}
+ }
+ function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],verificationReview:undefined,createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false}))}:blank(project.season,year);
  setProjects(all=>[...all,p]);setActive(p.id);setSelected(null);setView('All zones');setShowMenu(false);setMessage(duplicate?'Copied plan is a DRAFT — verify every connection before use.':'Created a blank local project.');}
  function addComponent(){if(!project)return;const zone:Zone=zones.includes(view as Zone)?view as Zone:'Front porch';const offset=project.nodes.filter(n=>n.zone===zone).length;const n=makeNode(addKind,zone,{x:80+(offset%5)*240,y:80+Math.floor(offset/5)*150});update(p=>({...p,nodes:[...p.nodes,n]}));setSelected(n.id);setInspectorOpen(true);setMessage('Component added. Connect it with the output handles or the connection form.');}
 
@@ -185,10 +196,11 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
   {showSidebar&&<button type="button" className="mobile-drawer-dismiss" aria-label="Close menu" onClick={()=>setShowSidebar(false)}/>}
   <div className="workspace">
    <aside id="mobile-navigation" aria-label="Navigation and tools" className={`leftbar ${showSidebar?'leftbar-open':''}`}>
-    <div className="mobile-drawer-header mobile-drawer-only"><div><strong>Navigation & tools</strong><span>{project.season} {project.year}</span></div><button type="button" className="icon-button" aria-label="Close menu" onClick={()=>setShowSidebar(false)}><X size={22}/></button></div><div className="side-section"><p className="side-label">WORKSPACE</p><nav className="nav-list" aria-label="Workspace tabs">{(['diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={`nav-link ${tab===t?'active':''}`} onClick={()=>{setTab(t);setShowSidebar(false);}}><Icon size={18}/><span>{({diagram:'Wiring diagram',setup:'Installation steps',teardown:'Teardown steps',inventory:'Equipment inventory'})[t]}</span>{t==='setup'&&<small>{generatedTasks(project,'setup').length}</small>}</button>;})}</nav></div>
+    <div className="mobile-drawer-header mobile-drawer-only"><div><strong>Navigation & tools</strong><span>{project.season} {project.year}</span></div><button type="button" className="icon-button" aria-label="Close menu" onClick={()=>setShowSidebar(false)}><X size={22}/></button></div><div className="side-section"><p className="side-label">WORKSPACE</p><nav className="nav-list" aria-label="Workspace tabs">{(['field','diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={`nav-link ${tab===t?'active':''}`} onClick={()=>{setTab(t);setShowSidebar(false);}}><Icon size={18}/><span>{({field:'Field Mode · phone-friendly',diagram:'Wiring diagram',setup:'Installation steps',teardown:'Teardown steps',inventory:'Equipment inventory'})[t]}</span>{t==='setup'&&<small>{generatedTasks(project,'setup').length}</small>}</button>;})}</nav></div>
     <div className="side-section mobile-drawer-only">
      <p className="side-label">QUICK ACTIONS</p>
      <nav className="nav-list" aria-label="Mobile quick actions">
+      <button className="nav-link" onClick={()=>{setTab('field');setShowSidebar(false)}}><Smartphone size={18}/> Field Mode</button>
       <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('guide');setShowSidebar(false)}}><ClipboardCheck size={18}/> Simplified install view</button>
       <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('audit');setShowSidebar(false)}}><AlertTriangle size={18}/> Needs verification</button>
       <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('map');setShowSidebar(false)}}><CircuitBoard size={18}/> Wiring diagram editor</button>
@@ -200,8 +212,9 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
      </nav>
     </div>
     <div className="side-section"><p className="side-label">SEASON OVERVIEW</p><div className="side-season"><span>{project.season==='Halloween'?'🎃':'🎄'}</span><div><strong>{project.season} {project.year}</strong><small>{project.nodes.length} components · {project.edges.length} connections</small></div></div>
-      <label className="status-row">Installation record<select value={project.status} onChange={e=>update(p=>({...p,status:e.target.value as 'draft'|'verified'}))}><option value="draft">Draft · not verified</option><option value="verified">Verified as-installed</option></select></label>
-      {project.example&&<div className="example-notice"><AlertTriangle size={17}/> Example data only. Not an installation record.</div>}
+      <label className="status-row">Installation record<select value={project.status} onChange={e=>reviewInstallationStatus(e.target.value as 'draft'|'verified')}><option value="draft">Draft · not verified</option><option value="verified">Verified as-installed</option></select></label>
+      {project.verificationReview&&<div className="field-review-history"><strong>Last field review: {new Date(project.verificationReview.reviewedAt).toLocaleDateString()}</strong><span>{project.verificationReview.notes}</span><small>{project.verificationReview.exceptions.length} findings documented at review · not electrical certification</small></div>}
+       {project.example&&<div className="example-notice"><AlertTriangle size={17}/> Example data only. Not an installation record.</div>}
     </div>
     {tab==='diagram'&&<div className="side-section"><p className="side-label">DIAGRAM VIEWS</p><div className="nav-list">{(['All zones',...zones] as View[]).map(v=><button className={`nav-link nav-sub ${view===v?'active':''}`} key={v} onClick={()=>{changeView(v);setShowSidebar(false)}}><Layers size={15}/>{v==='All zones'?'Whole property':v}</button>)}{project.nodes.filter(n=>n.kind==='outlet').map(o=><button className={`nav-link nav-sub ${view===`Outlet: ${o.id}`?'active':''}`} key={o.id} onClick={()=>{focusOutlet(o.id);setShowSidebar(false)}}><PlugZap size={15}/>{o.name}</button>)}</div></div>}
     <div className="safety-note"><ShieldAlert size={19}/><div><strong>Electrical verification required</strong><span>Blueprint does not certify cords, loads, GFCI protection, or circuit safety.</span></div></div>
@@ -219,9 +232,10 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
       <div className="transfer-banner-copy"><Upload size={21}/><div><strong>Only examples on this device</strong><span>Import your private Halloween + Christmas backup from the computer that has your master plans.</span></div></div>
       <div className="transfer-banner-actions"><button className="button secondary" onClick={()=>setShowTransfer(true)}>Bring masters here</button><button className="icon-button" onClick={()=>setDismissTransfer(true)} aria-label="Dismiss master transfer tip"><X size={16}/></button></div>
      </section>}
-    <div className="page-head"><div><div className="eyebrow">{project.season.toUpperCase()} {project.year} / {tab==='diagram'?'SYSTEM OVERVIEW':tab.toUpperCase()}</div><h1>{({diagram:'Your display, connected.',setup:'Install with confidence.',teardown:'Pack it right for next year.',inventory:'Know what you own.'})[tab]}</h1><p>{({diagram:'Plan the wiring once. Find every connection next season.',setup:'Ordered from your wiring graph. Check off each step as you work.',teardown:'Power off, disconnect, inspect and pack your components.',inventory:'Storage, condition and repair history in one place.'})[tab]}</p></div>
+    <div className="page-head"><div><div className="eyebrow">{project.season.toUpperCase()} {project.year} / {tab==='diagram'?'SYSTEM OVERVIEW':tab.toUpperCase()}</div><h1>{({field:'Your yard companion.',diagram:'Your display, connected.',setup:'Install with confidence.',teardown:'Pack it right for next year.',inventory:'Know what you own.'})[tab]}</h1><p>{({field:'Follow connections and setup steps without opening the graph editor.',diagram:'Plan the wiring once. Find every connection next season.',setup:'Ordered from your wiring graph. Check off each step as you work.',teardown:'Power off, disconnect, inspect and pack your components.',inventory:'Storage, condition and repair history in one place.'})[tab]}</p></div>
      <div className="head-buttons">{tab==='diagram'?<><button className="button secondary" onClick={()=>setShowWizard(true)}><FileSpreadsheet size={16}/> <span className="desktop-only">Import workbook</span><span className="mobile-only">Import</span></button><button className="button secondary" onClick={()=>{downloadWiringReference(project);setMessage('Reference workbook downloaded; original Excel master unchanged.');}}><FileSpreadsheet size={16}/> <span className="desktop-only">Export Excel reference</span><span className="mobile-only">Excel</span></button><button className="button secondary desktop-only" onClick={printAll}><Printer size={16}/> Print</button></>:null}
      {tab==='inventory'&&<button className="button secondary" onClick={()=>{const rows=[['ID','Name','Type','Zone','Color','Length ft','Storage','Quantity','Condition','Price','Repair history'],...project.nodes.map(n=>[n.id,n.name,n.kind,n.zone,n.color,n.lengthFt,n.inventory?.storage,n.inventory?.quantity,n.inventory?.condition,n.inventory?.price,n.inventory?.repairHistory])];downloadText(`inventory-${project.season}-${project.year}.csv`,rows.map(r=>r.map(csvEscape).join(',')).join('\r\n'),'text/csv');}}><Download size={16}/> CSV</button>}</div></div>
+    {tab==='field'&&<><div className="field-sync-line" role="status"><span>{localSaving.saveState.phase==='saved'?'Saved locally':localSaving.saveState.phase==='saving'?'Saving on this device…':'Local save failed'}</span><span>{!cloud.enabled?'Sync not linked':cloud.status==='synced'?'Private sync connected':cloud.status==='offline'?'Cloud offline; local edits retained':cloud.status==='conflict'?'Sync conflict needs review':'Cloud checking…'}</span></div><FieldMode key={project.id} project={project} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})} onEdit={()=>{setTab('diagram');setDiagramMode('map');setSelected(null);setView('All zones')}}/></>}
     {tab==='diagram'&&<>
       <div className="stats"><div className="stat"><div className="stat-icon soft-blue"><Layers size={20}/></div><div><strong>{project.nodes.length}</strong><span>Components</span></div></div><div className="stat"><div className="stat-icon soft-amber"><Link2 size={20}/></div><div><strong>{project.edges.length}</strong><span>Connections</span></div></div><div className="stat"><div className="stat-icon soft-green"><PlugZap size={20}/></div><div><strong>{project.nodes.filter(n=>n.kind==='outlet').length}</strong><span>Power sources</span></div></div><div className="stat"><div className="stat-icon soft-red"><AlertTriangle size={20}/></div><div><strong>{auditSummary.critical+auditSummary.attention}</strong><span>Needs verification</span></div></div></div>
       <div className="circuit-shortcuts" role="group" aria-label="Quick outlet focus">
@@ -277,7 +291,7 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
     {tab==='inventory'&&<div className="inventory-panel"><div className="inventory-toolbar"><div className="searchbox"><Search size={17}/><input aria-label="Search inventory" placeholder="Search equipment, bins, notes..." value={search} onChange={e=>setSearch(e.target.value)}/></div><span>{project.nodes.length} items</span></div><div className="inventory-list">{project.nodes.filter(n=>`${n.name} ${n.kind} ${n.zone} ${n.inventory?.storage} ${n.notes}`.toLowerCase().includes(search.toLowerCase())).map(n=><button className="inventory-row" key={n.id} onClick={()=>{setTab('diagram');setPathOnly(false);setView('All zones');jumpToNode(n.id);}}>{n.photo?<img src={n.photo} alt=""/>:<span className="inventory-blank"><Package size={22}/></span>}<span className="inventory-info"><strong>{n.name}</strong><small>{n.kind} · {n.zone}</small></span><span className="inventory-storage">{n.inventory?.storage||'Storage not set'}<small>{n.inventory?.condition||'Condition not recorded'}</small></span><ArrowRight size={18}/></button>)}</div></div>}
    </main>
   </div>
-  <nav className="mobile-tabbar" aria-label="Mobile main navigation">{(['diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={tab===t?'active':''} onClick={()=>{setTab(t);setShowSidebar(false);setShowMenu(false)}}><Icon size={21}/><span>{({diagram:'Diagram',setup:'Install',teardown:'Teardown',inventory:'Inventory'})[t]}</span></button>;})}</nav>
+  <nav className="mobile-tabbar" aria-label="Mobile main navigation">{(['field','diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={tab===t?'active':''} onClick={()=>{setTab(t);setShowSidebar(false);setShowMenu(false)}}><Icon size={21}/><span>{({field:'Field',diagram:'Wiring',setup:'Install',teardown:'Teardown',inventory:'Inventory'})[t]}</span></button>;})}</nav>
   {message&&<div className="toast" role="status"><span>{message}</span><button aria-label="Dismiss message" onClick={()=>setMessage('')}><X size={16}/></button></div>}
   {showTransfer&&<DeviceTransfer hasRealPlans={!examplesOnly} projectCount={projects.length} onExport={exportPrivateBackup} onImport={importBackup} onClose={()=>setShowTransfer(false)}/>}
   {showWizard&&<ExcelWizard project={project} onSave={p=>{update(()=>p);setMessage('Workbook rows imported as draft. Review each mapping and save a backup.');}} onImportMaster={p=>{setProjects(all=>[...all,p]);setActive(p.id);setView(p.nodes.length>25&&p.nodes.some(n=>n.kind==='outlet')?`Outlet: ${p.nodes.find(n=>n.kind==='outlet')!.id}`:'All zones');setSelected(null);setTrace('none');setMessage(`${p.season} workbook imported as a separate DRAFT. Check every connection and export a private backup.`);}} onClose={()=>setShowWizard(false)}/>}

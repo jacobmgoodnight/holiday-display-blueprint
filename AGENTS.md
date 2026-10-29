@@ -17,9 +17,10 @@
 ## Engineering workflow
 
 9. Preserve existing project IDs, connection IDs where appropriate, checklist states, source row metadata, imported cord tags, and manual icon positions. A *new* physical connection should produce an unchecked new task; do not carry a stale done check over to it.
-10. Run `npm test` and `npm run build` via GitHub Actions before merging. Tests should cover graph validation, exports, migration/backups, cloud conflicts, and Christmas O03 topology. Prefer one readable UI flow on mobile over advanced hidden controls.
-11. GitHub Pages base path must remain `/holiday-display-blueprint/`. Never change other repositories or existing Supabase dinner-app tables without explicit permission.
-12. Update **README.md**, **docs/ROADMAP.md**, and **docs/WIRING_WORKFLOW.md** when architecture, UI or feature completeness changes. Don't leave false statements such as "no backend", "no sync", or "not tested" after successful deployed CI.
+10. Per-project local saving is serialized and retried; do not reinstate an active-project-only debounced save effect or allow delayed writes to resurrect deleted records. Field Mode must reuse the same project/checklist data, never a separate copy. Project Verified requires recorded human inspection notes/exceptions, and never signifies electrical safety certification.
+11. Run `npm test` and `npm run build` via GitHub Actions before merging. Tests should cover graph validation, exports, migration/backups, cloud conflicts, and Christmas O03 topology. Prefer one readable UI flow on mobile over advanced hidden controls.
+12. GitHub Pages base path must remain `/holiday-display-blueprint/`. Never change other repositories or existing Supabase dinner-app tables without explicit permission.
+13. Update **README.md**, **docs/ROADMAP.md**, and **docs/WIRING_WORKFLOW.md** when architecture, UI or feature completeness changes. Don't leave false statements such as "no backend", "no sync", or "not tested" after successful deployed CI.
 
 ## Unverified installation details
 

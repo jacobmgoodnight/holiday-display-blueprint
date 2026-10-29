@@ -122,3 +122,17 @@
  .topbar .mobile-header-menu{min-width:65px;padding:8px!important}
 }
 @media print{.more-menu-dismiss,.mobile-drawer-dismiss,.mobile-drawer-header{display:none!important}}
+
+/* Phone field mode shows save and cloud status without crowding the top header. */
+.field-sync-line{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 13px}
+.field-sync-line span{display:inline-flex;align-items:center;gap:7px;border:1px solid #d7e7e3;background:#f2f9f5;color:#416b5c;border-radius:100px;padding:7px 11px;font-size:10px;font-weight:800}
+.field-sync-line span:nth-child(2){background:#f0f6fa;border-color:#dae5ed;color:#4c6d83}
+.local-save-failed{color:#ffc58c!important}.local-save-failed .pulse-dot{background:#e79d4d}
+.local-save-saving .pulse-dot{background:#ecc277}
+@media(max-width:720px){
+ .mobile-tabbar{height:73px}
+ .mobile-tabbar button{min-width:0;gap:4px;font-size:9px;padding:7px 2px}
+ .mobile-tabbar button svg{width:20px;height:20px}
+ .content{padding-bottom:98px}
+ .field-sync-line{margin-top:0}
+}
