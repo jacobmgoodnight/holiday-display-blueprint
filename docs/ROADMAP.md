@@ -34,3 +34,12 @@
 - IndexedDB is per browser/device. Browser storage may be cleared; there is no autosync, authentication or conflict resolution.
 - Photos are stored inline as compressed data URIs in the local project record. A large library could exceed browser storage quotas; separate blob storage would scale better.
 - The print view uses the browser print engine; large diagrams may need manual scale adjustments.
+
+## Master workbook import (2026-10-29)
+- [x] Detect the structured Halloween and narrative Christmas source worksheets.
+- [x] Preserve Halloween ID/port/source-row metadata, cord tags and unknown or excluded links.
+- [x] Stage new draft projects rather than replacing current plans.
+- [x] Private offline backup of the two 2026 master projects; never publish private source data.
+- [ ] Map anchored workbook pictures onto equipment records and inspect unmatched images.
+- [ ] Review/merge source revisions and show exact year-to-year diffs.
+- [ ] Trace unresolved Christmas prose notes to field-verified connector locations.

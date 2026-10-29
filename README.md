@@ -32,6 +32,16 @@ npm run build
 - **Private backup:** JSON export / restore (including photos), browser IndexedDB, no authentication or backend.
 - **Printing:** browser print view of the wiring map; consider PDF print via system print dialog. A calibrated multi-page schematic is a roadmap item.
 
+### Source-aware master workbook import (local-only)
+
+**For the 2026 plans:** Use the separately supplied private two-season JSON backup through **More actions → Restore JSON backup**. It creates two real, *unverified* seasonal wiring drafts. **Never commit this private JSON, household photos or workbooks to your public GitHub repository.**
+
+For future workbook revisions, use **Import workbook**. The wizard now recognizes the Halloween `2026 Connections` sheet, preserves component IDs, upstream links, port labels, status, source-row information and 2026 Cord Tags. Audio, BLE and battery-only records are excluded from AC wiring. Invalid/unconfirmed links are reported, not silently connected.
+
+The Christmas `Cords & Connections` master is narrative: it has no stable ID-to-ID electrical edge table. To avoid inventing plug connections, direct workbook import creates clearly labeled *disconnected review items*. The separately prepared private two-season backup contains a cautious, source-informed Christmas wiring draft with the covered-porch C9 female-to-morning-room distinction. Verify all provisional tap and splitter positions in the field.
+
+Both imports create new drafts; existing projects are not overwritten. Embedded workbook photos and drawn shapes are not automatically extracted. Attach photos in the local app.
+
 ### First time with your real master workbooks
 
 1. Create a **blank project** first. Do not use the illustrative fixture as an installed plan.

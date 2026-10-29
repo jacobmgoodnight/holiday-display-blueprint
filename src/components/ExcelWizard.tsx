@@ -2,8 +2,12 @@ import {useState} from 'react';
 import {FileSpreadsheet,Upload, X} from 'lucide-react';
 import type {Project} from '../lib/model';
 import {emptyMapping,importMappedRows,readWorkbook,suggestMapping,type WorkbookPreview,type Mapping,type ImportMode} from '../lib/excel';
-export function ExcelWizard({project,onSave,onClose}:{project:Project;onSave:(p:Project)=>void;onClose:()=>void}){
+import {buildMasterDraft,detectMaster,type MasterImport} from '../lib/master';
+export function ExcelWizard({project,onSave,onImportMaster,onClose}:{project:Project;onSave:(p:Project)=>void;onImportMaster:(p:Project)=>void;onClose:()=>void}){
  const [sheets,setSheets]=useState<WorkbookPreview[]>([]);const [edits,setEdits]=useState<Record<number,string[]>>({});const [omitted,setOmitted]=useState<number[]>([]);const [page,setPage]=useState(0);const [selected,setSelected]=useState(0);const [header,setHeader]=useState(0);const [mode,setMode]=useState<ImportMode>('components');const [mapping,setMapping]=useState<Mapping>(emptyMapping);const [error,setError]=useState('');const [filename,setFilename]=useState('');
+ const [reviewMaster,setReviewMaster]=useState(true);const [acknowledged,setAcknowledged]=useState(false);
+ const masterSeason=detectMaster(sheets);let master:MasterImport|null=null;let masterError='';
+ if(sheets.length&&masterSeason)try{master=buildMasterDraft(sheets,filename);}catch(e){masterError=String(e);}
  const sheet=sheets[selected];const headers=sheet?.rows[header]||[];const reviewedRows=sheet?.rows.map((row,i)=>omitted.includes(i)?[]:edits[i]||row)||[];
  function mapChange(sheetIndex:number,headRow:number){setEdits({});setOmitted([]);setPage(0);setSelected(sheetIndex);setHeader(headRow);setMapping(suggestMapping(sheets[sheetIndex]?.rows[headRow]||[]));}
  const candidate=sheet?importMappedRows(project,reviewedRows,header,mode,mapping):null;
@@ -11,9 +15,21 @@ export function ExcelWizard({project,onSave,onClose}:{project:Project;onSave:(p:
  return <div className="modal-backdrop" role="presentation"><div className="modal" role="dialog" aria-modal="true" aria-label="Workbook import wizard">
   <div className="modal-heading"><div><span className="eyebrow">IMPORT CENTER</span><h2>Excel import wizard</h2></div><button className="icon-button" onClick={onClose} aria-label="Close import"><X size={20}/></button></div>
   <p className="muted">Nothing is imported until you review and confirm. You can edit preview cells and omit rows before saving. Your original file stays unchanged. Import components first, then their connections using matching IDs.</p>
-  <label className="upload-box"><Upload size={20}/><span>{filename||'Choose an .xlsx or .xls workbook'}</span><input type="file" accept=".xlsx,.xls" onChange={async e=>{const f=e.target.files?.[0];if(!f)return;try{setError('');const result=await readWorkbook(f);setSheets(result);setEdits({});setOmitted([]);setPage(0);setFilename(f.name);setSelected(0);setHeader(0);setMapping(suggestMapping(result[0]?.rows[0]||[]));}catch(err){setError(String(err));}}}/></label>
+  <label className="upload-box"><Upload size={20}/><span>{filename||'Choose an .xlsx or .xls workbook'}</span><input type="file" accept=".xlsx,.xls" onChange={async e=>{const f=e.target.files?.[0];if(!f)return;try{setError('');const result=await readWorkbook(f);setSheets(result);setEdits({});setOmitted([]);setPage(0);setFilename(f.name);setReviewMaster(true);setAcknowledged(false);setSelected(0);setHeader(0);setMapping(suggestMapping(result[0]?.rows[0]||[]));}catch(err){setError(String(err));}}}/></label>
   {error&&<p className="warning">{error}</p>}
-  {sheet&&<>
+  {masterSeason&&reviewMaster&&<section className="master-review" aria-label="Detected master reference">
+   <span className="eyebrow">MASTER WORKBOOK DETECTED</span>
+   <h3>{masterSeason} {master?.project.year||'2026'} · source-aware local import</h3>
+   <p>Your original workbook stays on this device. No workbook contents or photos are published to GitHub.</p>
+   {master&&<><div className="master-metrics"><span><strong>{master.scanned}</strong> components / review items</span><span><strong>{master.linked}</strong> source links</span><span><strong>{master.issues.length}</strong> review warnings</span></div>
+   <p className="small">Source sheet: <b>{master.worksheet}</b>. {master.provenance==='structured'?'Importing original IDs, upstream links and port labels.':'Descriptive rows are retained as disconnected review items, because their exact plug topology is not specified.'} All imports remain draft plans.</p>
+   <div className="master-issues"><strong>Items requiring attention</strong><ul>{master.issues.slice(0,10).map((issue,i)=><li key={i}>{issue}</li>)}{master.issues.length>10&&<li>And {master.issues.length-10} additional warnings.</li>}{master.excluded.slice(0,5).map((issue,i)=><li key={'skip'+i}>{issue}</li>)}</ul></div>
+   <p className="small warning">Embedded workbook photographs are not extracted; attach photographs manually. Electrical ratings and environmental safety remain unverified.</p>
+   <label className="master-ack"><input type="checkbox" checked={acknowledged} onChange={e=>setAcknowledged(e.target.checked)}/> Import into a separate, unverified draft project without replacing my existing work.</label>
+   <div className="modal-actions"><button className="button secondary" onClick={()=>setReviewMaster(false)}>Manual sheet mapping</button><button className="button primary" disabled={!acknowledged} onClick={()=>{onImportMaster(master.project);onClose();}}>Import as new draft</button></div></>}
+   {masterError&&<p className="warning">{masterError}. You may use manual mapping instead.</p>}
+   </section>}
+  {sheet&&(!masterSeason||!reviewMaster)&&<>
    <div className="form-grid"><label>Worksheet<select value={selected} onChange={e=>mapChange(+e.target.value,0)}>{sheets.map((s,i)=><option key={s.name} value={i}>{s.name} ({s.rows.length} rows)</option>)}</select></label>
    <label>Header row<select value={header} onChange={e=>mapChange(selected,+e.target.value)}>{sheet.rows.slice(0,30).map((r,i)=><option key={i} value={i}>Row {i+1}: {r.slice(0,3).join(' / ').slice(0,70)}</option>)}</select></label>
    <label>Information type<select value={mode} onChange={e=>setMode(e.target.value as ImportMode)}><option value="components">Components / inventory</option><option value="connections">Electrical connections</option></select></label></div>

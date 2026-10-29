@@ -1,5 +1,5 @@
 import type {WorkbookPreview} from './excel';
-import type {Component,Connection,Kind,Project,Zone} from './model';
+import type {Component,Kind,Project,Zone} from './model';
 import {now,outputCount} from './model';
 import {connect,validateGraph} from './graph';
 
