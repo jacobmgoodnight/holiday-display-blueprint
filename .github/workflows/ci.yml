@@ -1,4 +1,4 @@
-name: Test and build
+name: Test, build, and deploy
 on:
   push:
     branches: [main]
@@ -18,7 +18,9 @@ jobs:
       - run: npm test
       - run: npm run build
   deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.ENABLE_PAGES == 'true'
+    # Deploy automatically for this public repository after verification.
+    # Do not automatically publish private-repository changes if visibility changes later.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.event.repository.private == false
     needs: verify
     runs-on: ubuntu-latest
     permissions:

@@ -48,20 +48,19 @@ All projects and compressed photos are saved in **IndexedDB in your own browser 
 
 **A public GitHub Pages site is public software, not private cloud storage.** It does *not* publish your locally imported data. JSON backups do include potentially sensitive photos/location information and should never be committed to a public repository. `.gitignore` excludes spreadsheets, common photo extensions, private folders, and `*.backup.json`.
 
-## GitHub Pages (optional, explicit opt-in)
+## GitHub Pages (public site)
 
-The source is already on the `main` branch at <https://github.com/jacobmgoodnight/holiday-display-blueprint>.
+The source repository is public and the GitHub Actions workflow automatically builds and attempts to deploy the app after tests pass on `main`. The expected public address is:
 
-**Pages is not enabled by default.** GitHub Pages may publish the application publicly even when the source repository is private, and private-repository eligibility depends on your GitHub plan. Do **not** use Pages as cloud storage for house photos: browser data stays local and is never included in the site bundle.
+**https://jacobmgoodnight.github.io/holiday-display-blueprint/**
 
-To deploy deliberately:
+**Required one-time GitHub setting:** Open [Settings → Pages](https://github.com/jacobmgoodnight/holiday-display-blueprint/settings/pages) and select **Build and deployment → Source: GitHub Actions**. This setting cannot be changed by the repository source-code workflow itself with its default token. If this setting was already selected, the next push runs the pipeline; otherwise select it and then use **Actions → Test, build, and deploy → Run workflow** on `main`.
 
-1. In repository **Settings → Pages**, choose **Build and deployment → Source: GitHub Actions**. If that option is unavailable, check your plan's private-repo Pages eligibility or choose to make the repository public only after reviewing privacy implications.
-2. In **Settings → Secrets and variables → Actions → Variables**, create a repository variable named `ENABLE_PAGES` with value `true`.
-3. Open **Actions → Test and build → Run workflow** on `main`. The workflow verifies, builds and deploys to `https://jacobmgoodnight.github.io/holiday-display-blueprint/` if Pages has been configured.
-4. Without that variable, CI runs all tests and the production build, but **skips** the optional deployment job.
+No `ENABLE_PAGES` variable is needed. Public-repository pushes to `main` trigger test, build, and deploy, but pull requests only run verification. For safety, the deployment job skips when the repository is private.
 
-You can keep the application private and run it locally via `npm run dev` without enabling Pages. This MVP does not require any cloud service.
+Check the [Actions runs](https://github.com/jacobmgoodnight/holiday-display-blueprint/actions) to confirm an actual successful deployment before treating the site as live.
+
+**Privacy:** Hosting the public React app does not publish locally imported plans, images, or inventory records; those remain in each browser's IndexedDB. Do not put workbook files, private backups, or house photos in the repository or in public fixtures. Devices do not automatically sync their browser data.
 
 ## Electrical safety limitations
 
