@@ -1,23 +1,8 @@
-import type {Component,Connection,Kind,Project} from './model';
+import type {Connection,Kind,Project} from './model';
 import {makeNode,now} from './model';
 import {downstream,validateGraph} from './graph';
 
-export const portName=(n:Pick<Component,'portLabels'|'outputs'>,index:number)=>{
- const custom=n.portLabels?.[String(index)]?.trim();
- return custom||`Output ${index+1}`;
-};
-export function renameOutputPort(p:Project,nodeId:string,index:number,label:string):Project{
- const node=p.nodes.find(n=>n.id===nodeId);
- if(!node)throw Error('Component does not exist');
- if(!Number.isInteger(index)||index<0||index>=node.outputs)throw Error('Choose an existing output');
- const trimmed=label.trim();
- if(trimmed.length>40)throw Error('Port label must be 40 characters or fewer');
- const labels={...node.portLabels};
- if(trimmed)labels[String(index)]=trimmed;
- else delete labels[String(index)];
- if((node.portLabels?.[String(index)]||'')===(labels[String(index)]||''))return p;
- return {...p,nodes:p.nodes.map(n=>n.id===nodeId?{...n,portLabels:labels}:n),updatedAt:now()};
-}
+export {portName,renameOutputPort} from './portLabels';
 export const insertableKinds:readonly Kind[]=['cord','spt-1','splitter','inline-tap','light-strand'];
 /** Atomic insertion: Source(port) -> inserted input; inserted output -> existing target.
  * Retains every unrelated connection and manual position. Clears old link steps.
