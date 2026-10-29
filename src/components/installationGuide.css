@@ -47,7 +47,7 @@
 .ig-step-note{margin:4px 0 9px 38px;font-size:11px;color:#617e92}
 .ig-empty{padding:13px;border:1px dashed #d6e3eb;border-radius:8px;color:#71899a;font-size:12px}
 @media(max-width:1050px){.ig-grid{grid-template-columns:1fr}}
-@media(max-width:720px){.diagram-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px}.diagram-mode-switch button{padding:10px 6px;font-size:10px}.ig-intro{padding:14px;display:block}.ig-intro h2{font-size:18px}.ig-status{margin-top:12px}.ig-grid{padding:8px;gap:10px}.ig-section{padding:10px}.ig-children{margin-left:7px;padding-left:7px}.ig-item{gap:3px;padding:5px}.ig-item-name strong{font-size:11px}.ig-wire-label{max-width:94px;padding:4px;font-size:9px}.ig-locate{flex-basis:28px}.ig-step label{padding:11px 7px}}
+@media(max-width:720px){.diagram-mode-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:8px}.diagram-mode-switch button{padding:10px 6px;font-size:10px}.ig-intro{padding:14px;display:block}.ig-intro h2{font-size:18px}.ig-status{margin-top:12px}.ig-grid{padding:8px;gap:10px}.ig-section{padding:10px}.ig-children{margin-left:7px;padding-left:7px}.ig-item{gap:3px;padding:5px}.ig-item-name strong{font-size:11px}.ig-wire-label{max-width:94px;padding:4px;font-size:9px}.ig-locate{flex-basis:28px}.ig-step label{padding:11px 7px}}
 @media print{.diagram-mode-switch{display:none!important}.install-guide{display:block!important}}
 
 

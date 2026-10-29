@@ -33,3 +33,21 @@ export function editPowerFeed(project:Project,targetId:string,sourceId:string|nu
  return {...project,nodes:updatedNodes,edges,checklist:nextChecklist,status:'draft',updatedAt:history.at,
   wiringHistory:[...(project as ProjectWithWiringHistory).wiringHistory||[],history].slice(-200)};
 }
+
+/** Reverse the last *guided feed* change only if its recorded postcondition
+ * still matches the graph. Undo never silently re-verifies equipment or checks
+ * old setup tasks; inspect wiring before use. */
+export function undoLastWiringChange(project:Project):Project{
+ const last=project.wiringHistory?.at(-1);
+ if(!last)throw Error('No recorded wiring change to undo');
+ if(!project.nodes.some(n=>n.id===last.targetId))throw Error('Changed component was removed; restore a private backup to recover it');
+ const actual=project.edges.find(e=>e.target===last.targetId);
+ if(last.toId===undefined){
+  if(actual)throw Error('The power feed has changed since this action; cannot safely undo');
+ }else if(actual?.source!==last.toId||actual.sourcePort!==last.toPort){
+  throw Error('The power feed has changed since this action; cannot safely undo');
+ }
+ if(last.fromId!==undefined&&!Number.isInteger(last.fromPort))throw Error('Original output port is unknown; cannot safely undo');
+ if(last.fromId!==undefined&&!project.nodes.some(n=>n.id===last.fromId))throw Error('Previous upstream component is missing');
+ return editPowerFeed(project,last.targetId,last.fromId??null,last.fromPort);
+}
