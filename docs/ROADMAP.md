@@ -6,6 +6,7 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 
 - **Multi-season local-first records:** Halloween/Christmas years, graphs with directed feeds, output ports, validation, asset details, notes, reference photos, verified/draft states, IndexedDB and JSON backups.
 - **Master references:** private two-season initial master snapshot distributed through the encrypted GitHub Pages recovery file; source-aware Halloween structured-sheet and Christmas narrative-sheet import (new drafts, no auto merge).
+- **Mobile header navigation:** a clearly labeled single menu drawer with setup views and quick import/export/backup/sync actions; the desktop three-dot More actions dropdown remains distinct, with outside-tap and Escape dismissal.
 - **Navigable wiring:** left-to-right auto power-flow layout, preserved manual placements, quick O01/O02/O03 focus, searchable source paths, isolate selected branch, outage impact.
 - **Installer experience:** collapsible power trees, exact recorded cord labels, numbered downstream-first setup tasks, shared checklist state, task/component photos, printable outlet-specific sheets.
 - **Phone access:** private URL-fragment key; browser decrypts master snapshot once and links the device to the encrypted cloud sync vault; no app account required.

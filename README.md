@@ -20,6 +20,14 @@ npm test
 npm run build
 ```
 
+### Finding your way around
+
+**Phone and narrow tablet:** Tap the clearly labeled **Menu** button in the upper-right header. It opens **Navigation & tools**, including Wiring diagram, Installation steps, Teardown steps, Inventory, outlet/zone views, and **Quick actions** for simplified installation, diagram editing, Excel import/export, private backups and manual sync. Tap outside the drawer, tap its close button, select an action, or press Escape to dismiss it. The four bottom tabs are shortcuts for the same workspace sections.
+
+**Desktop:** The left sidebar contains navigation, while the three-dot **More actions** button in the upper-right header contains imports, exports and project management. Click outside it or press Escape to dismiss the dropdown.
+
+The project selector in the header changes which seasonal plan is open; it does not move or overwrite any wiring records.
+
 ### Which is the master: Blueprint or the old Excel workbooks?
 
 **Use Holiday Display Blueprint as the live, synced wiring record.** Keep the original Halloween and Christmas Excel masters as **private historical reference files**, especially for original diagrams and embedded photos. Do not simultaneously maintain two editable master copies.

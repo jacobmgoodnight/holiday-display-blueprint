@@ -86,3 +86,39 @@
 .wiring-history p{margin:9px 0 0;border-top:1px solid #e6edf2;padding-top:8px;font-size:10px;line-height:1.5;color:#536f82}
 .wiring-history p strong{text-transform:capitalize}
 .wiring-history p span{display:block;overflow-wrap:anywhere;color:#36536b}
+
+
+/* Responsive primary navigation. One clear menu on phone, one actions dropdown on desktop. */
+.topbar{z-index:50}
+.mobile-drawer-only,.mobile-drawer-dismiss{display:none}
+.more-menu-dismiss{display:block;position:fixed;inset:74px 0 0;width:100%;background:transparent;z-index:45;cursor:default}
+.action-menu{z-index:100;max-height:calc(100dvh - 86px);overflow-y:auto;overscroll-behavior:contain}
+.mobile-header-menu{gap:6px;padding:8px 9px!important;min-height:42px;min-width:68px;width:auto!important;height:auto!important;align-items:center;justify-content:center;color:#e2edf5;font-size:11px;font-weight:800}
+.mobile-drawer-header{align-items:center;justify-content:space-between;gap:12px;padding:5px 8px 12px;border-bottom:1px solid #e1e9f0}
+.mobile-drawer-header strong{font-size:15px;color:#213c51}
+.mobile-drawer-header span{display:block;color:#758b9b;font-size:11px;margin-top:4px}
+.mobile-drawer-header .icon-button{color:#37566d;border:1px solid #dae6ee}
+@media(max-width:900px){
+ .desktop-more-button{display:none!important}
+ .topbar .mobile-header-menu{display:inline-flex}
+ .mobile-drawer-only{display:block}
+ .mobile-drawer-header{display:flex}
+ .mobile-drawer-dismiss{display:block;position:fixed;inset:74px 0 0;z-index:46;background:#091b2d8f;border:0;border-radius:0;width:100%;height:calc(100dvh - 74px);cursor:pointer}
+ .leftbar{width:min(340px,calc(100vw - 35px));max-width:calc(100vw - 35px);flex-basis:auto;z-index:60;padding:17px 12px 28px;gap:16px;overscroll-behavior:contain;box-shadow:12px 0 38px #0b223a48}
+ .leftbar.leftbar-open{display:flex}
+ .leftbar .mobile-drawer-only .nav-link{min-height:42px;padding:12px;font-size:12px}
+ .top-actions{flex:0 0 auto}
+}
+@media(max-width:720px){
+ .mobile-drawer-dismiss{top:62px;height:calc(100dvh - 62px)}
+ .leftbar{top:62px}
+}
+@media(max-width:580px){
+ .topbar .brand{width:36px;flex:0 0 36px;gap:0}
+ .topbar .brand>div:nth-child(2){display:none}
+ .topbar .project-picker{flex:1;min-width:0;width:auto}
+ .topbar .project-picker select{width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis}
+ .topbar{gap:8px;padding-left:10px;padding-right:10px}
+ .topbar .mobile-header-menu{min-width:65px;padding:8px!important}
+}
+@media print{.more-menu-dismiss,.mobile-drawer-dismiss,.mobile-drawer-header{display:none!important}}

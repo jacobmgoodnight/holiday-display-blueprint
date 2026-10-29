@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,Menu,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
@@ -15,6 +15,7 @@ import {PowerFeedEditor} from './components/PowerFeedEditor';
 import {editPowerFeed} from './lib/wiringEdits';
 import {downloadWiringReference} from './lib/wiringExport';
 import {DeviceTransfer} from './components/DeviceTransfer';
+import {MobileMenuToggle} from './components/MobileMenuToggle';
 import {hasOnlyExamples} from './lib/deviceTransfer';
 import {useSharedSync} from './hooks/useSharedSync';
 import './components/deviceTransfer.css';
@@ -37,6 +38,17 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
+ useEffect(()=>{
+  if(!showSidebar&&!showMenu)return;
+  const dismiss=(event:KeyboardEvent)=>{if(event.key==='Escape'){setShowSidebar(false);setShowMenu(false);}};
+  document.addEventListener('keydown',dismiss);
+  return()=>document.removeEventListener('keydown',dismiss);
+ },[showSidebar,showMenu]);
+ useEffect(()=>{
+  if(!showSidebar||!window.matchMedia('(max-width:900px)').matches)return;
+  const previous=document.body.style.overflow;document.body.style.overflow='hidden';
+  return()=>{document.body.style.overflow=previous;};
+ },[showSidebar]);
  useEffect(()=>{let live=true;initialize().then(items=>{if(live){setProjects(items);setActive(items[0]?.id||'');setLoaded(true);}}).catch(e=>{if(live){const fallback=exampleProjects();setProjects(fallback);setActive(fallback[0].id);setLoaded(true);setStorageReady(false);setMessage(`Browser storage unavailable: ${String(e)}. Changes are temporary — export a JSON backup.`);}});return()=>{live=false;};},[]);
  const cloud=useSharedSync({loaded,storageReady,projects,setProjects,onImported:(chosen)=>{
   const outlet=chosen.nodes.find(n=>n.kind==='outlet');
@@ -142,8 +154,8 @@ function AppContent(){
   <header className="topbar"><div className="brand"><div className="brand-icon"><CircuitBoard size={23}/></div><div><strong>HOLIDAY DISPLAY <span>BLUEPRINT</span></strong><small>LOCAL-FIRST DISPLAY PLANNER</small></div></div>
    <div className="project-picker"><label className="visually-hidden" htmlFor="projects">Seasonal project</label><select id="projects" value={active} onChange={e=>chooseProject(e.target.value)}>{[...projects].sort((a,b)=>b.year-a.year||a.season.localeCompare(b.season)).map(p=><option value={p.id} key={p.id}>{projectLabel(p)}</option>)}</select><ChevronDown className="picker-chevron" size={17}/></div>
    <div className="top-actions"><span className="local-pill"><span className="pulse-dot"/> {storageReady?'Local browser storage':'Unsaved session'}</span><button className="button secondary desktop-only" onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setMessage('Backup downloaded. Keep the file private — it may include photos and details.');}}><Download size={16}/> Backup</button>
-   <button className="icon-button mobile-only" onClick={()=>setShowSidebar(s=>!s)} aria-label="Open navigation"><Menu size={22}/></button>
-   <button className="icon-button" aria-label="More actions" onClick={()=>setShowMenu(x=>!x)}><MoreVertical size={20}/></button>{showMenu&&<div className="action-menu">
+   <MobileMenuToggle open={showSidebar} onToggle={()=>{setShowMenu(false);setShowSidebar(x=>!x)}}/>
+   <button type="button" className="icon-button desktop-more-button" aria-label="More actions" aria-controls="more-actions-menu" aria-expanded={showMenu} onClick={()=>{setShowSidebar(false);setShowMenu(x=>!x)}}><MoreVertical size={20}/></button>{showMenu&&<div id="more-actions-menu" className="action-menu" aria-label="More actions">
     <button onClick={()=>makeNew(false)}><Plus size={16}/> New blank project</button><button onClick={()=>makeNew(true)}><Copy size={16}/> Copy into next year</button>
     <button onClick={()=>{setShowWizard(true);setShowMenu(false);}}><FileSpreadsheet size={16}/> Import Excel workbook</button>
     <button onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setShowMenu(false);}}><Download size={16}/> Back up all projects (JSON)</button>
@@ -151,17 +163,32 @@ function AppContent(){
     <button onClick={()=>{setShowMenu(false);setShowTransfer(true);}}><Upload size={16}/> Back up / move plans</button>
     {cloud.enabled&&<button onClick={()=>{if(confirm('Disconnect encrypted sync on this device? Local projects will remain here.'))cloud.disconnect();setShowMenu(false);}}><LockKeyhole size={16}/> Stop syncing this device</button>}
     <button onClick={()=>{downloadWiringReference(project);setShowMenu(false);setMessage('Private reference workbook exported. Continue editing in Blueprint.');}}><FileSpreadsheet size={16}/> Export wiring reference (.xlsx)</button>
-    <button onClick={printAll}><Printer size={16}/> Print diagram</button>
+    <button onClick={()=>{setShowMenu(false);printAll()}}><Printer size={16}/> Print diagram</button>
     <button onClick={()=>{if(!confirm('Delete this local project? Export a backup first.'))return;const ids=projects.filter(p=>p.id!==active);if(!ids.length){setMessage('Keep at least one project.');return;}void db.projects.delete(active);setProjects(ids);chooseProject(ids[0].id);}}><Trash2 size={16}/> Delete selected project</button>
    </div>}</div>
   </header>
+  {showMenu&&<button type="button" className="more-menu-dismiss" aria-label="Dismiss more actions" onClick={()=>setShowMenu(false)}/>}
+  {showSidebar&&<button type="button" className="mobile-drawer-dismiss" aria-label="Close menu" onClick={()=>setShowSidebar(false)}/>}
   <div className="workspace">
-   <aside className={`leftbar ${showSidebar?'leftbar-open':''}`}><div className="side-section"><p className="side-label">WORKSPACE</p><nav className="nav-list" aria-label="Workspace tabs">{(['diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={`nav-link ${tab===t?'active':''}`} onClick={()=>{setTab(t);setShowSidebar(false);}}><Icon size={18}/><span>{({diagram:'Wiring diagram',setup:'Installation steps',teardown:'Teardown steps',inventory:'Equipment inventory'})[t]}</span>{t==='setup'&&<small>{generatedTasks(project,'setup').length}</small>}</button>;})}</nav></div>
+   <aside id="mobile-navigation" aria-label="Navigation and tools" className={`leftbar ${showSidebar?'leftbar-open':''}`}>
+    <div className="mobile-drawer-header mobile-drawer-only"><div><strong>Navigation & tools</strong><span>{project.season} {project.year}</span></div><button type="button" className="icon-button" aria-label="Close menu" onClick={()=>setShowSidebar(false)}><X size={22}/></button></div><div className="side-section"><p className="side-label">WORKSPACE</p><nav className="nav-list" aria-label="Workspace tabs">{(['diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={`nav-link ${tab===t?'active':''}`} onClick={()=>{setTab(t);setShowSidebar(false);}}><Icon size={18}/><span>{({diagram:'Wiring diagram',setup:'Installation steps',teardown:'Teardown steps',inventory:'Equipment inventory'})[t]}</span>{t==='setup'&&<small>{generatedTasks(project,'setup').length}</small>}</button>;})}</nav></div>
+    <div className="side-section mobile-drawer-only">
+     <p className="side-label">QUICK ACTIONS</p>
+     <nav className="nav-list" aria-label="Mobile quick actions">
+      <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('guide');setShowSidebar(false)}}><ClipboardCheck size={18}/> Simplified install view</button>
+      <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('map');setShowSidebar(false)}}><CircuitBoard size={18}/> Wiring diagram editor</button>
+      <button className="nav-link" onClick={()=>{setShowWizard(true);setShowSidebar(false)}}><FileSpreadsheet size={18}/> Import Excel workbook</button>
+      <button className="nav-link" onClick={()=>{downloadWiringReference(project);setShowSidebar(false);setMessage('Private Excel reference exported. Continue editing in Blueprint.')}}><Download size={18}/> Export Excel reference</button>
+      <button className="nav-link" onClick={()=>{exportPrivateBackup();setShowSidebar(false)}}><Download size={18}/> Back up all projects</button>
+      {cloud.enabled&&<button className="nav-link" onClick={()=>{setShowSidebar(false);void cloud.syncNow()}}><LockKeyhole size={18}/> Sync now</button>}
+      <button className="nav-link" onClick={()=>{setShowSidebar(false);setShowTransfer(true)}}><Upload size={18}/> Backup / device options</button>
+     </nav>
+    </div>
     <div className="side-section"><p className="side-label">SEASON OVERVIEW</p><div className="side-season"><span>{project.season==='Halloween'?'🎃':'🎄'}</span><div><strong>{project.season} {project.year}</strong><small>{project.nodes.length} components · {project.edges.length} connections</small></div></div>
       <label className="status-row">Installation record<select value={project.status} onChange={e=>update(p=>({...p,status:e.target.value as 'draft'|'verified'}))}><option value="draft">Draft · not verified</option><option value="verified">Verified as-installed</option></select></label>
       {project.example&&<div className="example-notice"><AlertTriangle size={17}/> Example data only. Not an installation record.</div>}
     </div>
-    {tab==='diagram'&&<div className="side-section"><p className="side-label">DIAGRAM VIEWS</p><div className="nav-list">{(['All zones',...zones] as View[]).map(v=><button className={`nav-link nav-sub ${view===v?'active':''}`} key={v} onClick={()=>changeView(v)}><Layers size={15}/>{v==='All zones'?'Whole property':v}</button>)}{project.nodes.filter(n=>n.kind==='outlet').map(o=><button className={`nav-link nav-sub ${view===`Outlet: ${o.id}`?'active':''}`} key={o.id} onClick={()=>focusOutlet(o.id)}><PlugZap size={15}/>{o.name}</button>)}</div></div>}
+    {tab==='diagram'&&<div className="side-section"><p className="side-label">DIAGRAM VIEWS</p><div className="nav-list">{(['All zones',...zones] as View[]).map(v=><button className={`nav-link nav-sub ${view===v?'active':''}`} key={v} onClick={()=>{changeView(v);setShowSidebar(false)}}><Layers size={15}/>{v==='All zones'?'Whole property':v}</button>)}{project.nodes.filter(n=>n.kind==='outlet').map(o=><button className={`nav-link nav-sub ${view===`Outlet: ${o.id}`?'active':''}`} key={o.id} onClick={()=>{focusOutlet(o.id);setShowSidebar(false)}}><PlugZap size={15}/>{o.name}</button>)}</div></div>}
     <div className="safety-note"><ShieldAlert size={19}/><div><strong>Electrical verification required</strong><span>Blueprint does not certify cords, loads, GFCI protection, or circuit safety.</span></div></div>
    </aside>
    <main className="content">
@@ -230,7 +257,7 @@ function AppContent(){
     {tab==='inventory'&&<div className="inventory-panel"><div className="inventory-toolbar"><div className="searchbox"><Search size={17}/><input aria-label="Search inventory" placeholder="Search equipment, bins, notes..." value={search} onChange={e=>setSearch(e.target.value)}/></div><span>{project.nodes.length} items</span></div><div className="inventory-list">{project.nodes.filter(n=>`${n.name} ${n.kind} ${n.zone} ${n.inventory?.storage} ${n.notes}`.toLowerCase().includes(search.toLowerCase())).map(n=><button className="inventory-row" key={n.id} onClick={()=>{setTab('diagram');setPathOnly(false);setView('All zones');jumpToNode(n.id);}}>{n.photo?<img src={n.photo} alt=""/>:<span className="inventory-blank"><Package size={22}/></span>}<span className="inventory-info"><strong>{n.name}</strong><small>{n.kind} · {n.zone}</small></span><span className="inventory-storage">{n.inventory?.storage||'Storage not set'}<small>{n.inventory?.condition||'Condition not recorded'}</small></span><ArrowRight size={18}/></button>)}</div></div>}
    </main>
   </div>
-  <nav className="mobile-tabbar" aria-label="Mobile main navigation">{(['diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}><Icon size={21}/><span>{({diagram:'Diagram',setup:'Install',teardown:'Teardown',inventory:'Inventory'})[t]}</span></button>;})}</nav>
+  <nav className="mobile-tabbar" aria-label="Mobile main navigation">{(['diagram','setup','teardown','inventory'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={tab===t?'active':''} onClick={()=>{setTab(t);setShowSidebar(false);setShowMenu(false)}}><Icon size={21}/><span>{({diagram:'Diagram',setup:'Install',teardown:'Teardown',inventory:'Inventory'})[t]}</span></button>;})}</nav>
   {message&&<div className="toast" role="status"><span>{message}</span><button aria-label="Dismiss message" onClick={()=>setMessage('')}><X size={16}/></button></div>}
   {showTransfer&&<DeviceTransfer hasRealPlans={!examplesOnly} projectCount={projects.length} onExport={exportPrivateBackup} onImport={importBackup} onClose={()=>setShowTransfer(false)}/>}
   {showWizard&&<ExcelWizard project={project} onSave={p=>{update(()=>p);setMessage('Workbook rows imported as draft. Review each mapping and save a backup.');}} onImportMaster={p=>{setProjects(all=>[...all,p]);setActive(p.id);setView(p.nodes.length>25&&p.nodes.some(n=>n.kind==='outlet')?`Outlet: ${p.nodes.find(n=>n.kind==='outlet')!.id}`:'All zones');setSelected(null);setTrace('none');setMessage(`${p.season} workbook imported as a separate DRAFT. Check every connection and export a private backup.`);}} onClose={()=>setShowWizard(false)}/>}
