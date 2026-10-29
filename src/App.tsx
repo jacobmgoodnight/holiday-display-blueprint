@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Smartphone,Maximize2,Minimize2,ZoomIn,ZoomOut,Eye,PenTool,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Smartphone,Maximize2,Minimize2,ZoomIn,ZoomOut,Eye,SlidersHorizontal,PenTool,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
@@ -27,6 +27,8 @@ import {deleteComponentSafely,undoComponentDeletion,type DeletedComponent} from 
 import './components/deviceTransfer.css';
 import {wireDescription} from './lib/wiringGuide';
 import {powerFlowLayout} from './lib/flowLayout';
+import {portName,renameOutputPort} from './lib/portLabels';
+import {insertIntoConnection,insertableKinds} from './lib/wiringBuilder';
 import {freeOutputPorts,searchComponents,workspaceCanEdit} from './lib/canvasWorkspace';
 import {exampleProjects} from './fixtures/examples';
 import './styles.css';
@@ -52,15 +54,33 @@ function AppContent(){
  const [builderSource,setBuilderSource]=useState<string|null>(null);
  const [builderPort,setBuilderPort]=useState(0);
  const [builderName,setBuilderName]=useState('');
+ const [fullToolsOpen,setFullToolsOpen]=useState(false);
+ const [insertEdgeId,setInsertEdgeId]=useState('');
+ const [insertKind,setInsertKind]=useState<Kind>('splitter');
+ const [insertName,setInsertName]=useState('');
+ const [showInsertPreview,setShowInsertPreview]=useState(false);
  const workspaceEditable=workspaceCanEdit(fullscreen,fullMode);
  useEffect(()=>{
   if(!fullscreen)return;
   const previous=document.body.style.overflow;document.body.style.overflow='hidden';
-  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){setFullscreen(false);setBuilderSource(null);setFullSearch('');}};
+  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){setFullscreen(false);setBuilderSource(null);setFullSearch('');setShowInsertPreview(false);}};
   document.addEventListener('keydown',onKey);
   return()=>{document.body.style.overflow=previous;document.removeEventListener('keydown',onKey);};
  },[fullscreen]);
- useEffect(()=>{if(!fullscreen||tab!=='diagram'||diagramMode!=='map')return;const t=setTimeout(()=>{void fitView({padding:.2,duration:220});},190);return()=>clearTimeout(t);},[fullscreen,tab,diagramMode,fitView]);
+ useEffect(()=>{
+  if(!fullscreen||tab!=='diagram'||diagramMode!=='map'||!project)return;
+  const timer=setTimeout(()=>{
+   const mobile=window.innerWidth<1000;
+   if(!mobile){void fitView({padding:.17,duration:230,maxZoom:.95});return;}
+   const outlet=view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8)):project.nodes.find(n=>n.kind==='outlet');
+   const anchor=project.nodes.find(n=>n.id===selected)||outlet||project.nodes[0];
+   if(!anchor)return;
+   const pos=layoutMode==='auto'?(autoPositions.get(anchor.id)||anchor.position):anchor.position;
+   // Start at legible node scale; full-system overview remains available through Fit.
+   setCenter(pos.x+195,pos.y+55,{zoom:.88,duration:200});
+  },190);
+  return()=>clearTimeout(timer);
+ },[fullscreen,tab,diagramMode,view,layoutMode,active,fitView,setCenter]);
  useEffect(()=>{
   if(!showSidebar&&!showMenu)return;
   const dismiss=(event:KeyboardEvent)=>{if(event.key==='Escape'){setShowSidebar(false);setShowMenu(false);}};
@@ -82,7 +102,7 @@ function AppContent(){
  }});
  const project=projects.find(p=>p.id===active);
  const localSaving=useProjectPersistence(projects,active,loaded,storageReady);
- useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode]);
+ useEffect(()=>{if(fullscreen||tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode,fullscreen]);
  const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>{if(p.id!==active)return p;const result=fn(p);return result===p?p:{...result,updatedAt:now()};}));},[active]);
  useEffect(()=>{if(!message)return;const timer=setTimeout(()=>setMessage(''),6500);return()=>clearTimeout(timer);},[message]);
  const highlighted=useMemo(()=>{if(!project||!selected)return new Set<string>();if(trace==='upstream')return new Set([...upstream(selected,project.edges),selected]);if(trace==='downstream'||trace==='outage')return new Set([...downstream(selected,project.edges),selected]);return new Set([selected]);},[project,selected,trace]);
@@ -102,9 +122,15 @@ function AppContent(){
    :new globalThis.Map<string,{x:number;y:number}>(),[project,visibleIds,layoutMode]);
  const flowNodes:BlueprintFlowNode[]=useMemo(()=>project?.nodes.filter(n=>visibleIds.has(n.id)).map(n=>({id:n.id,type:'blueprint' as const,position:layoutMode==='auto'?(autoPositions.get(n.id)||n.position):n.position,data:{component:n,highlight:highlighted.has(n.id),dim:!!selected&&trace!=='none'&&!highlighted.has(n.id)},selected:n.id===selected}))||[],[project,visibleIds,highlighted,selected,trace,autoPositions,layoutMode]);
  const fullscreenMatches=useMemo(()=>project?searchComponents(project,fullSearch,8):[],[project,fullSearch]);
+ const insertEdge=project?.edges.find(e=>e.id===insertEdgeId);
+ const insertFrom=project?.nodes.find(n=>n.id===insertEdge?.source);
+ const insertTo=project?.nodes.find(n=>n.id===insertEdge?.target);
  const flowEdges:Edge[]=useMemo(()=>project?.edges.filter(e=>visibleIds.has(e.source)&&visibleIds.has(e.target)).map(e=>{
   const target=project.nodes.find(n=>n.id===e.target);
-  const label=target?wireDescription(target):undefined;
+  const source=project.nodes.find(n=>n.id===e.source);
+   const part=target?wireDescription(target):undefined;
+   const named=source?.portLabels?.[String(e.sourcePort)]?.trim();
+   const label=[named,part].filter(Boolean).join(' · ')||undefined;
   return {id:e.id,source:e.source,target:e.target,sourceHandle:`port-${e.sourcePort}`,targetHandle:'input',type:'smoothstep',
     animated:selected!==null&&(highlighted.has(e.source)&&highlighted.has(e.target)),label,
     labelStyle:{fill:'#344e63',fontWeight:650,fontSize:10},
@@ -113,8 +139,8 @@ function AppContent(){
     style:{stroke:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},
     markerEnd:{type:MarkerType.ArrowClosed,color:'#8296a9'}};
  })||[],[project,visibleIds,selected,highlighted]);
- function chooseProject(id:string){setFullscreen(false);setBuilderSource(null);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
- function changeView(next:View){setView(next);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
+ function chooseProject(id:string){setFullscreen(false);setBuilderSource(null);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
+ function changeView(next:View){setView(next);setShowInsertPreview(false);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
  function jumpToNode(id:string){setTab('diagram');setDiagramMode('map');if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function openFinder(){setInspectorOpen(true);if(window.innerWidth<720)setTimeout(()=>document.getElementById('connection-finder')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
@@ -131,6 +157,23 @@ function AppContent(){
  }
  function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],verificationReview:undefined,createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false}))}:blank(project.season,year);
  setProjects(all=>[...all,p]);setActive(p.id);setSelected(null);setView('All zones');setShowMenu(false);setMessage(duplicate?'Copied plan is a DRAFT — verify every connection before use.':'Created a blank local project.');}
+ function applyPortLabel(id:string,index:number,label:string){
+  if(!project)return;
+  try{
+   const next=renameOutputPort(project,id,index,label);
+   if(next!==project){update(()=>next);setMessage('Output name saved. Existing wiring and output number are unchanged.');}
+  }catch(error){setMessage(error instanceof Error?error.message:String(error));}
+ }
+ function insertBuilderLink(){
+  if(!project||!insertEdgeId||!showInsertPreview)return;
+  try{
+   const updated=insertIntoConnection(project,insertEdgeId,insertKind,insertName);
+   update(()=>updated);
+   const added=updated.nodes.find(n=>!project.nodes.some(prev=>prev.id===n.id));
+   setSelected(added?.id||null);setTrace('none');setInsertEdgeId('');setInsertName('');setShowInsertPreview(false);
+   setMessage('Item inserted. New connections need physical verification and the old wiring step was reset.');
+  }catch(error){setMessage(error instanceof Error?error.message:String(error));}
+ }
  function addBuilderItem(){
   if(!project)return;
   const zone:Zone=zones.includes(view as Zone)?view as Zone:'Front porch';
