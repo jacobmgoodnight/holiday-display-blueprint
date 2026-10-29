@@ -20,6 +20,16 @@ npm test
 npm run build
 ```
 
+### Simplified installation guide
+
+In **Wiring diagram**, choose **Simplified install view** and select your O01/O02/O03 outlet from **Focus circuit**.
+
+- Every recorded outlet is shown as a power-branch tree. Collapse a splitter, smart plug, or other branch to hide its downstream devices; **Collapse all / Expand all** handles the complete view.
+- Known cord length, type and color appear on the receiving cord, and the diagram editor also labels relevant connections. Missing lengths remain unknown (never invented).
+- Numbered setup steps come from the same downstream-first dependency checklist used in **Installation steps**. Completion checkboxes are shared, and previously recorded notes remain available.
+- Select any item or step to jump to its highlighted power path in the diagram. The guide is read-only and never modifies electrical connectivity or saved manual diagram positions.
+- Disconnected items are identified for review. The guide is not an electrical safety inspection.
+
 ### Faster wiring navigation
 
 - The diagram opens in **Auto power flow** mode: outlets lead left-to-right through smart plugs, cords, splitters, and decorations. Layout is computed in memory and does not rewrite the imported workbook, electrical graph, or saved manual node positions.
