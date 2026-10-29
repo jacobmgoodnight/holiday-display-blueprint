@@ -10,8 +10,8 @@ describe('Excel wiring reference export',()=>{
   const wb=createWiringReferenceWorkbook(project);
   expect(wb.SheetNames).toEqual(['Read Me','Components','Power Links','Setup Steps','Teardown Steps','Review Items','Wiring Changes']);
   const readme=XLSX.utils.sheet_to_json(wb.Sheets['Read Me'],{header:1}) as string[][];
-  expect(readme.flat().join(' ')).toContain('NOT an import/merge template');
-  expect(readme.flat().join(' ')).toContain('not electrical certification');
+  expect(readme.flat().join(' ').toLowerCase()).toContain('not an import/merge template');
+  expect(readme.flat().join(' ').toLowerCase()).toContain('does not mean electrical-safe');
  });
  it('preserves link IDs, output port numbers and names',()=>{
   const wb=createWiringReferenceWorkbook(project);
