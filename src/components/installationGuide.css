@@ -1,0 +1,51 @@
+
+/* Read-only installation guide: compact on desktop, finger-friendly in the yard. */
+.diagram-mode-switch{display:flex;gap:8px;flex-wrap:wrap;padding:10px 13px;background:#fff;border:1px solid #e2eaf1}
+.diagram-mode-switch button{display:inline-flex;gap:8px;align-items:center;justify-content:center;min-height:43px;border-radius:9px;padding:10px 15px;border:1px solid #d8e4ee;background:#f7fafc;color:#49677f;font-weight:800;font-size:12px}
+.diagram-mode-switch button.active{background:#243f55;color:white;border-color:#243f55}
+.install-guide{border:1px solid #e0e8ee;border-radius:0 0 12px 12px;background:#f7fafc;margin-bottom:14px;min-width:0;color:#29465a}
+.install-guide button:focus-visible,.diagram-mode-switch button:focus-visible,.install-guide input:focus-visible{outline:3px solid #d69c54;outline-offset:2px}
+.ig-intro{background:white;border-bottom:1px solid #e1eaf1;padding:20px 22px;display:flex;align-items:flex-start;justify-content:space-between;gap:15px}
+.ig-intro h2{font-size:21px;line-height:1.25;margin:5px 0 7px}
+.ig-intro p{font-size:12px;line-height:1.55;color:#627d91;margin:0;max-width:620px}
+.ig-status{white-space:nowrap;display:inline-block;background:#fff4e6;border:1px solid #ead3b4;border-radius:30px;color:#94662f;font-size:10px;font-weight:800;padding:8px 11px}
+.ig-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.07fr);gap:14px;padding:15px}
+.ig-section{background:#fff;border:1px solid #e0e8ee;border-radius:11px;padding:14px;min-width:0}
+.ig-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ig-heading h3{display:flex;align-items:center;gap:7px;font-size:13px;margin:0;color:#2a4659}
+.ig-heading button,.ig-actions button{border:1px solid #d8e4ec;border-radius:7px;background:#f1f6f9;color:#3a6785;padding:8px 9px;font-weight:700;font-size:10px;min-height:34px}
+.ig-actions{display:flex;gap:5px}
+.ig-roots,.ig-children,.ig-steps{list-style:none;margin:0;padding:0}
+.ig-roots>li+li{border-top:1px dashed #d7e2ea;margin-top:13px;padding-top:13px}
+.ig-children{border-left:2px solid #d7e6ee;margin:5px 0 7px 14px;padding-left:12px}
+.ig-children .ig-branch+.ig-branch{margin-top:5px}
+.ig-item{display:flex;align-items:center;gap:5px;padding:6px;border:1px solid #e0eaf1;border-radius:9px;background:#fff;min-width:0}
+.ig-outlet{background:#edf6fc;border-color:#b8d5e7}
+.ig-item:hover{border-color:#a2c5dd}
+.ig-fold,.ig-no-fold{flex:0 0 27px;min-width:27px;display:grid;place-items:center}
+.ig-fold{min-height:35px;color:#4e6d84;border-radius:6px;background:#ecf3f8}
+.ig-item-name{text-align:left;flex:1;min-width:0;color:#2d4a61;padding:4px 2px;background:transparent}
+.ig-item-name strong{display:block;font-size:11px;overflow-wrap:anywhere;line-height:1.35}
+.ig-item-name small{display:block;font-size:10px;color:#748c9e;line-height:1.4;margin-top:3px}
+.ig-wire-label{color:#4c7188;font-size:10px;border:1px solid #dbe7f0;border-radius:6px;background:#f4f8fb;padding:6px;max-width:140px;overflow-wrap:anywhere}
+.ig-count{color:#9b6c37;font-size:10px;white-space:nowrap}
+.ig-locate,.ig-step button{flex:0 0 32px;height:36px;display:grid;place-items:center;border-radius:7px;border:1px solid #dae6ed;background:#f5f9fc;color:#4b7692}
+.ig-warning{background:#fff7eb;border-left:3px solid #c18842;color:#916331;line-height:1.5;padding:11px;font-size:11px}
+.ig-progress{font-size:11px;font-weight:800;color:#4f7087}
+.ig-progress-track{height:6px;background:#e6edf2;border-radius:6px;overflow:hidden;margin:9px 0 13px}
+.ig-progress-track span{height:100%;background:#3e8b6b;display:block}
+.ig-note{font-size:11px;line-height:1.55;color:#697f90;background:#f6f9fb;border-radius:8px;padding:10px;margin-bottom:13px}
+.ig-steps>li{margin-bottom:9px}
+.ig-phase{font-size:12px;color:#335b76;border-bottom:1px solid #e0e9ee;padding-bottom:7px;margin:17px 0 10px}
+.ig-step{display:flex;align-items:flex-start;gap:7px;min-width:0}
+.ig-number{flex:0 0 29px;height:30px;display:grid;place-items:center;border-radius:8px;background:#eaf3f8;color:#456d88;font-size:11px;font-weight:850}
+.ig-step label{display:flex;align-items:center;gap:9px;min-height:44px;flex:1;min-width:0;border:1px solid #e0e9ef;border-radius:8px;padding:10px 9px;cursor:pointer}
+.ig-step input{width:18px;height:18px;accent-color:#388569;flex:0 0 18px}
+.ig-step label span{font-size:11px;line-height:1.5;color:#354d62;overflow-wrap:anywhere}
+.ig-complete .ig-step label{background:#edf8f2;border-color:#bee0c9}
+.ig-complete .ig-step label span{text-decoration:line-through;color:#6f9380}
+.ig-step-note{margin:4px 0 9px 38px;font-size:11px;color:#617e92}
+.ig-empty{padding:13px;border:1px dashed #d6e3eb;border-radius:8px;color:#71899a;font-size:12px}
+@media(max-width:1050px){.ig-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.diagram-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px}.diagram-mode-switch button{padding:10px 6px;font-size:10px}.ig-intro{padding:14px;display:block}.ig-intro h2{font-size:18px}.ig-status{margin-top:12px}.ig-grid{padding:8px;gap:10px}.ig-section{padding:10px}.ig-children{margin-left:7px;padding-left:7px}.ig-item{gap:3px;padding:5px}.ig-item-name strong{font-size:11px}.ig-wire-label{max-width:94px;padding:4px;font-size:9px}.ig-locate{flex-basis:28px}.ig-step label{padding:11px 7px}}
+@media print{.diagram-mode-switch{display:none!important}.install-guide{display:block!important}}
