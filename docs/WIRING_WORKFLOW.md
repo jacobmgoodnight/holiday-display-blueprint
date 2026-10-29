@@ -8,6 +8,24 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Practical phone installation: Field Mode
+
+Open your **private linked master plan** on your phone, then choose **Field** on the bottom navigation (it opens by default on narrow phones). Pick O01/O02/O03 or Whole system.
+
+- The main card shows the next unfinished setup step with a single **Mark step complete** button. These are the same persisted checklist tasks visible on desktop.
+- Search by name, wiring ID or storage notes **across the entire project**, even when looking at one outlet. Search results show the documented source chain and can jump to the advanced wiring diagram.
+- Below the next step, expand the connection tree to inspect branches and splitter outputs, reference photos, equipment notes, and checklist boxes.
+- Tap **Edit wiring** only when you actually need to change the graph; the simpler phone view does not alter electrical topology.
+- Local saves are queued separately for each project. Leaving an active project or switching seasons no longer cancels its pending write. The app reports saving/saved/failed, with a retry action. Cloud sync remains independent and periodic while the app is open.
+
+Do not use an unknown or provisional Excel note to invent a power socket in the app.
+
+## Confirming a field installation
+
+Changing the project status to **Verified as-installed** now requests a written review. If the model reports outstanding wiring or field-check findings, document your observed evidence and outstanding exceptions. A date, note and recorded exceptions are retained in the project. Invalid graphs cannot be verified. **This status never certifies electrical safety.**
+
+Deleting a component now invalidates surviving downstream verification and removes obsolete connection/setup checkmarks, with an immediate guarded **Undo component removal** action. Old completed/verified state is not automatically restored. Cloud-linked whole-project deletion stays disabled until safe deletion synchronization is implemented.
+
 ## Changing a connection during installation
 
 1. Open the **private Blueprint master link** on the device you plan to use. Check that the **Private sync on** indicator appears. If sync is offline, your work still saves locally; confirm it syncs again before editing on another device.
@@ -40,7 +58,7 @@ Blueprint models **documented AC power wiring**, not electrical certification. I
 
 - **One-click circuit change review**: show wiring differences since last installation, including disconnected feeds and field verification evidence.
 - **Clear picture-to-component association**: extract photos from the old workbooks and attach them to exact equipment records, with unmatched photos explicitly identified.
-- **More legible mobile diagrams**: collapse complex power branches, pre-label plugs/splitter port names, make setup photos and cord lengths directly visible.
+- **More legible mobile diagrams**: Field Mode now provides an outlet-first mobile view with steps and photos; improve port names and photo association next. collapse complex power branches, pre-label plugs/splitter port names, make setup photos and cord lengths directly visible.
 - **Project-wide completeness checks**: distinguish missing confirmed upstream sources, missing cord lengths, unknown load estimates, and unverified branch connectors.
 - **Trusted offline experience**: installable PWA with cached assets, safe backup reminders and offline-sync status; currently the browser may not open the app offline unless its assets remain cached.
 - **Stronger cloud conflict resolution**: show side-by-side differences rather than a whole-project keep-cloud/keep-device choice.
