@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Smartphone,Maximize2,Minimize2,ZoomIn,ZoomOut,Eye,PenTool,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Smartphone,Maximize2,Minimize2,ZoomIn,ZoomOut,Eye,SlidersHorizontal,PenTool,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
@@ -27,6 +27,8 @@ import {deleteComponentSafely,undoComponentDeletion,type DeletedComponent} from 
 import './components/deviceTransfer.css';
 import {wireDescription} from './lib/wiringGuide';
 import {powerFlowLayout} from './lib/flowLayout';
+import {portName,renameOutputPort} from './lib/portLabels';
+import {insertIntoConnection,insertableKinds} from './lib/wiringBuilder';
 import {freeOutputPorts,searchComponents,workspaceCanEdit} from './lib/canvasWorkspace';
 import {exampleProjects} from './fixtures/examples';
 import './styles.css';
@@ -52,15 +54,34 @@ function AppContent(){
  const [builderSource,setBuilderSource]=useState<string|null>(null);
  const [builderPort,setBuilderPort]=useState(0);
  const [builderName,setBuilderName]=useState('');
+ const [fullToolsOpen,setFullToolsOpen]=useState(false);
+ const [insertEdgeId,setInsertEdgeId]=useState('');
+ const [insertKind,setInsertKind]=useState<Kind>('splitter');
+ const [builderPanel,setBuilderPanel]=useState<'add'|'wire'|'insert'|'ports'>('wire');
+ const [insertName,setInsertName]=useState('');
+ const [showInsertPreview,setShowInsertPreview]=useState(false);
  const workspaceEditable=workspaceCanEdit(fullscreen,fullMode);
  useEffect(()=>{
   if(!fullscreen)return;
   const previous=document.body.style.overflow;document.body.style.overflow='hidden';
-  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){setFullscreen(false);setBuilderSource(null);setFullSearch('');}};
+  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){setFullscreen(false);setBuilderSource(null);setFullSearch('');setShowInsertPreview(false);}};
   document.addEventListener('keydown',onKey);
   return()=>{document.body.style.overflow=previous;document.removeEventListener('keydown',onKey);};
  },[fullscreen]);
- useEffect(()=>{if(!fullscreen||tab!=='diagram'||diagramMode!=='map')return;const t=setTimeout(()=>{void fitView({padding:.2,duration:220});},190);return()=>clearTimeout(t);},[fullscreen,tab,diagramMode,fitView]);
+ useEffect(()=>{
+  if(!fullscreen||tab!=='diagram'||diagramMode!=='map'||!project)return;
+  const timer=setTimeout(()=>{
+   const mobile=window.innerWidth<1000;
+   if(!mobile){void fitView({padding:.17,duration:230,maxZoom:.95});return;}
+   const outlet=view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8)):project.nodes.find(n=>n.kind==='outlet');
+   const anchor=project.nodes.find(n=>n.id===selected)||outlet||project.nodes[0];
+   if(!anchor)return;
+   const pos=layoutMode==='auto'?(autoPositions.get(anchor.id)||anchor.position):anchor.position;
+   // Start at legible node scale; full-system overview remains available through Fit.
+   setCenter(pos.x+195,pos.y+55,{zoom:.88,duration:200});
+  },190);
+  return()=>clearTimeout(timer);
+ },[fullscreen,tab,diagramMode,view,layoutMode,active,fitView,setCenter]);
  useEffect(()=>{
   if(!showSidebar&&!showMenu)return;
   const dismiss=(event:KeyboardEvent)=>{if(event.key==='Escape'){setShowSidebar(false);setShowMenu(false);}};
@@ -82,7 +103,7 @@ function AppContent(){
  }});
  const project=projects.find(p=>p.id===active);
  const localSaving=useProjectPersistence(projects,active,loaded,storageReady);
- useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode]);
+ useEffect(()=>{if(fullscreen||tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode,fullscreen]);
  const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>{if(p.id!==active)return p;const result=fn(p);return result===p?p:{...result,updatedAt:now()};}));},[active]);
  useEffect(()=>{if(!message)return;const timer=setTimeout(()=>setMessage(''),6500);return()=>clearTimeout(timer);},[message]);
  const highlighted=useMemo(()=>{if(!project||!selected)return new Set<string>();if(trace==='upstream')return new Set([...upstream(selected,project.edges),selected]);if(trace==='downstream'||trace==='outage')return new Set([...downstream(selected,project.edges),selected]);return new Set([selected]);},[project,selected,trace]);
@@ -102,19 +123,25 @@ function AppContent(){
    :new globalThis.Map<string,{x:number;y:number}>(),[project,visibleIds,layoutMode]);
  const flowNodes:BlueprintFlowNode[]=useMemo(()=>project?.nodes.filter(n=>visibleIds.has(n.id)).map(n=>({id:n.id,type:'blueprint' as const,position:layoutMode==='auto'?(autoPositions.get(n.id)||n.position):n.position,data:{component:n,highlight:highlighted.has(n.id),dim:!!selected&&trace!=='none'&&!highlighted.has(n.id)},selected:n.id===selected}))||[],[project,visibleIds,highlighted,selected,trace,autoPositions,layoutMode]);
  const fullscreenMatches=useMemo(()=>project?searchComponents(project,fullSearch,8):[],[project,fullSearch]);
+ const insertEdge=project?.edges.find(e=>e.id===insertEdgeId);
+ const insertFrom=project?.nodes.find(n=>n.id===insertEdge?.source);
+ const insertTo=project?.nodes.find(n=>n.id===insertEdge?.target);
  const flowEdges:Edge[]=useMemo(()=>project?.edges.filter(e=>visibleIds.has(e.source)&&visibleIds.has(e.target)).map(e=>{
   const target=project.nodes.find(n=>n.id===e.target);
-  const label=target?wireDescription(target):undefined;
+  const source=project.nodes.find(n=>n.id===e.source);
+   const part=target?wireDescription(target):undefined;
+   const named=source?.portLabels?.[String(e.sourcePort)]?.trim();
+   const label=[named,part].filter(Boolean).join(' · ')||undefined;
   return {id:e.id,source:e.source,target:e.target,sourceHandle:`port-${e.sourcePort}`,targetHandle:'input',type:'smoothstep',
     animated:selected!==null&&(highlighted.has(e.source)&&highlighted.has(e.target)),label,
     labelStyle:{fill:'#344e63',fontWeight:650,fontSize:10},
     labelBgStyle:{fill:'#fff',stroke:'#cad8e3',strokeWidth:0.6},
     labelBgPadding:[7,4] as [number,number],labelBgBorderRadius:6,
-    style:{stroke:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},
+    style:{stroke:insertEdgeId===e.id?'#327963':selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:insertEdgeId===e.id?4:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},
     markerEnd:{type:MarkerType.ArrowClosed,color:'#8296a9'}};
- })||[],[project,visibleIds,selected,highlighted]);
- function chooseProject(id:string){setFullscreen(false);setBuilderSource(null);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
- function changeView(next:View){setView(next);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
+ })||[],[project,visibleIds,selected,highlighted,insertEdgeId]);
+ function chooseProject(id:string){setFullscreen(false);setBuilderSource(null);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
+ function changeView(next:View){setView(next);setShowInsertPreview(false);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
  function jumpToNode(id:string){setTab('diagram');setDiagramMode('map');if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function openFinder(){setInspectorOpen(true);if(window.innerWidth<720)setTimeout(()=>document.getElementById('connection-finder')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
@@ -131,6 +158,23 @@ function AppContent(){
  }
  function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],verificationReview:undefined,createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false}))}:blank(project.season,year);
  setProjects(all=>[...all,p]);setActive(p.id);setSelected(null);setView('All zones');setShowMenu(false);setMessage(duplicate?'Copied plan is a DRAFT — verify every connection before use.':'Created a blank local project.');}
+ function applyPortLabel(id:string,index:number,label:string){
+  if(!project)return;
+  try{
+   const next=renameOutputPort(project,id,index,label);
+   if(next!==project){update(()=>next);setMessage('Output name saved. Existing wiring and output number are unchanged.');}
+  }catch(error){setMessage(error instanceof Error?error.message:String(error));}
+ }
+ function insertBuilderLink(){
+  if(!project||!insertEdgeId||!showInsertPreview)return;
+  try{
+   const updated=insertIntoConnection(project,insertEdgeId,insertKind,insertName);
+   update(()=>updated);
+   const added=updated.nodes.find(n=>!project.nodes.some(prev=>prev.id===n.id));
+   setSelected(added?.id||null);setTrace('none');setInsertEdgeId('');setInsertName('');setShowInsertPreview(false);
+   setMessage('Item inserted. New connections need physical verification and the old wiring step was reset.');
+  }catch(error){setMessage(error instanceof Error?error.message:String(error));}
+ }
  function addBuilderItem(){
   if(!project)return;
   const zone:Zone=zones.includes(view as Zone)?view as Zone:'Front porch';
@@ -281,7 +325,7 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
     <div className="page-head"><div><div className="eyebrow">{project.season.toUpperCase()} {project.year} / {tab==='diagram'?'SYSTEM OVERVIEW':tab.toUpperCase()}</div><h1>{({field:'Your yard companion.',diagram:'Your display, connected.',setup:'Install with confidence.',teardown:'Pack it right for next year.',inventory:'Know what you own.'})[tab]}</h1><p>{({field:'Follow connections and setup steps without opening the graph editor.',diagram:'Plan the wiring once. Find every connection next season.',setup:'Ordered from your wiring graph. Check off each step as you work.',teardown:'Power off, disconnect, inspect and pack your components.',inventory:'Storage, condition and repair history in one place.'})[tab]}</p></div>
      <div className="head-buttons">{tab==='diagram'?<><button className="button secondary" onClick={()=>setShowWizard(true)}><FileSpreadsheet size={16}/> <span className="desktop-only">Import workbook</span><span className="mobile-only">Import</span></button><button className="button secondary" onClick={()=>{downloadWiringReference(project);setMessage('Reference workbook downloaded; original Excel master unchanged.');}}><FileSpreadsheet size={16}/> <span className="desktop-only">Export Excel reference</span><span className="mobile-only">Excel</span></button><button className="button secondary desktop-only" onClick={printAll}><Printer size={16}/> Print</button></>:null}
      {tab==='inventory'&&<button className="button secondary" onClick={()=>{const rows=[['ID','Name','Type','Zone','Color','Length ft','Storage','Quantity','Condition','Price','Repair history'],...project.nodes.map(n=>[n.id,n.name,n.kind,n.zone,n.color,n.lengthFt,n.inventory?.storage,n.inventory?.quantity,n.inventory?.condition,n.inventory?.price,n.inventory?.repairHistory])];downloadText(`inventory-${project.season}-${project.year}.csv`,rows.map(r=>r.map(csvEscape).join(',')).join('\r\n'),'text/csv');}}><Download size={16}/> CSV</button>}</div></div>
-    {tab==='field'&&<><div className="field-sync-line" role="status"><span>{localSaving.saveState.phase==='saved'?'Saved locally':localSaving.saveState.phase==='saving'?'Saving on this device…':'Local save failed'}</span><span>{!cloud.enabled?'Sync not linked':cloud.status==='synced'?'Private sync connected':cloud.status==='offline'?'Cloud offline; local edits retained':cloud.status==='conflict'?'Sync conflict needs review':'Cloud checking…'}</span></div><FieldMode key={project.id} project={project} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})} onExplore={()=>{setTab('diagram');setDiagramMode('map');setFullscreen(true);setFullMode('explore');setBuilderSource(null);setSelected(null);setView('All zones')}} onEdit={()=>{setTab('diagram');setDiagramMode('map');setSelected(null);setView('All zones')}}/></>}
+    {tab==='field'&&<><div className="field-sync-line" role="status"><span>{localSaving.saveState.phase==='saved'?'Saved locally':localSaving.saveState.phase==='saving'?'Saving on this device…':'Local save failed'}</span><span>{!cloud.enabled?'Sync not linked':cloud.status==='synced'?'Private sync connected':cloud.status==='offline'?'Cloud offline; local edits retained':cloud.status==='conflict'?'Sync conflict needs review':'Cloud checking…'}</span></div><FieldMode key={project.id} project={project} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})} onExplore={()=>{setTab('diagram');setDiagramMode('map');setFullscreen(true);setFullMode('explore');setBuilderSource(null);setFullToolsOpen(false);setSelected(null);setView('All zones')}} onEdit={()=>{setTab('diagram');setDiagramMode('map');setSelected(null);setView('All zones')}}/></>}
     {tab==='diagram'&&<>
       <div className="stats"><div className="stat"><div className="stat-icon soft-blue"><Layers size={20}/></div><div><strong>{project.nodes.length}</strong><span>Components</span></div></div><div className="stat"><div className="stat-icon soft-amber"><Link2 size={20}/></div><div><strong>{project.edges.length}</strong><span>Connections</span></div></div><div className="stat"><div className="stat-icon soft-green"><PlugZap size={20}/></div><div><strong>{project.nodes.filter(n=>n.kind==='outlet').length}</strong><span>Power sources</span></div></div><div className="stat"><div className="stat-icon soft-red"><AlertTriangle size={20}/></div><div><strong>{auditSummary.critical+auditSummary.attention}</strong><span>Needs verification</span></div></div></div>
       <div className="circuit-shortcuts" role="group" aria-label="Quick outlet focus">
@@ -295,13 +339,13 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
        <button className={diagramMode==='guide'?'active':''} aria-pressed={diagramMode==='guide'} onClick={()=>setDiagramMode('guide')}><ClipboardCheck size={17}/> Install view</button>
         <button className={diagramMode==='audit'?'active':''} aria-pressed={diagramMode==='audit'} onClick={()=>setDiagramMode('audit')}><AlertTriangle size={17}/> Needs verification</button>
       </div>
-      {diagramMode==='map'&&<div className="diagram-toolbar"><div className="tool-title"><CircuitBoard size={18}/><strong>Electrical graph</strong><span>Auto layout or your saved positions</span></div><div className="tool-actions"><label className="layout-picker">Layout<select aria-label="Diagram arrangement" value={layoutMode} onChange={e=>setLayoutMode(e.target.value as 'auto'|'manual')}><option value="auto">Auto power flow</option><option value="manual">My saved positions</option></select></label><button className="button secondary" onClick={()=>{setFullscreen(true);setFullMode('explore');setBuilderSource(null);setFullSearch('')}}><Maximize2 size={16}/> Fullscreen</button><button className="button secondary finder-open" onClick={openFinder}><Search size={15}/> Find</button><button className={`button secondary ${pathOnly?'path-isolated':''}`} disabled={!selected} aria-pressed={pathOnly} onClick={()=>setPathOnly(x=>!x)}>{pathOnly?'Show circuit':'Path only'}</button><select aria-label="New component type" value={addKind} onChange={e=>setAddKind(e.target.value as Kind)}>{categories.map(k=><option key={k.kind} value={k.kind}>{k.label}</option>)}</select><button className="button primary" onClick={addComponent}><Plus size={16}/> Add</button><button className="icon-button" aria-label="Toggle inspector" onClick={()=>setInspectorOpen(s=>!s)}><BookOpen size={19}/></button></div></div>}
+      {diagramMode==='map'&&<div className="diagram-toolbar"><div className="tool-title"><CircuitBoard size={18}/><strong>Electrical graph</strong><span>Auto layout or your saved positions</span></div><div className="tool-actions"><label className="layout-picker">Layout<select aria-label="Diagram arrangement" value={layoutMode} onChange={e=>setLayoutMode(e.target.value as 'auto'|'manual')}><option value="auto">Auto power flow</option><option value="manual">My saved positions</option></select></label><button className="button secondary" onClick={()=>{setFullscreen(true);setFullMode('explore');setBuilderSource(null);setFullSearch('');setFullToolsOpen(false)}}><Maximize2 size={16}/> Fullscreen</button><button className="button secondary finder-open" onClick={openFinder}><Search size={15}/> Find</button><button className={`button secondary ${pathOnly?'path-isolated':''}`} disabled={!selected} aria-pressed={pathOnly} onClick={()=>setPathOnly(x=>!x)}>{pathOnly?'Show circuit':'Path only'}</button><select aria-label="New component type" value={addKind} onChange={e=>setAddKind(e.target.value as Kind)}>{categories.map(k=><option key={k.kind} value={k.kind}>{k.label}</option>)}</select><button className="button primary" onClick={addComponent}><Plus size={16}/> Add</button><button className="icon-button" aria-label="Toggle inspector" onClick={()=>setInspectorOpen(s=>!s)}><BookOpen size={19}/></button></div></div>}
       {diagramMode==='map'&&reusable.length>0&&<div className="reuse-strip"><Copy size={14}/><span>Reuse equipment from other seasons</span><select aria-label="Existing equipment" value={reuseId} onChange={e=>setReuseId(e.target.value)}><option value="">Select reusable item</option>{reusable.map(n=><option key={n.assetId||n.id} value={n.assetId||n.id}>{n.name} · {n.from}</option>)}</select><button className="button secondary" onClick={reuseComponent} disabled={!reuseId}>Add to this plan</button></div>}
       {diagramMode==='audit'&&<><div className="audit-undo"><div><strong>Latest recorded wiring change</strong><p>{project.wiringHistory?.length?`${project.wiringHistory.at(-1)?.action} · ${project.wiringHistory.at(-1)?.targetName}`:'No guided wiring edits recorded yet'}</p></div><button className="button secondary" disabled={!project.wiringHistory?.length||cloud.status==='conflict'} onClick={undoLastFeed}><ArrowUpRight size={15}/> Reverse last feed change</button></div>
         <VerificationAudit project={project} scope={baseVisibleIds} scopeLabel={view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8))?.name||view:view} onLocate={jumpToNode} onVerify={id=>{const component=project.nodes.find(n=>n.id===id);if(!component)return;if(confirm(`Have you physically checked ${component.name} at the display? This marks it field-verified, not electrically certified.`)){patchComponent(id,{verified:true});setMessage(`${component.name} marked checked in the field. Any missing wiring or rating details remain outstanding.`);}}}/></>}
        {diagramMode==='guide'&&<InstallationGuide key={project.id} project={project} scope={baseVisibleIds} scopeLabel={view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8))?.name||view:view} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})}/>}
       {diagramMode==='map'&&<div role={fullscreen?'dialog':undefined} aria-modal={fullscreen||undefined} aria-label={fullscreen?'Fullscreen wiring workspace':undefined} className={`diagram-layout ${!inspectorOpen?'diagram-wide':''} ${fullscreen?'diagram-fullscreen':''}`}><div className="diagram-card"><div className="canvas-label"><span className="canvas-live-dot"/> {view==='All zones'?'FULL SYSTEM':view.toUpperCase()} <span>· draft wiring view</span></div><div id="diagram-canvas" className="canvas-wrap" style={project.backgroundPhoto?{backgroundImage:`linear-gradient(#f9fafbcc,#f9fafbcc),url(${project.backgroundPhoto})`,backgroundSize:'contain',backgroundPosition:'center',backgroundRepeat:'no-repeat'}:undefined}>
-       <ReactFlow<BlueprintFlowNode,Edge> nodes={flowNodes} edges={flowEdges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:0.22}} minZoom={0.08} maxZoom={3} nodesDraggable={workspaceEditable&&layoutMode==='manual'} nodesConnectable={workspaceEditable} edgesReconnectable={false} onNodesChange={changes=>{if(!workspaceEditable||layoutMode!=='manual')return;for(const change of changes){if(change.type==='position'&&change.position){update(p=>({...p,nodes:p.nodes.map(n=>n.id===change.id?{...n,position:change.position!}:n)}));}}}} onNodeClick={(_,n)=>{if(fullscreen&&fullMode==='builder'&&builderSource){selectBuilderTarget(n.id);return;}setSelected(n.id);setTrace(n.data.component.kind==='outlet'?'downstream':'upstream');if(!fullscreen)setInspectorOpen(true);}} onPaneClick={()=>{setSelected(null);setTrace('none');}} onConnect={connection=>{if(workspaceEditable)onConnect(connection);}} onEdgeClick={(_,edge)=>{const target=project.nodes.find(n=>n.id===edge.target);if(target){setSelected(target.id);setTrace('upstream');if(!fullscreen)setInspectorOpen(true);}}} onEdgesDelete={deleted=>{if(!workspaceEditable)return;for(const e of deleted){if(confirm('Disconnect this power feed and mark downstream items for verification?'))changePowerFeed(e.target,null);}}} onNodesDelete={deleted=>{if(deleted.length===1)removeComponent(deleted[0].id);else setMessage('Delete nodes one at a time from the component inspector.')}} deleteKeyCode={null}>
+       <ReactFlow<BlueprintFlowNode,Edge> nodes={flowNodes} edges={flowEdges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:0.22}} minZoom={0.08} maxZoom={3} nodesDraggable={workspaceEditable&&layoutMode==='manual'} nodesConnectable={workspaceEditable} edgesReconnectable={false} onNodesChange={changes=>{if(!workspaceEditable||layoutMode!=='manual')return;for(const change of changes){if(change.type==='position'&&change.position){update(p=>({...p,nodes:p.nodes.map(n=>n.id===change.id?{...n,position:change.position!}:n)}));}}}} onNodeClick={(_,n)=>{if(fullscreen&&fullMode==='builder'&&builderSource){selectBuilderTarget(n.id);return;}setSelected(n.id);setTrace(n.data.component.kind==='outlet'?'downstream':'upstream');if(!fullscreen)setInspectorOpen(true);}} onPaneClick={()=>{setSelected(null);setTrace('none');}} onConnect={connection=>{if(workspaceEditable)onConnect(connection);}} onEdgeClick={(_,edge)=>{if(fullscreen&&fullMode==='builder'){setInsertEdgeId(edge.id);setBuilderPanel('insert');setShowInsertPreview(false);return;}const target=project.nodes.find(n=>n.id===edge.target);if(target){setSelected(target.id);setTrace('upstream');if(!fullscreen)setInspectorOpen(true);}}} onEdgesDelete={deleted=>{if(!workspaceEditable)return;for(const e of deleted){if(confirm('Disconnect this power feed and mark downstream items for verification?'))changePowerFeed(e.target,null);}}} onNodesDelete={deleted=>{if(deleted.length===1)removeComponent(deleted[0].id);else setMessage('Delete nodes one at a time from the component inspector.')}} deleteKeyCode={null}>
         <Background gap={24} size={1} color="#e1e7ed"/>{!fullscreen&&<Controls showInteractive={false}/>}<MiniMap pannable zoomable nodeColor={n=>n.data?.component&&(n.data.component as Component).kind==='outlet'?'#d68b3e':'#6289aa'} style={{width:130,height:85,display:fullscreen?'none':undefined}}/>
        </ReactFlow>
        {fullscreen&&<div className="fullscreen-workspace-ui">
@@ -314,42 +358,78 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
          <button className="fullscreen-close" aria-label="Exit fullscreen diagram" onClick={()=>{setFullscreen(false);setBuilderSource(null);setFullSearch('')}}><Minimize2 size={18}/> <span>Exit</span></button>
         </div>
         <div className="fullscreen-controls">
-         <label>Power circuit <select aria-label="Fullscreen power circuit" value={view} onChange={e=>changeView(e.target.value as View)}>
+         <select className="fullscreen-circuit" aria-label="Fullscreen power circuit" value={view} onChange={e=>changeView(e.target.value as View)}>
           <option value="All zones">Whole system</option>
-          {project.nodes.filter(n=>n.kind==='outlet').map(n=><option value={`Outlet: ${n.id}`} key={n.id}>{n.name}</option>)}
-          {zones.map(z=><option value={z} key={z}>{z}</option>)}</select></label>
+          {project.nodes.filter(n=>n.kind==='outlet').map(n=><option value={`Outlet: ${n.id}`} key={n.id}>{n.name.match(/\bO\d+\b/i)?.[0]||n.name}</option>)}
+          {zones.map(z=><option value={z} key={z}>{z}</option>)}
+         </select>
          <div className="fullscreen-zoom" role="group" aria-label="Diagram zoom">
-          <button aria-label="Zoom out diagram" onClick={()=>void zoomOut({duration:180})}><ZoomOut size={18}/></button>
-          <button aria-label="Fit diagram to screen" onClick={()=>void fitView({padding:.2,duration:230})}>Fit</button>
-          <button aria-label="Zoom in diagram" onClick={()=>void zoomIn({duration:180})}><ZoomIn size={18}/></button>
+          <button aria-label="Zoom out diagram" onClick={()=>void zoomOut({duration:180})}><ZoomOut size={17}/></button>
+          <button aria-label="Fit entire visible diagram" onClick={()=>void fitView({padding:.15,duration:230})}>Fit</button>
+          <button aria-label="Zoom in diagram" onClick={()=>void zoomIn({duration:180})}><ZoomIn size={17}/></button>
          </div>
-         <button aria-pressed={pathOnly} disabled={!selected} onClick={()=>setPathOnly(v=>!v)}>{pathOnly?'Show circuit':'Path only'}</button>
-         <div className="fullscreen-search"><Search size={15}/><input aria-label="Find equipment in fullscreen diagram" value={fullSearch} placeholder="Find any item…" onChange={e=>setFullSearch(e.target.value)}/>
-          {fullSearch.trim().length>=2&&<div className="fullscreen-matches" role="list">
-           {fullscreenMatches.map(item=><button key={item.id} role="listitem" onClick={()=>{if(!baseVisibleIds.has(item.id))setView('All zones');setSelected(item.id);setTrace('upstream');setFocusRequest(prev=>({id:item.id,seq:(prev?.seq||0)+1}));setFullSearch('')}}><strong>{item.name}</strong><small>{item.zone}</small></button>)}
-           {fullscreenMatches.length===0&&<p>No matching items</p>}
-          </div>}
-         </div>
-        </div>
-        {fullMode==='explore'?<div className="fullscreen-hint">Drag empty space to pan · scroll or pinch to zoom · tap an item to trace its power</div>:
-         <div className="fullscreen-builder" aria-label="Wiring builder tools">
-          <div className="builder-add-row">
-           <label>New item <select aria-label="New item type" value={addKind} onChange={e=>setAddKind(e.target.value as Kind)}>{categories.map(k=><option key={k.kind} value={k.kind}>{k.label}</option>)}</select></label>
-           <input aria-label="Optional new item name" placeholder="Optional name" value={builderName} maxLength={100} onChange={e=>setBuilderName(e.target.value)}/>
-           <button className="builder-primary" onClick={addBuilderItem}><Plus size={16}/> Add item</button>
+         <button className="fullscreen-more-toggle" aria-label={fullToolsOpen?'Hide search and options':'Show search and options'} aria-expanded={fullToolsOpen} onClick={()=>setFullToolsOpen(v=>!v)}><SlidersHorizontal size={18}/><span>Tools</span></button>
+         {fullToolsOpen&&<div className="fullscreen-extra">
+          <button aria-pressed={pathOnly} disabled={!selected} onClick={()=>setPathOnly(v=>!v)}>{pathOnly?'Show whole circuit':'Path only'}</button>
+          <div className="fullscreen-search"><Search size={15}/><input aria-label="Find equipment in fullscreen diagram" value={fullSearch} placeholder="Find an item in any circuit…" onChange={e=>setFullSearch(e.target.value)}/>
+           {fullSearch.trim().length>=2&&<div className="fullscreen-matches" role="list">
+            {fullscreenMatches.map(item=><button key={item.id} role="listitem" onClick={()=>{if(!baseVisibleIds.has(item.id))setView('All zones');setSelected(item.id);setTrace('upstream');setFocusRequest(prev=>({id:item.id,seq:(prev?.seq||0)+1}));setFullSearch('');setFullToolsOpen(false)}}><strong>{item.name}</strong><small>{item.zone}</small></button>)}
+            {fullscreenMatches.length===0&&<p>No matching items</p>}
+           </div>}
           </div>
-          <div className="builder-edit-row">
+          <small>Drag to pan · pinch to zoom · tap items to trace their source</small>
+         </div>}
+        </div>
+        {fullMode==='builder'&&<div className="fullscreen-builder" aria-label="Wiring builder tools">
+          <div className="builder-tabs" role="group" aria-label="Builder action">
+           {(['wire','add','insert','ports'] as const).map(t=><button key={t} className={builderPanel===t?'active':''} aria-pressed={builderPanel===t} onClick={()=>{setBuilderPanel(t);setShowInsertPreview(false)}}>{({wire:'Connect',add:'Add item',insert:'Insert on wire',ports:'Port names'})[t]}</button>)}
+          </div>
+          {builderPanel==='wire'&&<div className="builder-edit-row">
            <label>Layout <select aria-label="Builder diagram layout" value={layoutMode} onChange={e=>setLayoutMode(e.target.value as 'auto'|'manual')}><option value="auto">Auto flow</option><option value="manual">Move items manually</option></select></label>
-           {selectedNode&&<label className="builder-rename">Selected <input aria-label="Rename selected component" value={selectedNode.name} onChange={e=>patchComponent(selectedNode.id,{name:e.target.value})}/></label>}
-           {builderSource?<>
-            <span className="builder-help">From {project.nodes.find(n=>n.id===builderSource)?.name}: select output, then tap the receiving item.</span>
-            <label>Output <select aria-label="Builder source output" value={builderPort} onChange={e=>setBuilderPort(Number(e.target.value))}>{freeOutputPorts(project,builderSource).map(port=><option key={port} value={port}>Output {port+1}</option>)}</select></label>
-            <button onClick={()=>setBuilderSource(null)}>Cancel wire</button>
-           </>:<button disabled={!selectedNode||!selectedNode.outputs||!freeOutputPorts(project,selectedNode.id).length} onClick={chooseBuilderSource}><Link2 size={15}/> Connect from selected</button>}
+           {selectedNode&&<span className="builder-help">Selected: {selectedNode.name}</span>}
+           {builderSource?<><span className="builder-help">Tap the receiving item on the diagram.</span>
+             <select aria-label="Builder source output" value={builderPort} onChange={e=>setBuilderPort(Number(e.target.value))}>{freeOutputPorts(project,builderSource).map(port=><option key={port} value={port}>{portName(project.nodes.find(n=>n.id===builderSource)!,port)}</option>)}</select>
+             <button onClick={()=>setBuilderSource(null)}>Cancel wire</button></>
+             :<button disabled={!selectedNode||!selectedNode.outputs||!freeOutputPorts(project,selectedNode.id).length} onClick={chooseBuilderSource}><Link2 size={15}/> Connect from selected</button>}
            <button disabled={!selectedNode||!project.edges.some(e=>e.target===selectedNode.id)} onClick={()=>{if(selectedNode)changePowerFeed(selectedNode.id,null)}}><Unplug size={15}/> Disconnect</button>
            <button className="builder-danger" disabled={!selectedNode} onClick={()=>{if(selectedNode)removeComponent(selectedNode.id)}}><Trash2 size={15}/> Remove item</button>
            {deletedReceipt?.projectId===project.id&&<button onClick={undoDeletion}>Undo remove</button>}
-          </div>
+          </div>}
+          {builderPanel==='add'&&<div className="builder-add-row">
+           <select aria-label="New item type" value={addKind} onChange={e=>setAddKind(e.target.value as Kind)}>{categories.map(k=><option key={k.kind} value={k.kind}>{k.label}</option>)}</select>
+           <input aria-label="Optional new item name" placeholder="Item name (optional)" value={builderName} maxLength={100} onChange={e=>setBuilderName(e.target.value)}/>
+           <button className="builder-primary" onClick={()=>{addBuilderItem();setBuilderPanel('wire')}}><Plus size={16}/> Add</button>
+          </div>}
+          {builderPanel==='insert'&&<div className="builder-insert">
+           <p>Tap a wire on the diagram, or select it below. Blueprint will insert a new item between the existing source and receiver.</p>
+           <select aria-label="Existing connection to insert into" value={insertEdgeId} onChange={e=>{setInsertEdgeId(e.target.value);setShowInsertPreview(false)}}>
+            <option value="">Choose a connection…</option>
+            {project.edges.filter(e=>baseVisibleIds.has(e.source)&&baseVisibleIds.has(e.target)).map(e=>{
+             const source=project.nodes.find(n=>n.id===e.source),target=project.nodes.find(n=>n.id===e.target);
+             return <option key={e.id} value={e.id}>{source?.name||e.source} · {source?portName(source,e.sourcePort):e.sourcePort+1} → {target?.name||e.target}</option>;
+            })}
+           </select>
+           <div className="builder-add-row">
+            <select aria-label="Type to insert" value={insertKind} onChange={e=>{setInsertKind(e.target.value as Kind);setShowInsertPreview(false)}}>{insertableKinds.map(kind=><option value={kind} key={kind}>{categories.find(k=>k.kind===kind)?.label||kind}</option>)}</select>
+            <input aria-label="Inserted item name" value={insertName} maxLength={100} placeholder="New item name (optional)" onChange={e=>{setInsertName(e.target.value);setShowInsertPreview(false)}}/>
+            <button disabled={!insertEdge} onClick={()=>setShowInsertPreview(true)}>Preview change</button>
+           </div>
+           {showInsertPreview&&insertEdge&&<div className="builder-insert-preview">
+            <strong>Before</strong><span>{insertFrom?.name||insertEdge.source} ({insertFrom?portName(insertFrom,insertEdge.sourcePort):'Output'}) → {insertTo?.name||insertEdge.target}</span>
+            <strong>After</strong><span>{insertFrom?.name||insertEdge.source} → <b>{insertName.trim()||categories.find(k=>k.kind===insertKind)?.label||insertKind}</b> → {insertTo?.name||insertEdge.target}</span>
+            <small>Old connection checklist will reset. New item and downstream equipment will need re-verification. Unrelated branches remain unchanged.</small>
+            <button className="builder-primary" onClick={insertBuilderLink}><Check size={16}/> Confirm insertion</button>
+           </div>}
+          </div>}
+          {builderPanel==='ports'&&<div className="builder-port-editor">
+           {!selectedNode?<p>Select an outlet, splitter, smart plug, cord or light strand to name its outputs.</p>:
+             selectedNode.outputs===0?<p>{selectedNode.name} has no power outputs.</p>:
+             <><strong>{selectedNode.name} · {selectedNode.outputs} output(s)</strong>
+              <div className="builder-port-grid">{Array.from({length:selectedNode.outputs},(_,port)=><label key={`${selectedNode.id}:${port}`}>{`Port ${port+1}`}
+                <input key={`${selectedNode.id}:${port}`} aria-label={`Name output ${port+1} of ${selectedNode.name}`} defaultValue={selectedNode.portLabels?.[String(port)]||''} maxLength={40} placeholder={`Output ${port+1}`} onBlur={e=>applyPortLabel(selectedNode.id,port,e.target.value)}/></label>)}</div>
+              <small>Examples: Kasa left, Kasa right, C9 female tap. Labels do not change the recorded output numbers.</small>
+             </>}
+          </div>}
          </div>}
         {selectedNode&&fullMode==='explore'&&<div className="fullscreen-selection"><strong>{selectedNode.name}</strong><span>{sourcePath(selectedNode.id,project).map(n=>n.name).join(' → ')}</span><button onClick={()=>{setSelected(null);setTrace('none');setPathOnly(false)}} aria-label="Clear selected path"><X size={15}/></button></div>}
        </div>}
@@ -360,7 +440,8 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
          <div className="trace-buttons"><button onClick={()=>setTrace('upstream')} className={trace==='upstream'?'active':''}><ArrowDownToLine size={15}/> Trace source</button><button onClick={()=>setTrace('outage')} className={trace==='outage'?'active':''}><WifiOff size={15}/> If unplugged</button></div>
          {trace==='upstream'&&<div className="trace-box"><strong>Power path back to source</strong>{sourcePath(selectedNode.id,project).map((n,i)=><div key={n.id}>{i>0?'↳ ':''}{n.name}</div>)}</div>}
          {trace==='outage'&&<div className="trace-box warning"><strong>Components losing this feed: {downstream(selectedNode.id,project.edges).size}</strong>{[...downstream(selectedNode.id,project.edges)].map(id=><div key={id}>{project.nodes.find(n=>n.id===id)?.name||id}</div>)}</div>}
-         {selectedNode.kind!=='outlet'&&<PowerFeedEditor key={selectedNode.id} project={project} target={selectedNode} onConnect={(source,port)=>changePowerFeed(selectedNode.id,source,port)} onDisconnect={()=>changePowerFeed(selectedNode.id,null)}/>}
+         {selectedNode.outputs>0&&<details className="port-label-details"><summary>Output names · {selectedNode.outputs} ports</summary><p>Label the real sockets (e.g. Kasa left, C9 female tap). Output numbers and connections remain unchanged.</p><div className="port-label-inputs">{Array.from({length:selectedNode.outputs},(_,port)=><label key={`${selectedNode.id}:${port}`}>Port {port+1}<input key={`${selectedNode.id}:${port}`} defaultValue={selectedNode.portLabels?.[String(port)]||''} maxLength={40} aria-label={`Name output ${port+1} of ${selectedNode.name}`} placeholder={`Output ${port+1}`} onBlur={e=>applyPortLabel(selectedNode.id,port,e.target.value)}/></label>)}</div></details>}
+          {selectedNode.kind!=='outlet'&&<PowerFeedEditor key={selectedNode.id} project={project} target={selectedNode} onConnect={(source,port)=>changePowerFeed(selectedNode.id,source,port)} onDisconnect={()=>changePowerFeed(selectedNode.id,null)}/>}
          {project.wiringHistory?.some(entry=>entry.targetId===selectedNode.id)&&<details className="wiring-history"><summary>Recent wiring changes</summary>{[...project.wiringHistory].filter(entry=>entry.targetId===selectedNode.id).slice(-5).reverse().map(entry=><p key={entry.id}><strong>{entry.action}</strong> · {new Date(entry.at).toLocaleString()}<span>{entry.fromId||'No source'}{entry.fromPort!==undefined?` (output ${entry.fromPort+1})`:''} → {entry.toId||'Disconnected'}{entry.toPort!==undefined?` (output ${entry.toPort+1})`:''}</span></p>)}</details>}
          <div className="inspector-fields"><label>Name<input value={selectedNode.name} onChange={e=>patchComponent(selectedNode.id,{name:e.target.value})}/></label><label>Zone<select value={selectedNode.zone} onChange={e=>patchComponent(selectedNode.id,{zone:e.target.value as Zone})}>{zones.map(z=><option key={z}>{z}</option>)}</select></label>
           <div className="form-grid"><label>Type<select value={selectedNode.kind} onChange={e=>{const kind=e.target.value as Kind;patchComponent(selectedNode.id,{kind,outputs:outputCount(kind)});}}>{categories.map(c=><option key={c.kind} value={c.kind}>{c.label}</option>)}</select></label><label>Outputs<input type="number" min={0} max={16} value={selectedNode.outputs} onChange={e=>patchComponent(selectedNode.id,{outputs:Number(e.target.value)})}/></label></div>

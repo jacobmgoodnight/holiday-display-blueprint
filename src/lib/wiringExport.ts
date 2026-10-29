@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import {generatedTasks,warningSummary} from './graph';
+import {portName} from './portLabels';
 import type {Project} from './model';
 import type {ProjectWithWiringHistory} from './wiringEdits';
 
@@ -37,10 +38,10 @@ export function createWiringReferenceWorkbook(project:Project):XLSX.WorkBook{
  const links=project.edges.map(e=>[
   e.id,e.source,current.get(e.source)?.name||'',e.sourcePort+1,
   e.target,current.get(e.target)?.name||'',current.get(e.target)?.zone||'',e.notes||'',
-  project.checklist['wire:'+e.id]?.done?'Done':'Not done'
+  project.checklist['wire:'+e.id]?.done?'Done':'Not done',portName(current.get(e.source)||{outputs:1},e.sourcePort)
  ]);
  XLSX.utils.book_append_sheet(wb,rows(
-  ['Connection ID','From ID','From item','Output port (1-based)','To ID','To item','Zone','Connection notes','Setup complete'],links),'Power Links');
+  ['Connection ID','From ID','From item','Output port (1-based)','To ID','To item','Zone','Connection notes','Setup complete','Output port name'],links),'Power Links');
  for(const mode of ['setup','teardown'] as const){
   const tasks=generatedTasks(project,mode);
   const records=tasks.map((t,i)=>[i+1,t.phase,t.label,t.nodeId||'',project.checklist[t.id]?.done?'Done':'Not done',project.checklist[t.id]?.notes||'']);

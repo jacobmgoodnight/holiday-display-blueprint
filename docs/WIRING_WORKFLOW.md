@@ -8,6 +8,15 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Editing port labels and inserting components (Builder)
+
+- **Name a socket:** open Fullscreen → Builder → **Port names**, select the source on the diagram, enter a concise name for each port, then leave the field to save. These are descriptive names on the existing numeric output slots and don't relocate or rewire any device. Regular component details also has an expandable Output names section.
+- **Insert a splitter into a known existing wire:** choose Fullscreen → Builder → **Insert on wire**. Tap the wire or pick its precise source/output → receiver entry. Choose a new feeder/splitter type and an optional name. **Preview** displays the old path and proposed two-step path. Only **Confirm insertion** changes the graph.
+- The operation replaces the old edge with two new link IDs, resets the old link completion checkbox, marks the new item and downstream equipment unverified, and keeps unrelated branches and manual positions intact. The insertion is performed as one validated change, not two partly completed mutations.
+- The named output can refer to a known physical female receptacle, smart-plug side, inline tap or splitter socket. **Do not imply exact port numbers or physically installed locations when not field confirmed.**
+
+**iPhone usability:** Fullscreen defaults to a legible view near the current outlet, not the whole tiny circuit. Use **Fit** for overview; pinch to zoom. The top bar is compact and search/Path-only options live behind **Tools**. The persistent tip bubble is hidden on phones; landscape gets smaller toolbars. Chrome controlled by the ChatGPT/Safari browser isn't removable by Blueprint.
+
 ## Fullscreen wiring exploration and safe building
 
 Use **Field → Fullscreen diagram** on a phone, or **Wiring → Fullscreen** on a desktop. The first mode is **Explore**, which disables dragging and connecting nodes: drag empty space to pan; scroll/pinch or use the small ±/Fit buttons to zoom; switch the outlet filter; search any component across the full project; tap a component to trace its upstream feed; use Path only to isolate that chain. The **Exit** control returns to normal Blueprint.

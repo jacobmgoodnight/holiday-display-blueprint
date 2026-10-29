@@ -3,6 +3,7 @@ import {flushSync} from 'react-dom';
 import {ChevronDown,ChevronRight,Eye,Layers,PlugZap,Printer} from 'lucide-react';
 import type {Project} from '../lib/model';
 import {buildWiringForest,wireDescription,wiringSequence,type WiringBranch} from '../lib/wiringGuide';
+import {portName} from '../lib/portLabels';
 import './installationGuide.css';
 
 type Props={project:Project;scope:ReadonlySet<string>;scopeLabel:string;onLocate:(id:string)=>void;onTaskChange:(id:string,done:boolean)=>void};
@@ -23,7 +24,7 @@ export function InstallationGuide({project,scope,scopeLabel,onLocate,onTaskChang
    <div className={`ig-item ${n.kind==='outlet'?'ig-outlet':''}`}>
     {foldable?<button className="ig-fold" onClick={()=>toggle(n.id)} aria-expanded={!isFolded} aria-label={`${isFolded?'Expand':'Collapse'} ${n.name}`}>{isFolded?<ChevronRight size={18}/>:<ChevronDown size={18}/>}</button>:<span className="ig-no-fold"/>}
     <button className="ig-item-name" onClick={()=>onLocate(n.id)} title={`Show ${n.name} on diagram`}>
-     <strong>{n.name}</strong><small>{n.kind==='outlet'?'Power source':via?`Connect to upstream output ${via.sourcePort+1}`:'No recorded upstream power connection'}</small>
+     <strong>{n.name}</strong><small>{n.kind==='outlet'?'Power source':via?`Connect to ${portName(project.nodes.find(p=>p.id===via.source)||{outputs:1},via.sourcePort)}`:'No recorded upstream power connection'}</small>
     </button>
     {label&&<span className="ig-wire-label">{label}</span>}
     {isFolded&&<span className="ig-count">{branch.descendants} hidden</span>}

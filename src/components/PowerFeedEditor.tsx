@@ -1,6 +1,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {Link2,Unplug} from 'lucide-react';
 import type {Component,Project} from '../lib/model';
+import {portName} from '../lib/portLabels';
 
 type Props={project:Project;target:Component;onConnect:(source:string,port:number)=>void;onDisconnect:()=>void};
 export function PowerFeedEditor({project,target,onConnect,onDisconnect}:Props){
@@ -16,7 +17,7 @@ export function PowerFeedEditor({project,target,onConnect,onDisconnect}:Props){
  const identical=incoming?.source===source&&incoming?.sourcePort===port;
  return <section className="power-feed-editor" aria-label={`Power connection for ${target.name}`}>
   <div className="feed-heading"><Link2 size={17}/><strong>Where does this plug in?</strong></div>
-  <p className="feed-current">{incoming?<>Currently fed by <strong>{current?.name||incoming.source}</strong> · output {incoming.sourcePort+1}</>:<strong>No upstream power feed recorded</strong>}</p>
+  <p className="feed-current">{incoming?<>Currently fed by <strong>{current?.name||incoming.source}</strong> · {current?portName(current,incoming.sourcePort):`Output ${incoming.sourcePort+1}`}</>:<strong>No upstream power feed recorded</strong>}</p>
   <div className="feed-controls">
    <label>Plug into
     <select aria-label={`Upstream power source for ${target.name}`} value={source} onChange={e=>{
@@ -31,7 +32,7 @@ export function PowerFeedEditor({project,target,onConnect,onDisconnect}:Props){
    </label>
    <label>Output
     <select aria-label="Upstream output number" value={port} disabled={!sourceNode} onChange={e=>setPort(Number(e.target.value))}>
-     {options.map(o=><option key={o.index} value={o.index} disabled={o.occupied}>Output {o.index+1}{o.occupied?' · already used':''}</option>)}
+     {options.map(o=><option key={o.index} value={o.index} disabled={o.occupied}>{portName(sourceNode!,o.index)}{o.occupied?' · already used':''}</option>)}
     </select>
    </label>
   </div>

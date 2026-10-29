@@ -15,6 +15,18 @@
 
 Edits save locally in IndexedDB. The header reports **Saving locally**, **Saved locally**, or **Local save failed** with a retry; a separate cloud status reports encrypted sync. Online synchronization occurs while the app is open, not while a closed browser runs in the background.
 
+## iPhone-friendly full-screen diagram and custom wiring changes
+
+From **Field → Fullscreen diagram** (phone) or **Wiring → Fullscreen** (desktop), the app now opens on the current outlet at a **readable zoom** instead of shrinking every branch into a tiny overview. Drag empty space to pan, pinch or use ± to zoom; **Fit** intentionally zooms out to show the whole selected view. Controls are reduced to a compact one-row bar with circuit choice, ±/Fit, and a **Tools** toggle for search and Path only. The old persistent bottom instruction bubble is removed from phone layouts. Portrait and landscape styles account for Safari's visible browser controls.
+
+Full-screen **Explore** remains read-only. Select **Builder** for four compact actions:
+- **Connect:** select an existing item and its unused named output, then tap the receiver; disconnect or remove with validation/confirmation.
+- **Add item:** choose a type and optional name. New items start unverified.
+- **Insert on wire:** tap a current connection or choose from the list, choose a new inline cord, SPT-1, splitter, inline tap or light strand, then **Preview change → Confirm insertion**. The one old connection becomes two validated connections: original source/output → inserted item → original destination. Unrelated connections/positions are preserved; the old completed wire step resets and affected equipment requires re-verification.
+- **Port names:** select an outlet, Kasa plug, splitter or light strand and name its real outputs (e.g., **Kasa left**, **Kasa right**, or **C9 female tap**). The numbered output slots and electrical graph do not change, and labels now appear in the connection views, installation steps, inspector and exported Excel reference.
+
+**Do not invent a port name or tap connection without confirming it physically.** The original Christmas O03 morning-room C9 tap remains unspecified until checked in the field.
+
 ## Fullscreen diagram: Explore or Builder
 
 Select **Wiring → Fullscreen** on your computer, or **Field → Fullscreen diagram** on your phone. The same existing React Flow diagram fills the viewport (also on iOS Safari without depending on the native browser Fullscreen API).

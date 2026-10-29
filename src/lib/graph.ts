@@ -1,4 +1,5 @@
 import type {Project,Connection,Component} from './model';
+import {portName} from './portLabels';
 export type GraphError = {code:string;message:string};
 export function validateGraph(nodes:Component[],edges:Connection[]):GraphError[] {
  const errors:GraphError[]=[]; const byId=new Map(nodes.map(n=>[n.id,n]));
@@ -53,7 +54,7 @@ export function generatedTasks(p:Project,mode:'setup'|'teardown'):Task[]{
  const nodes=[...p.nodes].filter(n=>n.kind!=='outlet').sort((a,b)=>layoutDepth(a.id,p.edges)-layoutDepth(b.id,p.edges));
  const edges=[...p.edges].sort((a,b)=>layoutDepth(b.target,p.edges)-layoutDepth(a.target,p.edges));
  const place=nodes.map(n=>({id:`place:${n.id}`,label:`Position ${n.name} — ${n.zone}${n.inventory?.storage?` (from ${n.inventory.storage})`:''}`,phase:'1 · Position',nodeId:n.id,kind:mode}));
- const wire=edges.map(e=>({id:`wire:${e.id}`,label:`Connect ${p.nodes.find(n=>n.id===e.source)?.name||e.source} (output ${e.sourcePort+1}) → ${p.nodes.find(n=>n.id===e.target)?.name||e.target}`,phase:'2 · Connect downstream first',nodeId:e.target,kind:mode}));
+ const wire=edges.map(e=>({id:`wire:${e.id}`,label:`Connect ${p.nodes.find(n=>n.id===e.source)?.name||e.source} (${portName(p.nodes.find(n=>n.id===e.source)||{outputs:1},e.sourcePort)}) → ${p.nodes.find(n=>n.id===e.target)?.name||e.target}`,phase:'2 · Connect downstream first',nodeId:e.target,kind:mode}));
  const tests=p.nodes.filter(n=>n.kind==='outlet').map(n=>({id:`test:${n.id}`,label:`Attended test of ${n.name} and its downstream loads; verify ratings and protection manually`,phase:'3 · Verify',nodeId:n.id,kind:mode}));
  const arr=[...place,...wire,...tests];
  if(mode==='setup')return arr;
