@@ -10,6 +10,8 @@ import {readPhoto} from './lib/photos';
 import {BlueprintNode,type BlueprintFlowNode} from './components/BlueprintNode';
 import {ExcelWizard} from './components/ExcelWizard';
 import {ConnectionFinder} from './components/ConnectionFinder';
+import {InstallationGuide} from './components/InstallationGuide';
+import {wireDescription} from './lib/wiringGuide';
 import {powerFlowLayout} from './lib/flowLayout';
 import {exampleProjects} from './fixtures/examples';
 import './styles.css';
@@ -24,13 +26,13 @@ function AppContent(){
  const {fitView,setCenter}=useReactFlow<BlueprintFlowNode,Edge>();
  const [projects,setProjects]=useState<Project[]>([]);const [active,setActive]=useState('');const [loaded,setLoaded]=useState(false);const [storageReady,setStorageReady]=useState(true);
  const [tab,setTab]=useState<Tab>('diagram');const [view,setView]=useState<View>('All zones');const [selected,setSelected]=useState<string|null>(null);const [trace,setTrace]=useState<'none'|'upstream'|'downstream'|'outage'>('none');
- const [layoutMode,setLayoutMode]=useState<'auto'|'manual'>('auto');const [pathOnly,setPathOnly]=useState(false);const [focusRequest,setFocusRequest]=useState<{id:string;seq:number}|null>(null);
+ const [diagramMode,setDiagramMode]=useState<'map'|'guide'>('map');const [layoutMode,setLayoutMode]=useState<'auto'|'manual'>('auto');const [pathOnly,setPathOnly]=useState(false);const [focusRequest,setFocusRequest]=useState<{id:string;seq:number}|null>(null);
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
  useEffect(()=>{let live=true;initialize().then(items=>{if(live){setProjects(items);setActive(items[0]?.id||'');setLoaded(true);}}).catch(e=>{if(live){const fallback=exampleProjects();setProjects(fallback);setActive(fallback[0].id);setLoaded(true);setStorageReady(false);setMessage(`Browser storage unavailable: ${String(e)}. Changes are temporary — export a JSON backup.`);}});return()=>{live=false;};},[]);
  const project=projects.find(p=>p.id===active);
- useEffect(()=>{if(tab!=='diagram')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly]);
+ useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode]);
  const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>p.id===active?fn(p):p));},[active]);
  useEffect(()=>{if(!loaded||!project||!storageReady)return;const timer=setTimeout(()=>saveProject(project).catch(e=>setMessage(`Save failed: ${String(e)}`)),450);return()=>clearTimeout(timer);},[project,loaded,storageReady]);
  useEffect(()=>{if(!project||!storageReady)return;const flush=()=>{if(document.visibilityState==='hidden')void saveProject(project);};document.addEventListener('visibilitychange',flush);return()=>document.removeEventListener('visibilitychange',flush);},[project,storageReady]);
@@ -51,14 +53,24 @@ function AppContent(){
    ?powerFlowLayout(project.nodes.filter(n=>visibleIds.has(n.id)),project.edges.filter(e=>visibleIds.has(e.source)&&visibleIds.has(e.target)))
    :new globalThis.Map<string,{x:number;y:number}>(),[project,visibleIds,layoutMode]);
  const flowNodes:BlueprintFlowNode[]=useMemo(()=>project?.nodes.filter(n=>visibleIds.has(n.id)).map(n=>({id:n.id,type:'blueprint' as const,position:layoutMode==='auto'?(autoPositions.get(n.id)||n.position):n.position,data:{component:n,highlight:highlighted.has(n.id),dim:!!selected&&trace!=='none'&&!highlighted.has(n.id)},selected:n.id===selected}))||[],[project,visibleIds,highlighted,selected,trace,autoPositions,layoutMode]);
- const flowEdges:Edge[]=useMemo(()=>project?.edges.filter(e=>visibleIds.has(e.source)&&visibleIds.has(e.target)).map(e=>({id:e.id,source:e.source,target:e.target,sourceHandle:`port-${e.sourcePort}`,targetHandle:'input',type:'smoothstep',animated:selected!==null&&(highlighted.has(e.source)&&highlighted.has(e.target)),style:{stroke:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},markerEnd:{type:MarkerType.ArrowClosed,color:'#8296a9'}}))||[],[project,visibleIds,selected,highlighted]);
+ const flowEdges:Edge[]=useMemo(()=>project?.edges.filter(e=>visibleIds.has(e.source)&&visibleIds.has(e.target)).map(e=>{
+  const target=project.nodes.find(n=>n.id===e.target);
+  const label=target?wireDescription(target):undefined;
+  return {id:e.id,source:e.source,target:e.target,sourceHandle:`port-${e.sourcePort}`,targetHandle:'input',type:'smoothstep',
+    animated:selected!==null&&(highlighted.has(e.source)&&highlighted.has(e.target)),label,
+    labelStyle:{fill:'#344e63',fontWeight:650,fontSize:10},
+    labelBgStyle:{fill:'#fff',stroke:'#cad8e3',strokeWidth:0.6},
+    labelBgPadding:[7,4] as [number,number],labelBgBorderRadius:6,
+    style:{stroke:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},
+    markerEnd:{type:MarkerType.ArrowClosed,color:'#8296a9'}};
+ }))||[],[project,visibleIds,selected,highlighted]);
  function chooseProject(id:string){const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
  function changeView(next:View){setView(next);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
- function jumpToNode(id:string){if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
+ function jumpToNode(id:string){setTab('diagram');setDiagramMode('map');if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function openFinder(){setInspectorOpen(true);if(window.innerWidth<720)setTimeout(()=>document.getElementById('connection-finder')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
 
- useEffect(()=>{if(tab!=='diagram'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;setCenter(pos.x+105,pos.y+43,{zoom:window.innerWidth < 720 ? 0.85 : 1.1,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,project,focusRequest,layoutMode,autoPositions,setCenter]);
+ useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;setCenter(pos.x+105,pos.y+43,{zoom:window.innerWidth < 720 ? 0.85 : 1.1,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,diagramMode,project,focusRequest,layoutMode,autoPositions,setCenter]);
  function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false}))}:blank(project.season,year);
  setProjects(all=>[...all,p]);setActive(p.id);setSelected(null);setView('All zones');setShowMenu(false);setMessage(duplicate?'Copied plan is a DRAFT — verify every connection before use.':'Created a blank local project.');}
  function addComponent(){if(!project)return;const zone:Zone=zones.includes(view as Zone)?view as Zone:'Front porch';const offset=project.nodes.filter(n=>n.zone===zone).length;const n=makeNode(addKind,zone,{x:80+(offset%5)*240,y:80+Math.floor(offset/5)*150});update(p=>({...p,nodes:[...p.nodes,n]}));setSelected(n.id);setInspectorOpen(true);setMessage('Component added. Connect it with the output handles or the connection form.');}
@@ -79,7 +91,7 @@ function AppContent(){
  const warnings=project?warningSummary(project):[];
  const warningErrors=project?validateGraph(project.nodes,project.edges):[];
  const checklistKinds=Array.from(new Set(tasks.map(t=>t.phase)));
- function printAll(){setView('All zones');setTab('diagram');setSelected(null);setTimeout(()=>window.print(),250);}
+ function printAll(){setDiagramMode('map');setView('All zones');setTab('diagram');setSelected(null);setTimeout(()=>window.print(),250);}
  if(!loaded)return <div className="startup">Opening your local Blueprint workspace…</div>;
  if(!project)return <div className="startup">No project selected.</div>;
  return <div className="app-shell">
