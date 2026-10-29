@@ -1,5 +1,5 @@
 import type {Component,Connection,Project} from './model';
-import {portName} from './wiringBuilder';
+import {portName} from './portLabels';
 import {generatedTasks,type Task} from './graph';
 
 /** Read-only projections. They never modify persisted graph links or node positions. */
