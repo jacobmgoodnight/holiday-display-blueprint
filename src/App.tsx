@@ -20,6 +20,8 @@ import {DeviceTransfer} from './components/DeviceTransfer';
 import {MobileMenuToggle} from './components/MobileMenuToggle';
 import {hasOnlyExamples} from './lib/deviceTransfer';
 import {useSharedSync} from './hooks/useSharedSync';
+import {useProjectPersistence} from './hooks/useProjectPersistence';
+import {deleteComponentSafely,undoComponentDeletion,type DeletedComponent} from './lib/graphDeletion';
 import './components/deviceTransfer.css';
 import {wireDescription} from './lib/wiringGuide';
 import {powerFlowLayout} from './lib/flowLayout';
@@ -40,6 +42,7 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
+ const [deletedReceipt,setDeletedReceipt]=useState<DeletedComponent|null>(null);
  useEffect(()=>{
   if(!showSidebar&&!showMenu)return;
   const dismiss=(event:KeyboardEvent)=>{if(event.key==='Escape'){setShowSidebar(false);setShowMenu(false);}};
@@ -60,10 +63,9 @@ function AppContent(){
   setMessage('Your private master plans are available here and are now synced with other linked devices.');
  }});
  const project=projects.find(p=>p.id===active);
+ const localSaving=useProjectPersistence(projects,active,loaded,storageReady);
  useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode]);
- const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>p.id===active?fn(p):p));},[active]);
- useEffect(()=>{if(!loaded||!project||!storageReady)return;const timer=setTimeout(()=>saveProject(project).catch(e=>setMessage(`Save failed: ${String(e)}`)),450);return()=>clearTimeout(timer);},[project,loaded,storageReady]);
- useEffect(()=>{if(!project||!storageReady)return;const flush=()=>{if(document.visibilityState==='hidden')void saveProject(project);};document.addEventListener('visibilitychange',flush);return()=>document.removeEventListener('visibilitychange',flush);},[project,storageReady]);
+ const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>{if(p.id!==active)return p;const result=fn(p);return result===p?p:{...result,updatedAt:now()};}));},[active]);
  useEffect(()=>{if(!message)return;const timer=setTimeout(()=>setMessage(''),6500);return()=>clearTimeout(timer);},[message]);
  const highlighted=useMemo(()=>{if(!project||!selected)return new Set<string>();if(trace==='upstream')return new Set([...upstream(selected,project.edges),selected]);if(trace==='downstream'||trace==='outage')return new Set([...downstream(selected,project.edges),selected]);return new Set([selected]);},[project,selected,trace]);
  const baseVisibleIds=useMemo(()=>{if(!project)return new Set<string>();if(view==='All zones')return new Set(project.nodes.map(n=>n.id));const ids=new Set<string>();
@@ -136,9 +138,16 @@ function AppContent(){
   if(errors.length){setMessage(errors[0].message);return;}
   update(p=>({...p,nodes,status:changedElectrical?'draft':p.status}));
 }
- function removeComponent(id:string){if(!project)return;if(!confirm('Remove this component and its attached connections?'))return;update(p=>({...p,status:'draft',nodes:p.nodes.filter(n=>n.id!==id),edges:p.edges.filter(e=>e.source!==id&&e.target!==id)}));setSelected(null);}
+ function removeComponent(id:string){if(!project)return;const node=project.nodes.find(n=>n.id===id);if(!node)return;const downstreamCount=downstream(id,project.edges).size;
+ if(!confirm(`Remove ${node.name} and its power connections? ${downstreamCount} downstream item(s) will need re-verification. You can undo this removal.`))return;
+ try{const deleted=deleteComponentSafely(project,id);update(()=>deleted.project);setDeletedReceipt(deleted.receipt);setSelected(null);setMessage('Component removed; connected downstream items marked unverified.');}catch(err){setMessage(String(err));}
+}
+function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!==project.id)return;
+ try{const restored=undoComponentDeletion(project,deletedReceipt);update(()=>restored);setDeletedReceipt(null);setMessage('Component and valid links restored as Draft. Previous checked wiring steps were not restored.');}
+ catch(err){setMessage(`Undo unavailable: ${String(err)}`);}
+}
  async function attachPhoto(file:File|undefined,id?:string){if(!file||!project)return;try{const data=await readPhoto(file);if(id)patchComponent(id,{photo:data});else update(p=>({...p,backgroundPhoto:data}));}catch(e){setMessage(String(e));}}
- async function importBackup(file?:File){if(!file)return;try{const content=JSON.parse(await file.text());const parsed=parseBackup(content);if(!confirm(`Restore ${parsed.length} project(s)? Matching project IDs will be overwritten. Back up your current work first.`))return;await restoreBackup(content);setProjects(await db.projects.toArray());setActive(parsed[0]?.id||active);setView('All zones');setSelected(null);setMessage('Backup successfully restored to this browser.');}catch(e){setMessage(`Restore rejected: ${String(e)}`);}}
+ async function importBackup(file?:File){if(!file)return;try{const content=JSON.parse(await file.text());const parsed=parseBackup(content);if(!confirm(`Restore ${parsed.length} project(s)? Matching project IDs will be overwritten. Back up your current work first.`))return;await localSaving.flushAll();await restoreBackup(content);setProjects(await db.projects.toArray());setActive(parsed[0]?.id||active);setView('All zones');setSelected(null);setMessage('Backup successfully restored to this browser.');}catch(e){setMessage(`Restore rejected: ${String(e)}`);}}
  const tasks=useMemo(()=>project?generatedTasks(project,tab==='teardown'?'teardown':'setup'):[],[project,tab]);
  const progress=tasks.filter(t=>project?.checklist[t.id]?.done).length;
  function updateTask(id:string,fields:{done?:boolean;notes?:string;photo?:string}){update(p=>({...p,checklist:{...p.checklist,[id]:{...p.checklist[id],...fields,done:fields.done??p.checklist[id]?.done??false}}}));}
@@ -158,7 +167,7 @@ function AppContent(){
  return <div className="app-shell">
   <header className="topbar"><div className="brand"><div className="brand-icon"><CircuitBoard size={23}/></div><div><strong>HOLIDAY DISPLAY <span>BLUEPRINT</span></strong><small>LOCAL-FIRST DISPLAY PLANNER</small></div></div>
    <div className="project-picker"><label className="visually-hidden" htmlFor="projects">Seasonal project</label><select id="projects" value={active} onChange={e=>chooseProject(e.target.value)}>{[...projects].sort((a,b)=>b.year-a.year||a.season.localeCompare(b.season)).map(p=><option value={p.id} key={p.id}>{projectLabel(p)}</option>)}</select><ChevronDown className="picker-chevron" size={17}/></div>
-   <div className="top-actions"><span className="local-pill"><span className="pulse-dot"/> {storageReady?'Local browser storage':'Unsaved session'}</span><button className="button secondary desktop-only" onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setMessage('Backup downloaded. Keep the file private — it may include photos and details.');}}><Download size={16}/> Backup</button>
+   <div className="top-actions"><span className={`local-pill local-save-${localSaving.saveState.phase}`} title={localSaving.saveState.message||''} role="status"><span className="pulse-dot"/> {localSaving.saveState.phase==='saving'?'Saving locally…':localSaving.saveState.phase==='failed'?'Local save failed':'Saved locally'}</span><button className="button secondary desktop-only" onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setMessage('Backup downloaded. Keep the file private — it may include photos and details.');}}><Download size={16}/> Backup</button>
    <MobileMenuToggle open={showSidebar} onToggle={()=>{setShowMenu(false);setShowSidebar(x=>!x)}}/>
    <button type="button" className="icon-button desktop-more-button" aria-label="More actions" aria-controls="more-actions-menu" aria-expanded={showMenu} onClick={()=>{setShowSidebar(false);setShowMenu(x=>!x)}}><MoreVertical size={20}/></button>{showMenu&&<div id="more-actions-menu" className="action-menu" aria-label="More actions">
     <button onClick={()=>makeNew(false)}><Plus size={16}/> New blank project</button><button onClick={()=>makeNew(true)}><Copy size={16}/> Copy into next year</button>
@@ -169,7 +178,7 @@ function AppContent(){
     {cloud.enabled&&<button onClick={()=>{if(confirm('Disconnect encrypted sync on this device? Local projects will remain here.'))cloud.disconnect();setShowMenu(false);}}><LockKeyhole size={16}/> Stop syncing this device</button>}
     <button onClick={()=>{downloadWiringReference(project);setShowMenu(false);setMessage('Private reference workbook exported. Continue editing in Blueprint.');}}><FileSpreadsheet size={16}/> Export wiring reference (.xlsx)</button>
     <button onClick={()=>{setShowMenu(false);printAll()}}><Printer size={16}/> Print diagram</button>
-    <button onClick={()=>{if(!confirm('Delete this local project? Export a backup first.'))return;const ids=projects.filter(p=>p.id!==active);if(!ids.length){setMessage('Keep at least one project.');return;}void db.projects.delete(active);setProjects(ids);chooseProject(ids[0].id);}}><Trash2 size={16}/> Delete selected project</button>
+    <button onClick={()=>{if(cloud.enabled){setMessage('Cloud-linked project deletion is disabled until safe deletion synchronization is available. No data was removed.');setShowMenu(false);return;}if(!confirm('Delete this local project? Export a private backup first.'))return;const ids=projects.filter(p=>p.id!==active);if(!ids.length){setMessage('Keep at least one project.');return;}const doomed=active;void (async()=>{await localSaving.discardProject(doomed);await db.projects.delete(doomed);setProjects(ids);setActive(ids[0].id);setShowMenu(false);setMessage('Local project deleted.');})().catch(err=>setMessage('Delete failed: '+String(err)));}}><Trash2 size={16}/> Delete selected project</button>
    </div>}</div>
   </header>
   {showMenu&&<button type="button" className="more-menu-dismiss" aria-label="Dismiss more actions" onClick={()=>setShowMenu(false)}/>}
@@ -198,6 +207,8 @@ function AppContent(){
     <div className="safety-note"><ShieldAlert size={19}/><div><strong>Electrical verification required</strong><span>Blueprint does not certify cords, loads, GFCI protection, or circuit safety.</span></div></div>
    </aside>
    <main className="content">
+    {localSaving.saveState.phase==='failed'&&<div className="sync-alert" role="alert"><AlertTriangle size={17}/><span>Local save failed: {localSaving.saveState.message}. Changes remain on-screen. Retry saving now or make a private backup before leaving.</span><button className="button secondary" onClick={()=>void localSaving.flushAll()}>Retry local save</button></div>}
+    {deletedReceipt?.projectId===project.id&&<div className="sync-alert" role="status"><span>A component was removed and affected branches require checking.</span><button className="button secondary" onClick={undoDeletion}>Undo component removal</button><button className="icon-button" aria-label="Dismiss undo option" onClick={()=>setDeletedReceipt(null)}><X size={16}/></button></div>}
     {cloud.enabled&&<div className={`sync-bar sync-${cloud.status}`} role="status">
       <LockKeyhole size={16}/><span><strong>{cloud.status==='synced'?'Private sync on':cloud.status==='conflict'?'Sync needs your choice':cloud.status==='offline'?'Offline — changes saved here':'Checking encrypted cloud…'}</strong>{cloud.lastSynced&&cloud.status==='synced'?` · Last synced ${cloud.lastSynced}`:''}</span>
       <button className="button secondary" onClick={()=>void cloud.syncNow()} disabled={cloud.status==='saving'}>Sync now</button>
@@ -230,7 +241,7 @@ function AppContent(){
         <VerificationAudit project={project} scope={baseVisibleIds} scopeLabel={view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8))?.name||view:view} onLocate={jumpToNode} onVerify={id=>{const component=project.nodes.find(n=>n.id===id);if(!component)return;if(confirm(`Have you physically checked ${component.name} at the display? This marks it field-verified, not electrically certified.`)){patchComponent(id,{verified:true});setMessage(`${component.name} marked checked in the field. Any missing wiring or rating details remain outstanding.`);}}}/></>}
        {diagramMode==='guide'&&<InstallationGuide key={project.id} project={project} scope={baseVisibleIds} scopeLabel={view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8))?.name||view:view} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})}/>}
       {diagramMode==='map'&&<div className={`diagram-layout ${!inspectorOpen?'diagram-wide':''}`}><div className="diagram-card"><div className="canvas-label"><span className="canvas-live-dot"/> {view==='All zones'?'FULL SYSTEM':view.toUpperCase()} <span>· draft wiring view</span></div><div id="diagram-canvas" className="canvas-wrap" style={project.backgroundPhoto?{backgroundImage:`linear-gradient(#f9fafbcc,#f9fafbcc),url(${project.backgroundPhoto})`,backgroundSize:'contain',backgroundPosition:'center',backgroundRepeat:'no-repeat'}:undefined}>
-       <ReactFlow<BlueprintFlowNode,Edge> nodes={flowNodes} edges={flowEdges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:0.22}} minZoom={0.15} maxZoom={2} nodesDraggable={layoutMode==='manual'} onNodesChange={changes=>{if(layoutMode!=='manual')return;for(const change of changes){if(change.type==='position'&&change.position){update(p=>({...p,nodes:p.nodes.map(n=>n.id===change.id?{...n,position:change.position!}:n)}));}}}} onNodeClick={(_,n)=>{setSelected(n.id);setTrace(n.data.component.kind==='outlet'?'downstream':'upstream');setInspectorOpen(true);}} onPaneClick={()=>{setSelected(null);setTrace('none');}} onConnect={onConnect} onEdgesDelete={deleted=>update(p=>deleted.reduce((state,e)=>state.nodes.some(n=>n.id===e.target)&&state.edges.some(link=>link.id===e.id)?editPowerFeed(state,e.target,null):state,p))} onNodesDelete={deleted=>update(p=>({...p,status:'draft',nodes:p.nodes.filter(n=>!deleted.some(x=>x.id===n.id)),edges:p.edges.filter(e=>!deleted.some(x=>x.id===e.source||x.id===e.target))}))} deleteKeyCode={['Backspace','Delete']}>
+       <ReactFlow<BlueprintFlowNode,Edge> nodes={flowNodes} edges={flowEdges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:0.22}} minZoom={0.15} maxZoom={2} nodesDraggable={layoutMode==='manual'} onNodesChange={changes=>{if(layoutMode!=='manual')return;for(const change of changes){if(change.type==='position'&&change.position){update(p=>({...p,nodes:p.nodes.map(n=>n.id===change.id?{...n,position:change.position!}:n)}));}}}} onNodeClick={(_,n)=>{setSelected(n.id);setTrace(n.data.component.kind==='outlet'?'downstream':'upstream');setInspectorOpen(true);}} onPaneClick={()=>{setSelected(null);setTrace('none');}} onConnect={onConnect} onEdgesDelete={deleted=>update(p=>deleted.reduce((state,e)=>state.nodes.some(n=>n.id===e.target)&&state.edges.some(link=>link.id===e.id)?editPowerFeed(state,e.target,null):state,p))} onNodesDelete={deleted=>{if(deleted.length===1)removeComponent(deleted[0].id);else setMessage('Delete nodes one at a time from the component inspector.')}} deleteKeyCode={null}>
         <Background gap={24} size={1} color="#e1e7ed"/><Controls showInteractive={false}/><MiniMap pannable zoomable nodeColor={n=>n.data?.component&&(n.data.component as Component).kind==='outlet'?'#d68b3e':'#6289aa'} style={{width:130,height:85}}/>
        </ReactFlow></div><div className="canvas-footer"><span><CheckCircle2 size={14}/> {warningErrors.length?'Graph has errors':'Connection graph valid'}</span><label className="photo-action"><ImagePlus size={15}/> Add property image<input type="file" accept="image/*" onChange={e=>{void attachPhoto(e.target.files?.[0]);e.target.value='';}}/></label></div></div>
        {inspectorOpen&&<div className="inspector"><div className="inspector-title"><strong>{selectedNode?'Component details':'Connection tools'}</strong><button className="icon-button" aria-label="Close inspector" onClick={()=>setInspectorOpen(false)}><X size={16}/></button></div>
