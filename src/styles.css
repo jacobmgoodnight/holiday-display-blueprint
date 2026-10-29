@@ -21,3 +21,33 @@
 .master-issues li{margin:5px 0;font-size:.88rem}
 .master-ack{display:flex;gap:9px;align-items:flex-start;font-size:.9rem;font-weight:600;margin:16px 0}
 .master-ack input{margin-top:3px}
+
+/* Circuit-focused navigation: display coordinates remain separate from wiring data. */
+.circuit-shortcuts{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:11px 13px;background:#fff;border:1px solid #e4ebf2;border-bottom:0;border-radius:12px 12px 0 0}
+.circuit-shortcuts>span{display:inline-flex;gap:6px;align-items:center;margin-right:6px;font-size:11px;font-weight:800;color:#526b7e}
+.circuit-shortcuts button{border:1px solid #d7e3eb;background:#f7fafc;color:#536f83;border-radius:8px;padding:9px 12px;font-size:11px;font-weight:800;min-height:36px}
+.circuit-shortcuts button.active{background:#263f56;border-color:#263f56;color:#fff}
+.circuit-shortcuts button:focus-visible,.finder-result:focus-visible{outline:3px solid #d79c53;outline-offset:2px}
+.layout-picker{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:#61798c}
+.diagram-toolbar .layout-picker select{max-width:166px}
+.path-isolated{background:#eaf2f9!important;color:#27547a!important;border-color:#adc6db!important}
+.connection-finder{padding:13px 13px 12px;border-bottom:1px solid #dfe8f0;background:#f7fafc}
+.finder-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px}
+.finder-heading strong{display:flex;align-items:center;gap:6px;color:#263e52}
+.finder-heading span{font-size:10px;color:#8392a0}
+.finder-search{margin-top:10px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #d6e3ed;border-radius:8px;padding:9px;color:#7c93a6}
+.finder-search input{width:100%;min-width:0;border:0;background:transparent;font-size:12px;color:#314c61}
+.finder-toggle{display:flex;gap:7px;align-items:center;margin:10px 0;font-size:10px;color:#597385;cursor:pointer}
+.finder-toggle input{accent-color:#4f83ab}
+.finder-results{max-height:275px;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:6px}
+.finder-result{display:block;width:100%;padding:10px 11px;text-align:left;background:#fff;border:1px solid #e0e9f0;border-radius:8px;color:#29465c}
+.finder-result:hover,.finder-result.active{border-color:#8fb4d1;background:#eef5fa}
+.finder-result-top{display:flex;flex-direction:column;gap:3px}
+.finder-result-top strong{font-size:11px;line-height:1.3}
+.finder-result-top small{color:#6c8699;font-size:10px;display:flex;align-items:center;gap:4px;overflow-wrap:anywhere}
+.finder-chain{font-size:10px;line-height:1.5;color:#7d8e9b;margin-top:5px;display:block;overflow-wrap:anywhere}
+.finder-empty{font-size:11px;color:#72899a;padding:9px}
+.diagram-toolbar{border-top:1px solid #e4ebf2}
+@media(max-width:1000px){.diagram-toolbar{flex-wrap:wrap}.tool-actions{flex-wrap:wrap}.diagram-toolbar .layout-picker select{max-width:140px}}
+@media(max-width:720px){.circuit-shortcuts{gap:6px;padding:8px;overflow-x:auto;flex-wrap:nowrap}.circuit-shortcuts>span{white-space:nowrap}.circuit-shortcuts button{white-space:nowrap;padding:8px 11px;flex-shrink:0}.diagram-toolbar{align-items:flex-start;gap:8px}.tool-actions{gap:6px;width:100%}.diagram-toolbar .layout-picker{flex:1}.diagram-toolbar .layout-picker select{max-width:150px}.finder-open{min-width:65px}.connection-finder{padding:12px}.finder-results{max-height:340px}.finder-result{padding:12px}.finder-result-top strong{font-size:13px}.finder-chain{font-size:11px}.diagram-card{height:510px}.canvas-wrap{min-height:400px}}
+@media print{.circuit-shortcuts,.connection-finder{display:none!important}}

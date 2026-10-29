@@ -20,6 +20,14 @@ npm test
 npm run build
 ```
 
+### Faster wiring navigation
+
+- The diagram opens in **Auto power flow** mode: outlets lead left-to-right through smart plugs, cords, splitters, and decorations. Layout is computed in memory and does not rewrite the imported workbook, electrical graph, or saved manual node positions.
+- The **Focus circuit** strip switches directly between O01, O02, O03 and the whole system, using the outlets actually present in your selected seasonal project. Large imported projects open on their first outlet instead of a tiny overview.
+- The **Where does it plug in?** finder lists destinations and their complete upstream chain. Search by item, cord, zone, or outlet; select an entry to highlight and center the path. Choose **Include cords, splitters, and outlets** for intermediate components.
+- **Path only** temporarily hides unrelated diagram nodes. Disable it to restore the outlet view. **My saved positions** switches back to editable manual placement; auto layout disables dragging to protect saved coordinates.
+- These are viewing and navigation features, not electrical certification. Master plans remain private browser data.
+
 ### What works now
 
 - **Two season starters:** Halloween and Christmas 2026; create a blank project or copy the existing project to next year (copies remain draft).
