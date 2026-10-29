@@ -53,7 +53,7 @@ export function readBaseline(vaultId:string):Record<string,string>{
   const raw=window.localStorage.getItem(BASELINE_PREFIX+vaultId);
   const obj=raw?JSON.parse(raw):{};
   if(!obj||typeof obj!=='object'||Array.isArray(obj))return {};
-  return Object.fromEntries(Object.entries(obj).filter(([k,v])=>!!k&&typeof v==='string'&&/^[0-9a-f]{64}$/.test(v)));
+  return Object.fromEntries(Object.entries(obj).filter((entry):entry is [string,string]=>!!entry[0]&&typeof entry[1]==='string'&&/^[0-9a-f]{64}$/.test(entry[1])));
  }catch{return {};}
 }
 export function saveBaseline(vaultId:string,baseline:Record<string,string>):void{
