@@ -1,13 +1,13 @@
 import {useMemo,useState} from 'react';
-import {ArrowRight,Check,ChevronDown,CircuitBoard,ClipboardCheck,Eye,MapPin,Search} from 'lucide-react';
+import {ArrowRight,Check,ChevronDown,CircuitBoard,ClipboardCheck,Eye,MapPin,Search,Maximize2} from 'lucide-react';
 import type {Project} from '../lib/model';
 import {downstream,sourcePath} from '../lib/graph';
 import {wiringSequence} from '../lib/wiringGuide';
 import {InstallationGuide} from './InstallationGuide';
 import './fieldMode.css';
 
-type Props={project:Project;onLocate:(id:string)=>void;onTaskChange:(id:string,done:boolean)=>void;onEdit:()=>void;};
-export function FieldMode({project,onLocate,onTaskChange,onEdit}:Props){
+type Props={project:Project;onLocate:(id:string)=>void;onTaskChange:(id:string,done:boolean)=>void;onEdit:()=>void;onExplore?:()=>void;};
+export function FieldMode({project,onLocate,onTaskChange,onEdit,onExplore}:Props){
  const outlets=project.nodes.filter(n=>n.kind==='outlet');
  const [outlet,setOutlet]=useState(outlets[0]?.id||'all');
  const [search,setSearch]=useState('');
@@ -26,7 +26,7 @@ export function FieldMode({project,onLocate,onTaskChange,onEdit}:Props){
     <h2>Set up your display</h2>
     <p>Pick a power source, see what connects to it, and check off steps as you go.</p>
    </div>
-   <button className="field-advanced" onClick={onEdit}><CircuitBoard size={17}/> Edit wiring</button>
+   <div className="field-head-actions">{onExplore&&<button className="field-advanced" onClick={onExplore}><Maximize2 size={17}/> Fullscreen diagram</button>}<button className="field-advanced" onClick={onEdit}><CircuitBoard size={17}/> Edit wiring</button></div>
   </div>
   {project.example&&<p className="field-example">Example plan only — select the real master before using this as an installation reference.</p>}
   <div className="field-outlets" role="group" aria-label="Choose field circuit">

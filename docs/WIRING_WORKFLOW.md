@@ -8,6 +8,14 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Fullscreen wiring exploration and safe building
+
+Use **Field → Fullscreen diagram** on a phone, or **Wiring → Fullscreen** on a desktop. The first mode is **Explore**, which disables dragging and connecting nodes: drag empty space to pan; scroll/pinch or use the small ±/Fit buttons to zoom; switch the outlet filter; search any component across the full project; tap a component to trace its upstream feed; use Path only to isolate that chain. The **Exit** control returns to normal Blueprint.
+
+To modify the graph intentionally, select **Builder**. Add a named equipment item with the mini palette, tap an upstream source and **Connect from selected**, choose a free numbered output, then tap the receiver. The guided connection editor validates cycles, occupied ports, connector compatibility, and one-input rules, and changes the affected branch back to Draft for physical re-verification. Disconnect and Remove item are deliberate actions. Existing safe Undo component removal still works.
+
+Switch Builder's layout to **Move items manually** if you want to drag saved icon positions. Auto flow is a separate calculated view, not a permanent coordinate rewrite. Explorer and Builder operate on your existing project and encrypted phone/desktop sync; no second diagram data is created.
+
 ## Practical phone installation: Field Mode
 
 Open your **private linked master plan** on your phone, then choose **Field** on the bottom navigation (it opens by default on narrow phones). Pick O01/O02/O03 or Whole system.

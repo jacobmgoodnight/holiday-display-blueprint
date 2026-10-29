@@ -15,6 +15,16 @@
 
 Edits save locally in IndexedDB. The header reports **Saving locally**, **Saved locally**, or **Local save failed** with a retry; a separate cloud status reports encrypted sync. Online synchronization occurs while the app is open, not while a closed browser runs in the background.
 
+## Fullscreen diagram: Explore or Builder
+
+Select **Wiring → Fullscreen** on your computer, or **Field → Fullscreen diagram** on your phone. The same existing React Flow diagram fills the viewport (also on iOS Safari without depending on the native browser Fullscreen API).
+
+- **Explore (default):** read-only. Pan by dragging empty space, pinch or scroll to zoom, use **+ / − / Fit**, switch **Whole system / O01 / O02 / O03 / zone**, search the entire project, tap an item to highlight its power path, or choose **Path only** to isolate that chain. Use **Exit** or Escape to return. Viewing never changes connectors or stored manual positions.
+- **Builder (explicitly selected):** add a named outlet, smart plug, cord, SPT-1 feeder, splitter, C9 strand, projector or decoration; select an existing source and its unused output; tap the receiving item to wire it; disconnect or remove the selected item with confirmation. Builder uses the same graph constraints, local saving, verification invalidation and safe deletion undo as the regular editor.
+- **Layout:** Auto power flow is for reading; **Move items manually** switches to existing saved coordinates and enables dragging in Builder. Switching back to Auto does not rewrite the saved manual positions. Unknown splitter sockets, C9 taps and lengths are never assumed from workbook text.
+
+Builder works with **one documented AC power input per receiving item**, not HDMI, audio, BLE or battery-only control wiring. A recorded connection does not mean the circuit is electrically safe.
+
 ## Main features
 
 | Area | What it does |
