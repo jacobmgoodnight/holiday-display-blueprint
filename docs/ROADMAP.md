@@ -11,6 +11,8 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 - **Installer experience:** collapsible power trees, exact recorded cord labels, numbered downstream-first setup tasks, shared checklist state, task/component photos, printable outlet-specific sheets.
 - **Phone access:** private URL-fragment key; browser decrypts master snapshot once and links the device to the encrypted cloud sync vault; no app account required.
 - **Encrypted sync:** Supabase encrypted vault with no direct anon/authenticated table grants, local encryption/decryption, periodic polling/online/focus retries, per-project hashes, server compare-and-swap conflicts; works while browsers are open.
+- **Needs Verification dashboard:** outlet/full-system filters, missing power-path and graph checks, per-device field verification, unknown cord lengths and load estimates, and optional photo/connector/rating reminders. Includes search and jump-to-item; these are documentation checks only.
+- **Safe last-feed reversal:** reverse only the most recent guided power-connection change when the current feed still matches its recorded postcondition. Reverts remain draft with old checklist progress unverified; no full graph undo or cloud-history replay.
 - **Documenting changes:** guided **Where does this plug in?** source/port editor, recorded recent feed history, field verification invalidation after changes.
 - **Excel snapshot export:** current components, power links, setup/teardown steps, review flags, wiring history; read-only reference workbook, not a two-way edit or import.
 - **Automated tests and deployment:** Vitest and TypeScript production build run before GitHub Pages deploy.
