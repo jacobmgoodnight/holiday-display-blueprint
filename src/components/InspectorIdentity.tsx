@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
-import {Check,ImagePlus,Pencil} from 'lucide-react';
+import {ImagePlus,Pencil} from 'lucide-react';
 import type {Component,Season,Zone} from '../lib/model';
 import {VisualIconPicker} from './VisualIconPicker';
 import {VisualIconArtwork} from './VisualIconArtwork';
