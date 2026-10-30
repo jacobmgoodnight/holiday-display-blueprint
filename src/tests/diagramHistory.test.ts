@@ -9,7 +9,7 @@ describe('session diagram history is guarded and preserves field evidence safely
   const original=exampleProjects()[0];
   const old=original.edges.find(e=>e.target==='h-light')!;
   const withChecks={...original,status:'verified' as const,nodes:original.nodes.map(n=>({...n,verified:true})),checklist:{
-   ['wire:'+old.id]:{done:true},'place:h-light':{done:true},'place:h-o03':{done:true},'personal-note':{done:true}
+   ['wire:'+old.id]:{done:true},'place:h-light':{done:true},'place:h-o03':{done:true},'place:h-prop':{done:true},'personal-note':{done:true}
   }};
   const changed=editPowerFeed(withChecks,'h-light','h-o03',0);
   const history=recordGraphStep(emptyGraphHistory(),withChecks,changed,'rewire light');
@@ -20,6 +20,7 @@ describe('session diagram history is guarded and preserves field evidence safely
   expect(undone.project.nodes.find(n=>n.id==='h-light')?.verified).toBe(false);
   expect(undone.project.checklist['wire:'+old.id]).toBeUndefined();
   expect(undone.project.checklist['place:h-light']).toBeUndefined();
+  expect(undone.project.checklist['place:h-prop']).toEqual({done:true});
   expect(undone.project.checklist['personal-note']).toEqual({done:true});
   expect(validateGraph(undone.project.nodes,undone.project.edges)).toEqual([]);
   const redone=redoGraphStep(undone.history,undone.project);
