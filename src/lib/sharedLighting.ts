@@ -82,7 +82,7 @@ export function safeYearStockRows(x:SharedLighting,season:Season,year:number):{s
 }
 export function stockCsv(x:SharedLighting,season:Season,year:number):string{
  const quote=(v:unknown)=>'"'+String(v??'').replace(/"/g,'""')+'"';
- const lines=[['Stock ID','Item','Type','Unit','Owned','Bulbs/strand','Condition','Color','Technology','Brand','Model','Storage','Year','Area','Quantity placed','Installed?','Notes']];
+ const lines:(string|number)[][]=[['Stock ID','Item','Type','Unit','Owned','Bulbs/strand','Condition','Color','Technology','Brand','Model','Storage','Year','Area','Quantity placed','Installed?','Notes']];
  for(const item of x.stock){const rows=x.placements.filter(p=>p.stockId===item.id&&p.season===season&&p.year===year);for(const p of rows.length?rows:[undefined])lines.push([item.id,item.name,item.type,item.unit,item.owned??'',item.bulbsPerStrand??'',item.condition,item.bulbColor||'',item.bulbTechnology||'',item.brand||'',item.model||'',item.storage||'',p?.year??'',p?.area||'',p?.quantity??'',p?.status==='installed'?'Yes':p?'No':'',item.notes||'']);}
  return lines.map(r=>r.map(quote).join(',')).join('\r\n');
 }
