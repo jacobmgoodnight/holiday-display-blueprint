@@ -24,7 +24,7 @@ export type LightingEntry={
  componentId?:string;
 };
 /** Shared counts are physical stock, entered once; yearly placement is a separate record. */
-export type LightStock={id:string;name:string;type:LightingType;owned?:number;unit:'bulbs'|'strands';bulbsPerStrand?:number;bulbTechnology?:'LED'|'Incandescent'|'Unknown';bulbColor?:string;wireColor?:string;brand?:string;model?:string;storage?:string;condition:'good'|'repair';notes?:string;};
+export type LightStock={id:string;name:string;type:LightingType;owned?:number;unit:'bulbs'|'strands';bulbsPerStrand?:number;bulbTechnology?:'LED'|'Incandescent'|'Unknown';bulbColor?:string;wireColor?:string;brand?:string;model?:string;storage?:string;photo?:string;condition:'good'|'repair';notes?:string;};
 export type LightPlacement={id:string;stockId:string;season:Season;year:number;area:LightingArea;quantity?:number;status:'planned'|'installed';notes?:string;componentId?:string;};
 export type SharedLighting={stock:LightStock[];placements:LightPlacement[];changes?:{at:string;summary:string}[];};
 export type ChecklistState = Record<string,{done:boolean;notes?:string;photo?:string}>;
