@@ -37,6 +37,14 @@ Select **Wiring → Fullscreen** on your computer, or **Field → Fullscreen dia
 
 Builder works with **one documented AC power input per receiving item**, not HDMI, audio, BLE or battery-only control wiring. A recorded connection does not mean the circuit is electrically safe.
 
+## Quick Add, visual icons and equipment photo cards
+
+Open **Field → Fullscreen diagram → Builder → Add item** (or **Wiring → Fullscreen → Builder**). Tap the existing powered source, select one of its **free named output** chips, choose a new item type, enter an optional name, and pick a visual icon. **Add & connect** creates the component and its validated power connection in one atomic edit. Already occupied ports are not offered; adding a new house outlet as a downstream load is disabled. Choose **Add unconnected** for an item that should remain unconnected until its real power feed is confirmed.
+
+Each component now has an **optional visual icon distinct from its functional electrical type**. The picker suggests Halloween, Christmas and component-specific art (Skelly/skeleton, scarecrow, pumpkins, roofline C9, deer, snowman, roof/wreath lights, splitters and more). A visual skull/roofline icon does **not** change its recorded power consumption, plug type or actual wiring. Existing imported items keep their previous fallback icons until explicitly changed. Edit an existing component via **Builder → Port names / appearance** or the standard component inspector.
+
+**Photo-backed equipment cards:** In fullscreen **Explore**, tap a component to open its read-only details: main photo, notes, storage location and the documented upstream path. In Builder or the regular inspector, open **Photos & details** to take or upload photos and choose **Installed view**, **Plug / connector**, **Storage / bin** or **Detail**. Up to **8 compressed photos per item** are supported; choose a cover image and tap to enlarge. Existing single-photo data remain visible. Photos live in private IndexedDB and the encrypted sync payload when connected, subject to browser/cloud size limits. Photos are documentation, **not** proof of electrical safety. Excel reference export still omits images; the private JSON backup includes them.
+
 ## Main features
 
 | Area | What it does |
