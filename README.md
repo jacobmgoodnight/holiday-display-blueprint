@@ -21,6 +21,16 @@ In the **Diagram editor**, selecting a component now puts its icon, editable nam
 
 You can also edit **directly over the diagram**: double-click a node (desktop), right-click it, **select and press F2**, or **tap/click its icon** to open a compact name/icon picker. The popup stays readable independently of diagram zoom. **Done / Enter explicitly saves a name; Escape / close discards an unfinished name.** Choosing an icon applies it immediately. Committed edits use the existing project auto-save and encrypted sync. A single click still only selects the item. In fullscreen, these gestures edit in **Builder**, never in read-only **Explore**. Names and icons do not change electrical connections or field-verification status.
 
+## Undo, redo and field-check visibility
+
+The normal **Diagram editor** and fullscreen **Builder** now provide **Undo / Redo** for recent graph actions, including adding, removing, connecting, rewiring, inserting and duplicating components, as well as name/icon changes made through the inspector. On desktop, Ctrl/Cmd+Z undoes and Ctrl/Cmd+Shift+Z (or Ctrl+Y) redoes, except while typing in form fields. Undo is available only for the current browser session and up to ten recorded changes; it does not replace private restore points, cloud sync history or an exported JSON backup. Editing a graph outside the recorded history, switching projects or receiving a different cloud graph can make replay unavailable. Name changes made continuously in fullscreen Quick edit and drag-position changes are not yet recorded as individual undoable actions.
+
+A reversed power connection is validated again and its affected component field checks and obsolete connection tasks are invalidated. Unrelated checklist entries remain. **Undo never means a connection was electrically checked**. Photo-heavy plans that exceed the bounded session history limit can still be edited, but the app asks you to save a private restore point rather than promising undo.
+
+Diagram item labels now distinguish **Field checked**, **Needs field check** and **Example only**. These reflect recorded documentation, not electrical certification. Clicking a wire shows its source/receiver and whether that setup checklist step is marked done. The inspector asks for an explicit physical on-site confirmation before recording a new component field check.
+
+If encrypted sync detects conflicting device changes, resolving the conflict now initiates a private JSON backup download before replacing either version. Verify that the download was saved. Cloud choices remain deliberate, and a conflicting version is not automatically overwritten.
+
 ## iPhone-friendly full-screen diagram and custom wiring changes
 
 From **Field → Fullscreen diagram** (phone) or **Wiring → Fullscreen** (desktop), the app now opens on the current outlet at a **readable zoom** instead of shrinking every branch into a tiny overview. Drag empty space to pan, pinch or use ± to zoom; **Fit** intentionally zooms out to show the whole selected view. Controls are reduced to a compact one-row bar with circuit choice, ±/Fit, and a **Tools** toggle for search and Path only. The old persistent bottom instruction bubble is removed from phone layouts. Portrait and landscape styles account for Safari's visible browser controls.
