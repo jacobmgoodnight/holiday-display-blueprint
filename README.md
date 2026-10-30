@@ -57,6 +57,21 @@ For each run or group of identical strands, record **number of strands**, **bulb
 
 Associate a row with an existing diagram component only as a navigation reference, not a new power connection. Download a private lighting CSV or an Excel reference workbook with a Lighting Inventory sheet. The lighting rows also use encrypted project synchronization and private JSON backups. When copying a year, installed lighting rows become planned again for verification.
 
+## Count Christmas lights once — permanent stock and yearly assignments
+
+**Inventory → Lighting counts** now separates physical stock from the annual display plan. Enter your real C9 bulb counts and mini-light strand counts **only when you first inventory them** (or buy/discard more). The same named stock item and storage bin are reused in Christmas 2026, 2027, and later. Changes to annual placements never create a second copy of that physical stock.
+
+- **Owned inventory**: one row per physical C9 bulb stock lot or group of identical mini-light strings, with actual quantity, bulb count/string, color, model, condition and storage. Enter unknown values as blank; do not estimate.
+- **This year's placement**: assign an existing stock item to first-floor roofline, second-floor roofline, bushes, trees, fence, etc., with a *separate* quantity and **Planned / Installed** status. The same lights can change places next year without being recounted.
+- **Reuse last year's layout** copies only location assignments into the new Christmas year, explicitly setting them back to Planned. Physical stock quantities and identity do not change. Known shortage counts are shown by unit (C9 bulbs vs mini strings), with missing measurements called out.
+- **Legacy counted rows:** use the explicit review/import action once in the year you originally counted the lights. Existing annual inventory rows remain untouched; importing the same physical set from multiple old years can double-count it, so check for duplicated source records before confirming.
+- **Storage labels** can be printed per stock item. Private CSV exports include stock IDs and this year's placements.
+- **Backups and sync:** A hidden internal shared-stock record lives within the **same local-first, encrypted project vault** and JSON backups. It never appears in the seasonal project picker or makes a new AC wiring connection. A count is not proof of installation or electrical safety.
+
+### Navigation and offline access
+
+Phone navigation is now **Home / Diagram / Inventory / Tasks**. Tasks has Install and Teardown sections. Advanced operations remain in the More menu. The app also registers an installable home-screen web app shell on supported browsers. After an online visit and successful app-shell caching, the **previously loaded app shell** can reopen offline; user projects persist in IndexedDB and sync again when online. A physical iPhone offline/reopen test has not been completed; do not treat the local app as your only backup.
+
 ## Main features
 
 | Area | What it does |
