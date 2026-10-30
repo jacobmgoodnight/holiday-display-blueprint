@@ -15,6 +15,16 @@
 
 Edits save locally in IndexedDB. The header reports **Saving locally**, **Saved locally**, or **Local save failed** with a retry; a separate cloud status reports encrypted sync. Online synchronization occurs while the app is open, not while a closed browser runs in the background.
 
+## Mobile-first daily use
+
+On an iPhone, **Home** now opens on the **whole display** instead of silently choosing just the first outlet. The oversized detailed wiring tree starts collapsed; open it only when you need the full source reference. **Install checklist** is one tap away, while **Fullscreen diagram** and **Edit wiring** remain accessible. The mobile bottom navigation is the primary way to switch Home, Diagram, Tasks and Inventory; the side menu focuses on tools, backups and less frequent actions.
+
+In the regular **Diagram**, the first row of mobile tools is just **View · Find · Add · More**. **View** opens read-only fullscreen Explore, while **Add** opens fullscreen Builder directly on its Add tab. **More** reveals advanced layout, undo/redo and source editing. Tap a diagram item to reveal its name and **Edit details / Photos** actions without hunting below the canvas; Edit details scrolls to the existing inspector. The small editor hides its unnecessary minimap and controls on phones; pinch and fullscreen controls remain available. No changes to real wiring or saved verification are implied by this layout.
+
+In **Tasks**, only the next incomplete phase and work area expand initially. Use **Working in** to focus on a particular area, **Find in checklist** to jump to the next action, or open **Notes / photo** inline beneath a step rather than in a floating overlay. Every existing checkbox ID, note and picture is preserved. The workbook photo review also offers per-picture equipment search and All/Unassigned/Selected filters; all images still begin Skipped and require manual assignment.
+
+These are responsive usability changes tested by the automated suite and build; physical iPhone/Safari interaction and installed-PWA smoke testing remain to be performed.
+
 ## Photo matching and a simpler checklist
 
 Choose **Diagram → Match workbook photos** to open the separate, private, review-before-import workflow. Select your original **.xlsx** workbook, preview embedded JPG/PNG/WebP images, and see their original worksheet/row when available. Every image starts as **Skip**; select a specific existing component and its purpose (installed / connector / storage / detail) before importing. A single confirmation adds only selected, compressed images to existing private galleries. Existing photos, wiring, stock, notes and checklist records are not replaced. The app does not automatically identify props from a generic image filename or screenshot. Max eight photos per component; confirm your browser can save and sync large galleries. Original workbooks stay unchanged.
