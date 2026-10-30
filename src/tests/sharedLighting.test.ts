@@ -31,6 +31,19 @@ describe('count once, reuse lighting stock across Christmas years',()=>{
   expect(totals(next.stock,next.placements,'Christmas',2027,'C9').installedKnown).toBe(0);
   expect(repeatLastYearAssignments(next,'Christmas',2027).placements).toHaveLength(2);
  });
+ it('keeps one private stock photo and records every physical count change without annual recount',()=>{
+  let x=addStock({stock:[],placements:[]},'Mini');const id=x.stock[0].id;
+  x=updateStock(x,id,{owned:3,bulbsPerStrand:100,photo:'data:image/jpeg;base64,AAAA'});
+  x=updateStock(x,id,{owned:5});
+  expect(x.changes?.some(c=>c.summary.includes('from 3 to 5 strands'))).toBe(true);
+  expect(x.stock[0].photo).toContain('data:image');
+  x=addPlacement(x,id,'Christmas',2026,'Bushes',4);
+  x=repeatLastYearAssignments(x,'Christmas',2027);
+  expect(x.stock[0].owned).toBe(5);
+  expect(x.stock[0].photo).toContain('data:image');
+  const record={...createSharedLightingRecord(),sharedLighting:x};
+  expect(parseBackup(createBackup([record]))[0].sharedLighting?.stock[0].photo).toEqual(x.stock[0].photo);
+ });
  it('never invents quantities, flags known shortages and excludes damaged items from available stock',()=>{
   let stock=addStock({stock:[],placements:[]},'Mini');
   stock=addPlacement(stock,stock.stock[0].id,'Christmas',2026,'Fence',8);
