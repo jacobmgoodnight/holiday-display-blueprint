@@ -8,10 +8,20 @@ describe('Excel wiring reference export',()=>{
  const project=exampleProjects()[0];
  it('provides a clear non-round-trip source-of-truth warning and useful sheets',()=>{
   const wb=createWiringReferenceWorkbook(project);
-  expect(wb.SheetNames).toEqual(['Read Me','Components','Power Links','Setup Steps','Teardown Steps','Review Items','Wiring Changes']);
+  expect(wb.SheetNames).toEqual(['Read Me','Components','Power Links','Setup Steps','Teardown Steps','Lighting Inventory','Review Items','Wiring Changes']);
   const readme=XLSX.utils.sheet_to_json(wb.Sheets['Read Me'],{header:1}) as string[][];
   expect(readme.flat().join(' ').toLowerCase()).toContain('not an import/merge template');
   expect(readme.flat().join(' ').toLowerCase()).toContain('does not mean electrical-safe');
+ });
+ it('exports lighting bulb counts only when explicitly recorded',()=>{
+  const original=exampleProjects()[0];
+  const detailed={...original,lightingInventory:[{id:'lights1',label:'First floor C9 run 1',type:'C9' as const,area:'First-floor roofline' as const,status:'planned' as const,strandCount:1,totalBulbs:72},{id:'lights2',label:'Second floor run',type:'C9' as const,area:'Second-floor roofline' as const,status:'planned' as const}]};
+  const wb=createWiringReferenceWorkbook(detailed);
+  const data=XLSX.utils.sheet_to_json(wb.Sheets['Lighting Inventory'],{header:1}) as (string|number)[][];
+  expect(data).toHaveLength(3);
+  expect(data[1][0]).toBe('First floor C9 run 1');
+  expect(data[1][7]).toBe(72);
+  expect(data[2][7]).toBe('');
  });
  it('preserves link IDs, output port numbers and names',()=>{
   const wb=createWiringReferenceWorkbook(project);

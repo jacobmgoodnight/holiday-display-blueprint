@@ -47,6 +47,16 @@ Each component now has an **optional visual icon distinct from its functional el
 
 **Photo-backed equipment cards:** In fullscreen **Explore**, tap a component to open its read-only details: main photo, notes, storage location and the documented upstream path. In Builder or the regular inspector, open **Photos & details** to take or upload photos and choose **Installed view**, **Plug / connector**, **Storage / bin** or **Detail**. Up to **8 compressed photos per item** are supported; choose a cover image and tap to enlarge. Existing single-photo data remain visible. Photos live in private IndexedDB and the encrypted sync payload when connected, subject to browser/cloud size limits. Photos are documentation, **not** proof of electrical safety. Excel reference export still omits images; the private JSON backup includes them.
 
+## Christmas lighting counts and strand inventory
+
+Choose the Christmas project, then **Inventory → Lighting counts** (the default for Christmas). This is separate from the standard Equipment inventory and does not create AC power connections.
+
+Use **Add missing sections** to create optional blank planned records for first/second floor roofline C9, covered porch, morning room, mulch-bed outlines, bush/tree minis, fence minis and porch columns. The app never invents bulb/strand counts or installation status, and repeating the action avoids duplicate default labels.
+
+For each run or group of identical strands, record **number of strands**, **bulbs per strand**, **custom total bulbs** for irregular C9 runs, length per strand, LED/incandescent, bulb and wire colors, brand/model, storage and installation notes. Track Planned, Installed, Spare, or Needs repair separately. Summary totals show known bulb counts *and how many rows still need counting*; unknown is never treated as zero. Custom totals override multiplication.
+
+Associate a row with an existing diagram component only as a navigation reference, not a new power connection. Download a private lighting CSV or an Excel reference workbook with a Lighting Inventory sheet. The lighting rows also use encrypted project synchronization and private JSON backups. When copying a year, installed lighting rows become planned again for verification.
+
 ## Main features
 
 | Area | What it does |
