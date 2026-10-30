@@ -68,6 +68,12 @@ Associate a row with an existing diagram component only as a navigation referenc
 - **Storage labels** can be printed per stock item. Private CSV exports include stock IDs and this year's placements.
 - **Backups and sync:** A hidden internal shared-stock record lives within the **same local-first, encrypted project vault** and JSON backups. It never appears in the seasonal project picker or makes a new AC wiring connection. A count is not proof of installation or electrical safety.
 
+### Local restore points and change preview
+
+Choose **More → Restore points / history** on either phone or desktop. Save a named snapshot **before** a major rewiring change. Up to the newest eight complete snapshots per seasonal project stay in the local browser (8 MB cap each); they include existing photos. The timeline compares added, removed and changed items and connections, and each point can be downloaded as a private JSON backup. Restoring prompts for confirmation, automatically saves the current plan first, then restores the chosen wiring as **Draft** with all old installation checklist ticks and field-verification status cleared.
+
+These restore points are **local to that device**—not synced to other devices—and are not continuous automatic history or a one-tap undo of every operation. For huge photo-filled projects or durable off-device recovery, export a private JSON backup instead. Cloud conflict handling still applies if the restoration conflicts with another linked device.
+
 ### Safer cross-device lighting edits
 
 When both your phone and desktop are linked, independent edits to **different** lighting stock items or yearly placements can now reconcile using per-item content hashes saved on the device. If both devices change the **same** light quantity differently, or one deletes something whose history is ambiguous, Blueprint requires an explicit conflict decision. This is not instant collaborative editing, and whole-project deletions remain disabled while cloud-linked.
