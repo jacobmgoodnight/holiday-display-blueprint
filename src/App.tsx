@@ -487,7 +487,6 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
            onPortLabel={(port,label)=>{if(selectedNode)applyPortLabel(selectedNode.id,port,label)}}
            onPhotos={()=>{if(selectedNode)setGalleryId(selectedNode.id)}}
            onDuplicate={()=>{if(selectedNode)duplicateSelectedItem(selectedNode.id)}}/>}
-          </div>}
          </div>}
         {selectedNode&&fullMode==='explore'&&<div className="fullscreen-selection"><strong>{selectedNode.name}</strong><span>{sourcePath(selectedNode.id,project).map(n=>n.name).join(' → ')}</span><button onClick={()=>{setSelected(null);setTrace('none');setPathOnly(false)}} aria-label="Clear selected path"><X size={15}/></button></div>}
        </div>}
