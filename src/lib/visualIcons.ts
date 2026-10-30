@@ -42,8 +42,8 @@ export function suggestedIcons(season:Season,kind:Kind):VisualIcon[]{
  return [...visualIcons].sort((a,b)=>score(a)-score(b));
 }
 export function defaultVisualIcon(season:Season,kind:Kind):string|undefined{
- if(kind==='decoration')return season==='Halloween'?'skelly':'snowman';
- if(kind==='light-strand')return season==='Christmas'?'roof-c9':'light';
+ // A decoration or strand may be any prop; never assign a specific skeleton or roofline without confirmation.
+ if(kind==='decoration'||kind==='light-strand')return undefined;
  const mapping:Partial<Record<Kind,string>>={outlet:'outlet','smart-plug':'smart-plug',cord:'extension','spt-1':'spt',splitter:'splitter','inline-tap':'tap',projector:'projector',spotlight:'spotlight',controller:'controller'};
  return mapping[kind];
 }
