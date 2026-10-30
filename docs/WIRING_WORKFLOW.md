@@ -8,6 +8,14 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Permanent light counts across years
+
+**Count your lights once.** Inventory → Lighting counts now includes **Owned inventory** for physical C9 bulb stock and mini-light string groups, plus **This year's placement** for locations and quantities. Enter bulb/strand counts only upon first inventory or physical purchase/disposal/repair. Reuse last year's locations as Planned for a new season without recounting stock.
+
+The app uses a hidden private catalog inside the encrypted project vault, not new AC circuit nodes. Old per-year inventory rows remain available until you explicitly choose to import them into shared stock. Review possible duplicate physical items before importing old years. Never use a prior-year installation checkbox as proof of the new year's installation.
+
+This year's placement quantities can exceed recorded stock only as a **known shortage**; unknown owned quantities must remain unknown. C9 bulbs and mini-light strings are separate units and cannot be added into a single total. Print storage labels with the permanent stock ID rather than a year-specific string number.
+
 ## Counting Christmas C9 bulbs and mini-light strands
 
 Open **Inventory → Lighting counts** in your Christmas project. Lighting inventory describes physical strings/runs and never changes the separate electrical wiring diagram.

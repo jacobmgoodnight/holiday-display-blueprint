@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState,type Dispatch,type SetStateAction} from 'react';
 import type {Project} from '../lib/model';
+import {isSharedLightingRecord} from '../lib/sharedLighting';
 import {restoreBackup,createBackup} from '../lib/storage';
 import {syncCredentials,getDeviceSyncKey,forgetDeviceSyncKey,readBaseline,saveBaseline,hashProjects,planMerge,pullCloud,pushCloud,type CloudCredentials} from '../lib/cloudSync';
 
@@ -51,7 +52,7 @@ export function useSharedSync({loaded,storageReady,projects,setProjects,onImport
     const combined=[...local.filter(p=>p.example),...merged];
     latest.current=combined;
     setProjects(combined);
-    if(local.every(p=>p.example)&&merged.length)callback.current(merged.find(p=>p.season==='Halloween')||merged[0]);
+    if(local.every(p=>p.example)&&merged.some(p=>!isSharedLightingRecord(p)))callback.current(merged.find(p=>!isSharedLightingRecord(p)&&p.season==='Halloween')||merged.find(p=>!isSharedLightingRecord(p))!);
    }
    saveBaseline(creds.vaultId,mergedHashes);
    setConflicts([]);setStatus('synced');setLastSynced(new Date().toLocaleTimeString());

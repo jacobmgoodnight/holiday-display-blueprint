@@ -23,6 +23,10 @@ export type LightingEntry={
  bulbColor?:string;wireColor?:string;brand?:string;model?:string;storage?:string;notes?:string;
  componentId?:string;
 };
+/** Shared counts are physical stock, entered once; yearly placement is a separate record. */
+export type LightStock={id:string;name:string;type:LightingType;owned?:number;unit:'bulbs'|'strands';bulbsPerStrand?:number;bulbTechnology?:'LED'|'Incandescent'|'Unknown';bulbColor?:string;wireColor?:string;brand?:string;model?:string;storage?:string;condition:'good'|'repair';notes?:string;};
+export type LightPlacement={id:string;stockId:string;season:Season;year:number;area:LightingArea;quantity?:number;status:'planned'|'installed';notes?:string;componentId?:string;};
+export type SharedLighting={stock:LightStock[];placements:LightPlacement[];changes?:{at:string;summary:string}[];};
 export type ChecklistState = Record<string,{done:boolean;notes?:string;photo?:string}>;
 export type WiringEdit={
  id:string;at:string;action:'connected'|'rewired'|'disconnected';targetId:string;targetName:string;
@@ -31,7 +35,7 @@ export type WiringEdit={
 export type Project = {
   id:string;season:Season;year:number;name:string;status:'draft'|'verified';
   nodes:Component[];edges:Connection[];checklist:ChecklistState;
-  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];lightingInventory?:LightingEntry[];verificationReview?:{reviewedAt:string;notes:string;exceptions:string[]};
+  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];lightingInventory?:LightingEntry[];sharedLighting?:SharedLighting;verificationReview?:{reviewedAt:string;notes:string;exceptions:string[]};
 };
 export const outputCount = (kind:Kind):number => ({outlet:2,'smart-plug':2,cord:1,'spt-1':1,splitter:4,'inline-tap':2,'light-strand':1,decoration:0,projector:0,spotlight:0,controller:0,accessory:0})[kind];
 export const categories:{kind:Kind;label:string}[] = [

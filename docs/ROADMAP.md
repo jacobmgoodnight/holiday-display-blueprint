@@ -27,6 +27,13 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 - **Excel snapshot export:** current components, power links, setup/teardown steps, review flags, wiring history; read-only reference workbook, not a two-way edit or import.
 - **Automated tests and deployment:** Vitest and TypeScript production build run before GitHub Pages deploy.
 
+## Shipped in count-once inventory and UI consolidation
+
+- One permanent shared private lighting stock catalog, separate from yearly C9/mini assignments. Counts, brand, type and storage carry across Christmas years without re-entry; adding a purchase changes inventory once.
+- Explicit legacy import and reusable prior-year placements instead of cloning counts. Planned/Installed summaries and known shortages stay in their own units.
+- Four main phone navigation choices; Install/Teardown share a Tasks view. Compact inventory fields and printable stock labels.
+- Base-path-aware installable PWA app-shell caching, requiring an initial online visit; no promise of completed iOS offline smoke test.
+
 ## Highest-priority next improvements
 
 1. **Safer source reconciliation (large impact).** Match a changed workbook's IDs against the current synced master, present a side-by-side diff of additions, removals and upstream/port changes, require explicit per-change approval, and avoid overwriting field photos/checklist states.
