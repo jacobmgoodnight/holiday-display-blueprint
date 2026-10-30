@@ -36,7 +36,7 @@ export function useSharedSync({loaded,storageReady,projects,setProjects,onImport
    const [localHashes,remoteHashes,localItems,remoteItems]=await Promise.all([hashProjects(local),hashProjects(remote.projects),hashCatalogItems(local),hashCatalogItems(remote.projects)]);
    const outcome=planMerge(local,remote.projects,base,localHashes,remoteHashes,prefer,readItemBaseline(creds.vaultId),localItems,remoteItems);
    if(outcome.conflicts.length){
-    setConflicts(outcome.conflicts.map(id=>local.find(p=>p.id===id)?.name||id));
+    setConflicts(outcome.conflicts.map(id=>id==='shared-lighting-inventory-v1'?'Shared lighting inventory':local.find(p=>p.id===id)?.name||id));
     setStatus('conflict');return;
    }
    if(latest.current!==local){setStatus('connecting');return;} // user edited during fetch
