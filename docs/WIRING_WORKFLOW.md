@@ -8,9 +8,17 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Fast item editing and safe duplication in Builder
+
+To rename or edit a component, use **Field → Fullscreen diagram → Builder** and tap that item. It opens **Quick edit** (or choose the Quick edit tab manually). Change the name, zone, wire/item color, storage location and installation notes in the compact panel. The changes join the normal local auto-save queue and encrypted cloud synchronization; look for **Saved locally** and cloud sync status rather than relying on the form to claim completion. Expand **Diagram icon and output labels** only when needed.
+
+Choose **Duplicate unconnected** in the Quick edit panel (or in the normal diagram inspector) when adding another item of the same type. This makes a separate **Draft** component with a new ID/asset identity and unique copy name, copied icon, reusable equipment notes and descriptions. It does **not** copy wiring connections, source-specific port names, photos, purchase history or completed/verified checklist state; the new item is unconnected until you explicitly assign a verified free physical output. Its zone is inherited and the saved manual position is offset. A duplicated outlet does not imply a new physical electrical outlet exists.
+
+Do not confuse **Duplicate** with the separate *Reuse equipment from another season* feature, which intentionally links one physical asset across plans.
+
 ## Editing port labels and inserting components (Builder)
 
-- **Name a socket:** open Fullscreen → Builder → **Port names**, select the source on the diagram, enter a concise name for each port, then leave the field to save. These are descriptive names on the existing numeric output slots and don't relocate or rewire any device. Regular component details also has an expandable Output names section.
+- **Name a socket:** open Fullscreen → Builder → **Quick edit → Diagram icon and output labels**, select the source on the diagram, enter a concise name for each port, then leave the field to save. These are descriptive names on the existing numeric output slots and don't relocate or rewire any device. Regular component details also has an expandable Output names section.
 - **Insert a splitter into a known existing wire:** choose Fullscreen → Builder → **Insert on wire**. Tap the wire or pick its precise source/output → receiver entry. Choose a new feeder/splitter type and an optional name. **Preview** displays the old path and proposed two-step path. Only **Confirm insertion** changes the graph.
 - The operation replaces the old edge with two new link IDs, resets the old link completion checkbox, marks the new item and downstream equipment unverified, and keeps unrelated branches and manual positions intact. The insertion is performed as one validated change, not two partly completed mutations.
 - The named output can refer to a known physical female receptacle, smart-plug side, inline tap or splitter socket. **Do not imply exact port numbers or physically installed locations when not field confirmed.**
@@ -21,9 +29,9 @@ The **Export Excel reference** action creates a convenient *new workbook* contai
 
 **One-tap wiring additions:** Open Fullscreen → Builder → **Add item**, then tap an outlet/cord/splitter. A row of currently unused numbered or named outputs appears. Choose the **specific physical output**, select the new item type and optional diagram icon, then **Add & connect**. The edit is validated against occupied ports, connector compatibility and cycle rules. The new item and connection remain unverified until inspected in the yard. If the actual output is unknown, use **Add unconnected** and record that gap rather than invent a connection.
 
-**Icons:** Builder's appearance/port panel and the normal inspector let you change how a component looks on the graph independently from its electrical type. Suggestions are grouped by season, with Skelly, pumpkins, C9 roofline, reindeer, snowman, splitters and other equipment options. This visual choice does not update actual hardware ratings or confirm a real plug.
+**Icons:** Builder's Quick edit / diagram-icon panel and the normal inspector let you change how a component looks on the graph independently from its electrical type. Suggestions are grouped by season, with Skelly, pumpkins, C9 roofline, reindeer, snowman, splitters and other equipment options. This visual choice does not update actual hardware ratings or confirm a real plug.
 
-**Photo cards:** Tap a node in fullscreen Explore to see its equipment card, existing primary photo, storage and notes. In Builder select the component then **Port names / appearance → Photos & details** (or use the standard inspector). Use the phone camera for installed and plug close-ups, or upload photos of storage and other details. A gallery holds one cover photo and additional labeled images, up to eight compressed photos per component. Pick **Use as cover** to promote a secondary photo. Photos remain in the private backup/sync, not the public repository; large collections can reach cloud upload limits.
+**Photo cards:** Tap a node in fullscreen Explore to see its equipment card, existing primary photo, storage and notes. In Builder select the component then **Quick edit → Photos** (or use the standard inspector). Use the phone camera for installed and plug close-ups, or upload photos of storage and other details. A gallery holds one cover photo and additional labeled images, up to eight compressed photos per component. Pick **Use as cover** to promote a secondary photo. Photos remain in the private backup/sync, not the public repository; large collections can reach cloud upload limits.
 
 ## Fullscreen wiring exploration and safe building
 
