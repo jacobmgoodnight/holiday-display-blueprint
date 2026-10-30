@@ -21,7 +21,7 @@ describe('Excel wiring reference export',()=>{
   expect(data).toHaveLength(3);
   expect(data[1][0]).toBe('First floor C9 run 1');
   expect(data[1][7]).toBe(72);
-  expect(data[2][7]).toBeUndefined();
+  expect(data[2][7]).toBe('');
  });
  it('preserves link IDs, output port numbers and names',()=>{
   const wb=createWiringReferenceWorkbook(project);
