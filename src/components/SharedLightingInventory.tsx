@@ -9,7 +9,7 @@ const count=(value:string)=>value.trim()===''?undefined:/^\d+$/.test(value)&&Num
 export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,onCreate,onChangeStock,onDeleteStock,onPlace,onChangePlacement,onRemovePlacement,onCopyPrevious,onExport}:Props){
  const [q,setQ]=useState(''),[mode,setMode]=useState<'placements'|'stock'>('placements'),[type,setType]=useState<LightingType>('Mini'),[expanded,setExpanded]=useState<string|null>(null),[area,setArea]=useState<LightingArea>('First-floor roofline');
  const rows=useMemo(()=>safeYearStockRows(catalog,project.season,project.year),[catalog,project.year,project.season]);
- const showing=rows.filter(({stock})=>[stock.name,stock.type,stock.storage,stock.brand].some(v=>String(v||'').toLowerCase().includes(q.toLowerCase()))&&(type==='Other'||mode==='stock'||true));
+ const showing=rows.filter(({stock})=>[stock.name,stock.type,stock.storage,stock.brand].some(v=>String(v||'').toLowerCase().includes(q.toLowerCase())));
  const current=rows.filter(x=>x.placements.length);
  const c9=totals(catalog.stock,catalog.placements,project.season,project.year,'C9');
  const mini=totals(catalog.stock,catalog.placements,project.season,project.year,'Mini');
@@ -22,8 +22,8 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
   <div className="shared-metrics">
    <div><span>Owned, counted C9 bulbs</span><strong>{c9.ownedKnown.toLocaleString()}{c9.unknownOwned?' + ?':''}</strong><small>{c9.unknownOwned} stock group(s) uncounted</small></div>
    <div><span>Owned mini strands</span><strong>{mini.ownedKnown.toLocaleString()}{mini.unknownOwned?' + ?':''}</strong><small>{mini.unknownOwned} stock group(s) uncounted</small></div>
-   <div><span>{project.year} planned / installed</span><strong>{c9.plannedKnown+mini.plannedKnown} / {c9.installedKnown+mini.installedKnown}</strong><small>Mixed bulbs and strands; open entries for units · {c9.unknownPlaced+mini.unknownPlaced} unknown placement(s)</small></div>
-   <div><span>Confirmed shortages</span><strong>{shortages||'None calculated'}</strong><small>{c9.needsReview+mini.needsReview?'Some stock counts unknown; review before shopping':'Only compare like units (C9 bulbs / mini strands)'}</small></div>
+   <div><span>{project.year} planned / installed</span><strong>{c9.plannedKnown} / {c9.installedKnown} C9</strong><small>{mini.plannedKnown} / {mini.installedKnown} mini strands · {c9.unknownPlaced+mini.unknownPlaced} placement count(s) missing</small></div>
+   <div><span>Shopping shortages</span><strong>{shortages?'Review needs':'No known shortage'}</strong><small>{c9.shortKnown} C9 bulbs · {mini.shortKnown} mini strands short{c9.needsReview+mini.needsReview?' · unknown stock still needs counting':''}</small></div>
   </div>
   <div className="shared-lighting-tabs" role="group" aria-label="Lighting inventory view">
    <button className={mode==='placements'?'active':''} aria-pressed={mode==='placements'} onClick={()=>setMode('placements')}>This year's placement</button>
@@ -38,7 +38,6 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
   {!catalog.stock.length&&<div className="shared-empty">No permanent light inventory yet. Open <strong>Owned inventory</strong> to add your lights once, or import previous counted entries above.</div>}
   {mode==='placements'&&!current.length&&catalog.stock.length>0&&<div className="shared-empty">No lights assigned for {project.year} yet. Choose an owned item below or reuse last year's layout. Physical bulb counts won't change.</div>}
   <div className="shared-stock-list">{showing.map(({stock,placements})=>{
-   if(mode==='placements'&&placements.length===0&&expanded!==stock.id){} // Still show available stock to assign
    const editing=expanded===stock.id;
    return <article key={stock.id} className={editing?'shared-stock-row expanded':'shared-stock-row'}>
     <button className="shared-stock-summary" onClick={()=>setExpanded(editing?null:stock.id)} aria-expanded={editing}>
@@ -69,7 +68,7 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
       <label>Status<select value={place.status} onChange={e=>onChangePlacement(place.id,{status:e.target.value as LightPlacement['status']})}><option value="planned">Planned</option><option value="installed">Installed</option></select></label>
       <button aria-label="Remove placement" onClick={()=>onRemovePlacement(place.id)}><Trash2 size={15}/></button>
      </div>)}</section>}
-     <div className="shared-row-actions"><button onClick={()=>onPlace(stock.id,area)}><PackagePlus size={15}/> Place in {area}</button><button onClick={()=>{const code='HDB-'+stock.id.slice(0,8).toUpperCase();const child=window.open('','_blank');if(!child)return;child.document.write('<!doctype html><title>Storage label</title><div style="font-family:Arial;margin:30px;border:2px solid;padding:24px;width:320px"><h2>'+stock.name.replace(/[<>&]/g,'')+'</h2><p>'+code+'</p><p>Bin: '+(stock.storage||'Not set').replace(/[<>&]/g,'')+'</p></div>');child.document.close();child.focus();child.print();}}><Printer size={15}/> Storage label</button>{!placements.length&&<button className="destructive" onClick={()=>{if(confirm('Remove this owned stock record? This cannot be undone.'))onDeleteStock(stock.id)}}><Trash2 size={15}/> Remove stock</button>}</div>
+     <div className="shared-row-actions"><button onClick={()=>onPlace(stock.id,area)}><PackagePlus size={15}/> Place in {area}</button><button onClick={()=>{const code='HDB-'+stock.id.slice(0,8).toUpperCase();const child=window.open('','_blank');if(!child)return;const doc=child.document;doc.title='Storage label';const sheet=doc.createElement('section');sheet.style.cssText='font-family:Arial;margin:30px;border:2px solid;padding:24px;width:320px';for(const line of [stock.name,code,'Bin: '+(stock.storage||'Not set')]){const p=doc.createElement('p');p.textContent=line;sheet.appendChild(p);}doc.body.appendChild(sheet);child.focus();child.print();}}><Printer size={15}/> Storage label</button>{!placements.length&&<button className="destructive" onClick={()=>{if(confirm('Remove this owned stock record? This cannot be undone.'))onDeleteStock(stock.id)}}><Trash2 size={15}/> Remove stock</button>}</div>
      <p className="shared-stock-hint">Count once. New years reuse this record; only change owned quantity when purchasing, discarding or repairing lights.</p>
     </div>}
    </article>;
