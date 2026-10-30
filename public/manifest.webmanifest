@@ -1,0 +1,19 @@
+{
+  "name": "Holiday Display Blueprint",
+  "short_name": "Blueprint",
+  "description": "Private, offline-capable wiring and holiday inventory reference",
+  "id": "/holiday-display-blueprint/",
+  "start_url": "/holiday-display-blueprint/",
+  "scope": "/holiday-display-blueprint/",
+  "display": "standalone",
+  "background_color": "#f7fafc",
+  "theme_color": "#0e3047",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
