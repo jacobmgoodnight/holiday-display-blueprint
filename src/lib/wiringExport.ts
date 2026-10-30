@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import {generatedTasks,warningSummary} from './graph';
 import {portName} from './portLabels';
+import {computedBulbs} from './lightingInventory';
 import type {Project} from './model';
 import type {ProjectWithWiringHistory} from './wiringEdits';
 
@@ -47,6 +48,12 @@ export function createWiringReferenceWorkbook(project:Project):XLSX.WorkBook{
   const records=tasks.map((t,i)=>[i+1,t.phase,t.label,t.nodeId||'',project.checklist[t.id]?.done?'Done':'Not done',project.checklist[t.id]?.notes||'']);
   XLSX.utils.book_append_sheet(wb,rows(['Step','Phase','Instructions','Component ID','Status','Notes'],records),mode==='setup'?'Setup Steps':'Teardown Steps');
  }
+ const lighting=(project.lightingInventory||[]).map(x=>[
+  x.label,x.type,x.area,x.status,x.strandCount??'',x.bulbsPerStrand??'',x.totalBulbs??'',computedBulbs(x)??'',x.lengthPerStrandFt??'',x.bulbTechnology||'',x.bulbColor||'',x.wireColor||'',x.brand||'',x.model||'',x.storage||'',x.componentId||'',x.notes||''
+ ]);
+ XLSX.utils.book_append_sheet(wb,rows(
+  ['Run / group','Light type','Area','Status','Strands / runs','Bulbs per strand','Custom total bulbs','Calculated bulb total','Length per strand (ft)','LED / incandescent','Bulb color','Wire color','Brand','Model','Storage','Associated component ID','Notes'],
+  lighting),'Lighting Inventory');
  const warnings=warningSummary(project);
  XLSX.utils.book_append_sheet(wb,rows(['#','Review or verify'],warnings.map((x,i)=>[i+1,x])),'Review Items');
  const log=(project as ProjectWithWiringHistory).wiringHistory||[];
