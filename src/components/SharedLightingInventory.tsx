@@ -1,12 +1,12 @@
 import {useMemo,useState} from 'react';
-import {Copy,Download,PackagePlus,Printer,Search,Trash2} from 'lucide-react';
+import {Camera,Copy,Download,PackagePlus,Printer,Search,Trash2} from 'lucide-react';
 import type {LightingArea,LightingType,LightPlacement,LightStock,Project,SharedLighting} from '../lib/model';
 import {lightingAreas,lightingTypes} from '../lib/lightingInventory';
 import {safeYearStockRows,totals} from '../lib/sharedLighting';
 import './sharedLightingInventory.css';
-type Props={project:Project;catalog:SharedLighting;legacyRows:number;onMigrate:()=>void;onCreate:(type:LightingType)=>void;onChangeStock:(id:string,change:Partial<LightStock>)=>void;onDeleteStock:(id:string)=>void;onPlace:(id:string,area:LightingArea)=>void;onChangePlacement:(id:string,patch:Partial<LightPlacement>)=>void;onRemovePlacement:(id:string)=>void;onCopyPrevious:()=>void;onExport:()=>void};
+type Props={project:Project;catalog:SharedLighting;legacyRows:number;onMigrate:()=>void;onCreate:(type:LightingType)=>void;onChangeStock:(id:string,change:Partial<LightStock>)=>void;onPhoto:(id:string,file:File)=>Promise<void>;onDeleteStock:(id:string)=>void;onPlace:(id:string,area:LightingArea)=>void;onChangePlacement:(id:string,patch:Partial<LightPlacement>)=>void;onRemovePlacement:(id:string)=>void;onCopyPrevious:()=>void;onExport:()=>void};
 const count=(value:string)=>value.trim()===''?undefined:/^\d+$/.test(value)&&Number.isSafeInteger(Number(value))?Number(value):null;
-export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,onCreate,onChangeStock,onDeleteStock,onPlace,onChangePlacement,onRemovePlacement,onCopyPrevious,onExport}:Props){
+export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,onCreate,onChangeStock,onPhoto,onDeleteStock,onPlace,onChangePlacement,onRemovePlacement,onCopyPrevious,onExport}:Props){
  const [q,setQ]=useState(''),[mode,setMode]=useState<'placements'|'stock'>('placements'),[type,setType]=useState<LightingType>('Mini'),[expanded,setExpanded]=useState<string|null>(null),[area,setArea]=useState<LightingArea>('First-floor roofline');
  const rows=useMemo(()=>safeYearStockRows(catalog,project.season,project.year),[catalog,project.year,project.season]);
  const showing=rows.filter(({stock})=>[stock.name,stock.type,stock.storage,stock.brand].some(v=>String(v||'').toLowerCase().includes(q.toLowerCase())));
@@ -41,7 +41,7 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
    const editing=expanded===stock.id;
    return <article key={stock.id} className={editing?'shared-stock-row expanded':'shared-stock-row'}>
     <button className="shared-stock-summary" onClick={()=>setExpanded(editing?null:stock.id)} aria-expanded={editing}>
-     <span className="shared-stock-icon">{stock.type==='C9'?'💡':stock.type==='Mini'?'✨':'🔆'}</span>
+     <span className="shared-stock-icon">{stock.photo?<img className="shared-stock-thumb" src={stock.photo} alt=""/>:stock.type==='C9'?'💡':stock.type==='Mini'?'✨':'🔆'}</span>
      <span className="shared-stock-name"><strong>{stock.name}</strong><small>{stock.type} · {stock.storage||'Storage not recorded'} · {stock.condition==='repair'?'Needs repair':stock.unit==='bulbs'?'C9 bulbs':'strings'}</small></span>
      <span className="shared-stock-number"><strong>{stock.owned??'?'}</strong><small>owned {stock.unit}</small></span>
      <span className="shared-stock-toggle">{editing?'Close':'Edit'}</span>
@@ -53,6 +53,11 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
       <label>{stock.type==='Mini'?'Bulbs per string':'Bulbs per strand (optional)'}<input aria-label="Bulbs per strand" type="number" min={0} step={1} value={stock.bulbsPerStrand??''} onChange={e=>changeCount(e.target.value,bulbsPerStrand=>onChangeStock(stock.id,{bulbsPerStrand}))}/></label>
       <label>Storage bin<input aria-label="Light storage bin" value={stock.storage||''} placeholder="Bin X / roofline tote" onChange={e=>onChangeStock(stock.id,{storage:e.target.value})}/></label>
       <label>Condition<select value={stock.condition} aria-label="Stock condition" onChange={e=>onChangeStock(stock.id,{condition:e.target.value as 'good'|'repair'})}><option value="good">Available / good</option><option value="repair">Damaged / repair</option></select></label>
+     </div>
+     <div className="shared-stock-photo">
+      {stock.photo&&<img src={stock.photo} alt={'Reference photo for '+stock.name}/>}
+      <label><Camera size={16}/> {stock.photo?'Replace stock photo':'Add stock photo'}<input type="file" accept="image/*" capture="environment" onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)void onPhoto(stock.id,file);}}/></label>
+      {stock.photo&&<button onClick={()=>{if(confirm('Remove reference photo for this stock item?'))onChangeStock(stock.id,{photo:undefined})}}>Remove photo</button>}
      </div>
      <details className="shared-advanced"><summary>More stock details · color, brand, notes</summary><div className="shared-stock-fields">
        <label>Bulb technology<select value={stock.bulbTechnology||'Unknown'} onChange={e=>onChangeStock(stock.id,{bulbTechnology:e.target.value as LightStock['bulbTechnology']})}><option>Unknown</option><option>LED</option><option>Incandescent</option></select></label>
@@ -73,5 +78,6 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
     </div>}
    </article>;
   })}</div>
+  {!!catalog.changes?.length&&<details className="shared-change-history"><summary>Physical inventory change history ({catalog.changes.length})</summary><ol>{catalog.changes.slice(-20).reverse().map((c,i)=><li key={c.at+':'+i}><time>{new Date(c.at).toLocaleString()}</time> · {c.summary}</li>)}</ol></details>}
  </section>;
 }
