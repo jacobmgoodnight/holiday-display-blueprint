@@ -8,6 +8,17 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Counting Christmas C9 bulbs and mini-light strands
+
+Open **Inventory → Lighting counts** in your Christmas project. Lighting inventory describes physical strings/runs and never changes the separate electrical wiring diagram.
+
+- **Add missing Christmas sections** optionally creates blank planned entries for documented first-floor/second-floor C9s, covered-porch and morning-room C9s, both mulch beds, bushes, yard trees, fence and porch columns. No lengths, bulbs, ratings, status or ports are assumed.
+- For C9 custom runs, enter an actual bulb total per named physical run, and add another row if a floor uses multiple runs.
+- For identical mini-light strings, record e.g. three 100-bulb strings as one row; use separate rows where the type, bulb count, color or brand differs.
+- Track installed and planned runs separately from spare/repair stock; log LED/incandescent, bulb color, wire color, model, storage bin and notes as confirmed.
+- Optional diagram component links are for lookup only, never a new AC power feed.
+- Totals retain explicit unknown quantities, and exports contain only entered counts. Historical Excel workbook originals are not modified.
+
 ## Fast item editing and safe duplication in Builder
 
 To rename or edit a component, use **Field → Fullscreen diagram → Builder** and tap that item. It opens **Quick edit** (or choose the Quick edit tab manually). Change the name, zone, wire/item color, storage location and installation notes in the compact panel. The changes join the normal local auto-save queue and encrypted cloud synchronization; look for **Saved locally** and cloud sync status rather than relying on the form to claim completion. Expand **Diagram icon and output labels** only when needed.
