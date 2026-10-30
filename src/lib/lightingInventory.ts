@@ -63,3 +63,11 @@ export function addChristmasSectionPrompts(rows:readonly LightingEntry[]):Lighti
  }
  return next;
 }
+
+/** Private export for spreadsheet reference. Never a round-trip workbook importer. */
+export function lightingInventoryCsv(items:readonly LightingEntry[]):string{
+ const columns=['Label','Light type','Area','Status','Number of strands','Bulbs per strand','Custom total bulbs','Calculated total bulbs','Length per strand (ft)','Technology','Bulb color','Wire color','Brand','Model','Storage','Linked component ID','Notes'];
+ const esc=(value:unknown)=>'"'+String(value??'').replace(/"/g,'""')+'"';
+ const lines=[columns,...items.map(x=>[x.label,x.type,x.area,x.status,x.strandCount??'',x.bulbsPerStrand??'',x.totalBulbs??'',computedBulbs(x)??'',x.lengthPerStrandFt??'',x.bulbTechnology||'',x.bulbColor||'',x.wireColor||'',x.brand||'',x.model||'',x.storage||'',x.componentId||'',x.notes||''])];
+ return lines.map(line=>line.map(esc).join(',')).join('\r\n');
+}
