@@ -1,0 +1,69 @@
+/* Prioritize mobile operations; keep the desktop editor's full toolbar intact. */
+.mobile-diagram-actions,.mobile-selected-item{display:none}
+@media(max-width:900px){
+ .leftbar .desktop-drawer-navigation{display:none}
+ .leftbar.leftbar-open{padding-bottom:calc(95px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:720px){
+ .page-head-field{display:none}
+ .page-head-diagram .head-buttons{display:none}
+ .page-head-diagram{margin-bottom:9px}
+ .page-head-diagram h1{font-size:21px;margin:0 0 3px}
+ .page-head-diagram p{font-size:11px;margin:0}
+ .field-mode .field-head{margin-top:7px}
+ .field-mode .field-head-actions{grid-template-columns:1fr 1fr}
+ .field-mode .field-tasks-shortcut{grid-column:1/-1;background:#e6f4ed;border-color:#a8d8c4;color:#246a4d;min-height:48px;font-size:13px}
+ .field-mode .field-guide:not([open])>summary{border-radius:11px}
+ .field-mode .field-guide>summary{min-height:50px}
+ .field-search input{font-size:16px}
+ .diagram-toolbar{display:flex;flex-direction:column;padding:8px;gap:7px}
+ .diagram-toolbar .tool-title{display:none}
+ .mobile-diagram-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;width:100%}
+ .mobile-diagram-actions button{min-width:0;min-height:46px;border:1px solid #d4e4eb;background:#fff;color:#456d84;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:800;padding:8px 3px}
+ .mobile-diagram-actions button:nth-child(3){background:#317b68;color:#fff;border-color:#317b68}
+ .mobile-diagram-actions button[aria-expanded="true"]{background:#eaf4f9;border-color:#8bb8cf}
+ .diagram-toolbar .tool-actions{display:none}
+ .diagram-toolbar .tool-actions.mobile-tools-open{display:flex;align-items:stretch;flex-direction:column;gap:9px;padding:10px 2px 3px;width:100%}
+ .diagram-toolbar .tool-actions.mobile-tools-open>.button,.diagram-toolbar .tool-actions.mobile-tools-open>.finder-open,.diagram-toolbar .tool-actions.mobile-tools-open>select{width:100%;max-width:none;min-height:43px;font-size:13px}
+ .diagram-toolbar .tool-actions.mobile-tools-open .layout-picker{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px}
+ .diagram-toolbar .tool-actions.mobile-tools-open .layout-picker select{max-width:65%;width:65%;font-size:13px;min-height:42px}
+ .diagram-toolbar .tool-actions.mobile-tools-open .diagram-history-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+ .diagram-toolbar .tool-actions.mobile-tools-open .diagram-history-actions .button{min-height:42px;font-size:12px}
+ .diagram-toolbar .tool-actions.mobile-tools-open>.icon-button{align-self:flex-end;min-width:44px;min-height:44px}
+ .canvas-wrap{position:relative}
+ .mobile-selected-item{display:flex;position:absolute;z-index:10;left:8px;right:8px;bottom:8px;align-items:center;gap:6px;padding:8px 9px;border:1px solid #c0dce7;border-radius:12px;background:#fffefaed;box-shadow:0 7px 22px #172f4540}
+ .mobile-selected-item>span{display:block;flex:1;min-width:0;overflow:hidden}
+ .mobile-selected-item strong,.mobile-selected-item small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .mobile-selected-item strong{font-size:12px;color:#2e5067}
+ .mobile-selected-item small{font-size:10px;color:#698a9a;margin-top:2px}
+ .mobile-selected-item button{flex:none;min-height:44px;padding:9px 11px;border-radius:9px;background:#e9f3f8;color:#396f88;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px}
+ .mobile-selected-item button:last-child{min-width:44px;padding:9px}
+ #mobile-item-inspector{scroll-margin-top:75px}
+ .diagram-fullscreen .mobile-selected-item{display:none}
+ .sync-bar.sync-synced{padding:7px 10px;gap:7px;font-size:11px}
+ .sync-bar.sync-synced>button{display:none}
+ .mobile-tabbar{padding-bottom:env(safe-area-inset-bottom,0px);height:calc(64px + env(safe-area-inset-bottom,0px));align-items:stretch}
+ .mobile-tabbar button{min-height:48px}
+ .content{padding-bottom:calc(85px + env(safe-area-inset-bottom,0px))}
+ .toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:380px){
+ .mobile-selected-item{gap:4px;padding:6px}
+ .mobile-selected-item button{padding:8px;font-size:11px}
+ .mobile-diagram-actions button{font-size:11px;gap:3px}
+}
+@media print{.mobile-diagram-actions,.mobile-selected-item{display:none!important}}
+
+@media(max-width:720px){
+ .diagram-layout:not(.diagram-fullscreen) .react-flow__minimap,
+ .diagram-layout:not(.diagram-fullscreen) .react-flow__controls{display:none}
+ /* The Builder is a touch-friendly bottom sheet, not a 200-pixel strip. */
+ .diagram-fullscreen .fullscreen-builder{max-height:min(55dvh,495px);overscroll-behavior:contain}
+ .diagram-fullscreen .fullscreen-builder input,
+ .diagram-fullscreen .fullscreen-builder textarea,
+ .diagram-fullscreen .fullscreen-builder select{font-size:16px}
+ .diagram-fullscreen .fullscreen-builder .builder-tabs button{min-height:43px}
+}
+@media(max-height:530px) and (orientation:landscape){
+ .diagram-fullscreen .fullscreen-builder{max-height:55dvh}
+}

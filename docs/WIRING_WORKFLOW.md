@@ -16,6 +16,14 @@ Restoring a previous physical feed returns affected components to **Draft / Need
 
 For oversized photo-rich plans, create a private manual restore point before rewiring. The current editing action remains possible, but in-memory undo may be unavailable. Before using a cloud conflict resolution button, the app starts a private JSON backup download; confirm it was saved before leaving the page. Historical Excel workbooks are private references and have not been silently imported or photo-matched.
 
+## Phone navigation and fewer taps
+
+On a phone, use the four bottom tabs to move between Home, Diagram, Tasks and Inventory. The menu is for import/export/backup and less frequent tools. Home defaults to the whole system instead of an arbitrary first outlet. Choose O01/O02/O03 only when focusing on one circuit. The detailed wiring guide is collapsed until requested, and Install checklist opens Tasks directly.
+
+On Diagram, the mobile top bar has **View**, **Find**, **Add** and **More**. View opens the read-only full-screen diagram; Add opens Builder with the add form already selected. Tap an item to see the inline **Edit details** and **Photos** actions; Edit details jumps to the existing component-first inspector beneath the diagram. More exposes advanced controls without crowding the screen.
+
+On Tasks, the next incomplete phase and area are expanded first. Select **Working in** to narrow the list, use **Find in checklist** to locate the next unchecked action, and expand **Notes / photo** directly below its step. Existing completion and reference images persist. In workbook photo review, search component names/IDs per image and filter by unassigned or selected. All images are skipped by default.
+
 ## Workbook image review and phased tasks
 
 **Diagram → Match workbook photos** opens the separate photo review screen. Select a local .xlsx workbook and review each embedded image, its original worksheet/anchor row where supported, and the equipment record to attach it to. The default for every image is **Skip**. Choose the component and photo purpose; only approved selections are compressed and appended to private galleries. No workbook images or filenames are published to GitHub, and no electrical links are created. Existing photos remain, capped at eight per component. Diagrams/screenshots without a meaningful component match should remain skipped.

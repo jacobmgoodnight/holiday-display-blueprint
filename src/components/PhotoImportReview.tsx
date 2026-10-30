@@ -15,6 +15,8 @@ export function PhotoImportReview({project,onApply,onClose}:Props){
  const [error,setError]=useState('');
  const [busy,setBusy]=useState(false);
  const [name,setName]=useState('');
+ const [searchByPhoto,setSearchByPhoto]=useState<Record<string,string>>({});
+ const [showOnly,setShowOnly]=useState<'all'|'unassigned'|'assigned'>('all');
  useEffect(()=>()=>releaseWorkbookPhotos(photos),[photos]);
  const nodes=useMemo(()=>[...project.nodes].sort((a,b)=>a.zone.localeCompare(b.zone)||a.name.localeCompare(b.name)),[project]);
  const assigned=photos.filter(p=>matches[p.id]?.componentId);
@@ -22,7 +24,7 @@ export function PhotoImportReview({project,onApply,onClose}:Props){
  const choose=(id:string,patch:Partial<Match>)=>setMatches(prev=>({...prev,[id]:{componentId:prev[id]?.componentId||'',role:prev[id]?.role||'detail',...patch}}));
  const load=async(file?:File)=>{
   if(!file)return;
-  setBusy(true);setError('');setMatches({});
+  setBusy(true);setError('');setMatches({});setSearchByPhoto({});setShowOnly('all');
   try{const extracted=await extractWorkbookPhotos(file);setPhotos(extracted);setName(file.name);if(!extracted.length)setError('No supported embedded JPG, PNG or WebP pictures were found. The original workbook was not changed.');}
   catch(e){setPhotos([]);setError(e instanceof Error?e.message:String(e));}
   finally{setBusy(false);}
@@ -46,13 +48,14 @@ export function PhotoImportReview({project,onApply,onClose}:Props){
    <header><div><span className="eyebrow">PRIVATE PHOTO REVIEW</span><h2>Match workbook photos</h2><p>Preview each embedded image, choose its destination, then import only the matches you approve. Nothing is auto-assigned or uploaded publicly.</p></div><button aria-label="Close photo import" onClick={onClose}><X size={20}/></button></header>
    <label className="photo-import-upload"><Upload size={18}/>{name||'Choose Halloween / Christmas Excel workbook (.xlsx)'}<input type="file" accept=".xlsx" disabled={busy} onChange={e=>{void load(e.target.files?.[0]);e.target.value='';}}/></label>
    {error&&<p className="photo-import-error" role="alert">{error}</p>}
-   {!!photos.length&&<><div className="photo-import-summary"><strong>{photos.length} embedded photos found</strong><span>{assigned.length} selected for import · {photos.length-assigned.length} will remain untouched</span></div>
-   <div className="photo-import-list">{photos.map(p=><article key={p.id} className="photo-import-row">
+   {!!photos.length&&<><div className="photo-import-summary"><strong>{photos.length} embedded photos found</strong><span>{assigned.length} selected · {photos.length-assigned.length} skipped</span><label>Show <select aria-label="Filter workbook pictures" value={showOnly} onChange={e=>setShowOnly(e.target.value as 'all'|'unassigned'|'assigned')}><option value="all">All photos</option><option value="unassigned">Not assigned</option><option value="assigned">Selected to import</option></select></label></div>
+   <div className="photo-import-list">{photos.filter(p=>showOnly==='all'||(showOnly==='assigned'?!!matches[p.id]?.componentId:!matches[p.id]?.componentId)).map(p=><article key={p.id} className="photo-import-row">
     <img src={p.url} alt={'Workbook embedded '+p.name}/>
     <div className="photo-import-details"><strong>{p.name}</strong><small>{p.sheet?('Sheet: '+p.sheet+(p.row?' · near row '+p.row:'')):'Workbook image · no reliable worksheet anchor'}</small>
+     <label>Find equipment<input type="search" aria-label={'Search components for '+p.name} placeholder="Name, equipment ID or location…" value={searchByPhoto[p.id]||''} onChange={e=>setSearchByPhoto(prev=>({...prev,[p.id]:e.target.value}))}/></label>
      <label>Attach to component<select aria-label={'Assign '+p.name+' to component'} value={matches[p.id]?.componentId||''} onChange={e=>choose(p.id,{componentId:e.target.value})}>
       <option value="">Skip this image (default)</option>
-      {nodes.map(n=><option key={n.id} value={n.id}>{n.zone} · {n.name} · {n.id}</option>)}
+      {nodes.filter(n=>n.id===matches[p.id]?.componentId||(n.name+' '+n.id+' '+n.zone).toLowerCase().includes((searchByPhoto[p.id]||'').trim().toLowerCase())).map(n=><option key={n.id} value={n.id}>{n.zone} · {n.name} · {n.id}</option>)}
      </select></label>
      {matches[p.id]?.componentId&&<label>Photo purpose<select aria-label={'Purpose for '+p.name} value={matches[p.id]?.role||'detail'} onChange={e=>choose(p.id,{role:e.target.value as PhotoRole})}>{roles.map(role=><option key={role} value={role}>{({installed:'Installed view',connector:'Plug / connection',storage:'Storage / bin',detail:'Reference / detail'})[role]}</option>)}</select></label>}
     </div>

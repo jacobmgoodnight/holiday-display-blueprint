@@ -4,6 +4,11 @@ _Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Shipped and testable
 
+- **Mobile primary-flow refinement:** compact View/Find/Add/More diagram actions, direct selected-item Edit details and Photos, an easy jump to the same inspector, fullscreen Add/Explore modes, a simplified phone drawer, whole-system-first Field Mode with a collapsed detailed guide, and a visible Install checklist shortcut. Existing graph, checklist and sync data stay unchanged.
+- **Mobile checklist usability:** current phase/area open by default, in-place notes and photos, next-step lookup, and area-aware progress. Completed checklist items retain their original keys.
+- **Workbook photo review on phone:** per-image equipment search plus All/Unassigned/Selected review filters; no automated attachment, import, or overwrite.
+- **Validation limitation:** GitHub Actions tests/build do not substitute for hands-on iOS Safari, Android Chrome, small-landscape and installed-PWA touch/keyboard testing.
+
 - **Workbook photo review:** private .xlsx embedded-image preview with source sheet/row hints, per-photo manual component and purpose selection, default Skip, and atomic appended gallery import. No automatic matching of schematic images to equipment; no silent gallery replacement.
 - **Useful install/teardown phases:** collapsible three-phase execution with per-zone sections, completed/total counters and next step; all historic checklist IDs, notes and photos preserved.
 - **Cleaner diagrams:** removed newly introduced field-check badges from nodes, keeping persisted verification data and the separate optional audit intact.

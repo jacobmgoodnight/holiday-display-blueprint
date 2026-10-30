@@ -11,13 +11,16 @@ describe('phone-first Field Mode',()=>{
   expect(html).toContain('Continue installation');
   expect(html).toContain('O01');
   expect(html).toContain('Mark step complete');
-  expect(html).toContain('Connection tree and setup checklist');
+  expect(html).toContain('Show detailed wiring');
+  expect(html).toContain('aria-pressed="true"');
+  expect(html).not.toContain('class="field-guide" open');
   expect(html).toContain('Field Mode documents your plan');
  });
  it('offers one-tap full screen exploration from the phone field view',()=>{
-  const html=renderToStaticMarkup(<FieldMode project={project} onLocate={()=>{}} onTaskChange={()=>{}} onEdit={()=>{}} onExplore={()=>{}}/>);
+  const html=renderToStaticMarkup(<FieldMode project={project} onLocate={()=>{}} onTaskChange={()=>{}} onEdit={()=>{}} onExplore={()=>{}} onTasks={()=>{}}/>);
   expect(html).toContain('Fullscreen diagram');
   expect(html).toContain('Edit wiring');
+  expect(html).toContain('Install checklist');
  });
  it('recognizes completion of every step, while retaining warnings',()=>{
   const initial=renderToStaticMarkup(<FieldMode project={project} onLocate={()=>{}} onTaskChange={()=>{}} onEdit={()=>{}}/>);
