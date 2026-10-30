@@ -16,6 +16,12 @@ Restoring a previous physical feed returns affected components to **Draft / Need
 
 For oversized photo-rich plans, create a private manual restore point before rewiring. The current editing action remains possible, but in-memory undo may be unavailable. Before using a cloud conflict resolution button, the app starts a private JSON backup download; confirm it was saved before leaving the page. Historical Excel workbooks are private references and have not been silently imported or photo-matched.
 
+## Workbook image review and phased tasks
+
+**Diagram → Match workbook photos** opens the separate photo review screen. Select a local .xlsx workbook and review each embedded image, its original worksheet/anchor row where supported, and the equipment record to attach it to. The default for every image is **Skip**. Choose the component and photo purpose; only approved selections are compressed and appended to private galleries. No workbook images or filenames are published to GitHub, and no electrical links are created. Existing photos remain, capped at eight per component. Diagrams/screenshots without a meaningful component match should remain skipped.
+
+**Install/Teardown** now uses three expandable phases and groups checkboxes by display area. Old task IDs, notes and attached photos are reused; finished tasks are not reset. Install: position, connect downstream first, then attend final power-on tests. Teardown: power off, unplug, then pack and document storage. Look at the next unchecked step or filter by area; use **Diagram** to see the real recorded connection. The separate field-verification audit remains available, but distracting new node-level check badges were removed.
+
 ## Photos and stock-change records
 
 Permanent lighting stock now supports an optional private reference photo (e.g. C9 socket detail, storage bin, mini-light packaging) uploaded through the phone camera. The compressed photo travels with the stock item across Christmas years and syncs within private vault size limits. Use **Owned inventory → select stock → Add stock photo**. When the physical owned bulb or strand count changes, Blueprint keeps a short dated quantity-change log so next year's purchases are distinguishable from merely reassigning the same strands.
