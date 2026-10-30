@@ -22,6 +22,7 @@
 .shared-stock-row.expanded .shared-stock-summary{background:#eef7f9}
 .shared-stock-icon{font-size:26px;flex:none}
 .shared-stock-name{flex:1;min-width:0}.shared-stock-name strong{display:block;font-size:14px}.shared-stock-name small{display:block;font-size:11px;line-height:1.5;color:#728b99;margin-top:3px}
+.shared-stock-allocation{color:#416e80!important;font-weight:700;overflow-wrap:anywhere}
 .shared-stock-number{display:grid;text-align:right;min-width:56px}.shared-stock-number strong{font-size:18px}.shared-stock-number small{font-size:10px;color:#758d9d}
 .shared-stock-toggle{font-size:12px;border:1px solid #d8e4ec;border-radius:7px;padding:8px;flex:none}
 .shared-stock-detail{padding:12px;display:grid;gap:12px;border-top:1px solid #dfebef}
