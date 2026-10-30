@@ -1,10 +1,13 @@
 import type {Project} from './model';
+import {isSharedLightingRecord} from './sharedLighting';
+import {mergeConcurrentLighting} from './sharedLightingMerge';
 import {createBackup,parseBackup} from './storage';
 import {decryptHostedMasters,type EncryptedMasterEnvelope} from './hostedMasters';
 
 export const SYNC_ENDPOINT='https://rwqclcpmtuebxndadkxv.supabase.co/functions/v1/holiday-blueprint-sync';
 const STORAGE_KEY='hdb-private-sync-master-key-v1';
 const BASELINE_PREFIX='hdb-sync-baseline-v1:';
+const ITEM_BASELINE_PREFIX='hdb-sync-item-hashes-v1:';
 const AAD='holiday-display-blueprint:shared-master:v1';
 const FORMAT='holiday-display-blueprint-encrypted-master';
 const textEncoder=new TextEncoder();
@@ -56,6 +59,21 @@ export function readBaseline(vaultId:string):Record<string,string>{
   return Object.fromEntries(Object.entries(obj).filter((entry):entry is [string,string]=>!!entry[0]&&typeof entry[1]==='string'&&/^[0-9a-f]{64}$/.test(entry[1])));
  }catch{return {};}
 }
+export function readItemBaseline(vaultId:string):Record<string,string>{
+ try{const o=JSON.parse(localStorage.getItem(ITEM_BASELINE_PREFIX+vaultId)||'{}') as Record<string,unknown>;
+  return Object.fromEntries(Object.entries(o).filter((e):e is [string,string]=>typeof e[1]==='string'&&/^[0-9a-f]{64}$/.test(e[1])));
+ }catch{return {};}
+}
+export function saveItemBaseline(vaultId:string,hashes:Record<string,string>){
+ try{localStorage.setItem(ITEM_BASELINE_PREFIX+vaultId,JSON.stringify(hashes));}catch{/* conservative conflict if unavailable */}
+}
+export async function hashCatalogItems(projects:readonly Project[]):Promise<Record<string,string>>{
+ const record=projects.find(isSharedLightingRecord);if(!record?.sharedLighting)return {};
+ const h:Record<string,string>={};
+ for(const row of record.sharedLighting.stock)h['stock:'+row.id]=hex(await digest(textEncoder.encode(JSON.stringify(row))));
+ for(const row of record.sharedLighting.placements)h['placement:'+row.id]=hex(await digest(textEncoder.encode(JSON.stringify(row))));
+ return h;
+}
 export function saveBaseline(vaultId:string,baseline:Record<string,string>):void{
  try{window.localStorage.setItem(BASELINE_PREFIX+vaultId,JSON.stringify(baseline));}
  catch{/* offline browser without localStorage will conservatively flag conflicts later */}
@@ -73,7 +91,7 @@ export async function hashProjects(projects:readonly Project[]):Promise<Record<s
 export function planMerge(
  local:Project[],remote:Project[],base:Record<string,string>,
  localHashes:Record<string,string>,remoteHashes:Record<string,string>,
- prefer?:'local'|'remote'
+ prefer?:'local'|'remote',itemBase:Record<string,string>={},localItems:Record<string,string>={},remoteItems:Record<string,string>={}
 ):SyncOutcome{
  const localReal=new Map(local.filter(p=>!p.example).map(p=>[p.id,p]));
  const remoteReal=new Map(remote.filter(p=>!p.example).map(p=>[p.id,p]));
@@ -91,6 +109,10 @@ export function planMerge(
   if(prefer==='local'){chosen.push(l);upload=true;continue;}
   if(prefer==='remote'){chosen.push(r);download=true;continue;}
   const baseline=base[id];
+  if(isSharedLightingRecord(l)&&isSharedLightingRecord(r)){
+   const combined=mergeConcurrentLighting(l,r,itemBase,localItems,remoteItems);
+   if(combined){chosen.push(combined);upload=true;download=true;continue;}
+  }
   if(baseline===lh){chosen.push(r);download=true;}
   else if(baseline===rh){chosen.push(l);upload=true;}
   else{conflicts.push(id);chosen.push(l);}

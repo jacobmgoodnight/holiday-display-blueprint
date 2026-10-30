@@ -2,7 +2,7 @@ import {useCallback,useEffect,useRef,useState,type Dispatch,type SetStateAction}
 import type {Project} from '../lib/model';
 import {isSharedLightingRecord} from '../lib/sharedLighting';
 import {restoreBackup,createBackup} from '../lib/storage';
-import {syncCredentials,getDeviceSyncKey,forgetDeviceSyncKey,readBaseline,saveBaseline,hashProjects,planMerge,pullCloud,pushCloud,type CloudCredentials} from '../lib/cloudSync';
+import {syncCredentials,getDeviceSyncKey,forgetDeviceSyncKey,readBaseline,saveBaseline,hashProjects,hashCatalogItems,readItemBaseline,saveItemBaseline,planMerge,pullCloud,pushCloud,type CloudCredentials} from '../lib/cloudSync';
 
 export type SyncStatus='off'|'connecting'|'synced'|'saving'|'offline'|'conflict';
 type Props={
@@ -33,10 +33,10 @@ export function useSharedSync({loaded,storageReady,projects,setProjects,onImport
    const remote=await pullCloud(creds);
    const local=latest.current;
    const base=readBaseline(creds.vaultId);
-   const [localHashes,remoteHashes]=await Promise.all([hashProjects(local),hashProjects(remote.projects)]);
-   const outcome=planMerge(local,remote.projects,base,localHashes,remoteHashes,prefer);
+   const [localHashes,remoteHashes,localItems,remoteItems]=await Promise.all([hashProjects(local),hashProjects(remote.projects),hashCatalogItems(local),hashCatalogItems(remote.projects)]);
+   const outcome=planMerge(local,remote.projects,base,localHashes,remoteHashes,prefer,readItemBaseline(creds.vaultId),localItems,remoteItems);
    if(outcome.conflicts.length){
-    setConflicts(outcome.conflicts.map(id=>local.find(p=>p.id===id)?.name||id));
+    setConflicts(outcome.conflicts.map(id=>id==='shared-lighting-inventory-v1'?'Shared lighting inventory':local.find(p=>p.id===id)?.name||id));
     setStatus('conflict');return;
    }
    if(latest.current!==local){setStatus('connecting');return;} // user edited during fetch
@@ -55,6 +55,7 @@ export function useSharedSync({loaded,storageReady,projects,setProjects,onImport
     if(local.every(p=>p.example)&&merged.some(p=>!isSharedLightingRecord(p)))callback.current(merged.find(p=>!isSharedLightingRecord(p)&&p.season==='Halloween')||merged.find(p=>!isSharedLightingRecord(p))!);
    }
    saveBaseline(creds.vaultId,mergedHashes);
+   saveItemBaseline(creds.vaultId,await hashCatalogItems(merged));
    setConflicts([]);setStatus('synced');setLastSynced(new Date().toLocaleTimeString());
   }catch(e){
    const err=e as Error & {status?:number};
