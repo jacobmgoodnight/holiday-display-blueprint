@@ -289,3 +289,19 @@
  .nav-link{min-height:45px}
  .lighting-inventory input,.lighting-inventory select,.lighting-inventory button{font-size:13px}
 }
+
+/* Inspector identity comes first; connection and equipment specifics are optional sections. */
+.node-icon-action{border:1px solid transparent;padding:0;cursor:pointer;transition:box-shadow .15s,background .15s}
+.node-icon-action:hover,.node-icon-action:focus-visible{border-color:#78b8d4;box-shadow:0 0 0 3px #a8d7e855;outline-offset:2px}
+.inspector-quick-actions{display:flex;gap:8px;margin:10px 12px}
+.inspector-quick-actions button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:42px;flex:1;padding:8px;border:1px solid #cddfe8;border-radius:8px;background:#f7fafc;color:#3e6b86;font-weight:800;font-size:12px}
+.inspector-power-detail,.inspector-advanced,.inspector-find-other{border:1px solid #d6e5ed;border-radius:10px;margin:9px 12px;background:#fff;overflow:hidden}
+.inspector-power-detail>summary,.inspector-advanced>summary,.inspector-find-other>summary{display:flex;align-items:center;gap:8px;padding:12px;min-height:45px;cursor:pointer;color:#3e657c;font-size:12px;font-weight:850}
+.inspector-power-detail>summary{flex-wrap:wrap}
+.inspector-power-detail>summary small{display:block;width:100%;font-size:11px;font-weight:600;color:#68879a;padding-left:23px;overflow-wrap:anywhere}
+.inspector-power-detail[open],.inspector-advanced[open],.inspector-find-other[open]{background:#f9fcfd;border-color:#bcd8e7}
+.inspector-power-detail .power-feed-editor{border:0;border-top:1px solid #e1edf1;border-radius:0;margin:0;background:transparent}
+.inspector-advanced .inspector-fields{padding:11px;gap:11px}
+.inspector-find-other .connection-finder{border:0;margin:0}
+.inspector-advanced .field-verified{font-size:12px}
+@media(max-width:900px){.inspector-power-detail>summary,.inspector-advanced>summary,.inspector-find-other>summary{font-size:13px;min-height:46px}.inspector-quick-actions button{font-size:13px}}

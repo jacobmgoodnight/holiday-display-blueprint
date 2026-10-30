@@ -15,6 +15,12 @@
 
 Edits save locally in IndexedDB. The header reports **Saving locally**, **Saved locally**, or **Local save failed** with a retry; a separate cloud status reports encrypted sync. Online synchronization occurs while the app is open, not while a closed browser runs in the background.
 
+## Faster diagram editing
+
+In the **Diagram editor**, selecting a component now puts its icon, editable name, zone and photo button at the **top of Component details**. "Where does it plug in?" shows the current upstream feed in a compact expandable section; output names, specs, storage and the connection finder are below. This avoids making a wiring change just to rename a decoration.
+
+You can also edit **directly over the diagram**: double-click a node (desktop), right-click it, or **tap/click its icon** to open a compact name/icon picker. The popup stays readable independently of diagram zoom. Enter saves a name; Escape cancels; edits use the existing project auto-save and encrypted sync. A single click still only selects the item. In fullscreen, these gestures edit in **Builder**, never in read-only **Explore**. Names and icons do not change electrical connections or field-verification status.
+
 ## iPhone-friendly full-screen diagram and custom wiring changes
 
 From **Field → Fullscreen diagram** (phone) or **Wiring → Fullscreen** (desktop), the app now opens on the current outlet at a **readable zoom** instead of shrinking every branch into a tiny overview. Drag empty space to pan, pinch or use ± to zoom; **Fit** intentionally zooms out to show the whole selected view. Controls are reduced to a compact one-row bar with circuit choice, ±/Fit, and a **Tools** toggle for search and Path only. The old persistent bottom instruction bubble is removed from phone layouts. Portrait and landscape styles account for Safari's visible browser controls.

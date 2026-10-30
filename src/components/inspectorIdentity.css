@@ -1,0 +1,18 @@
+.inspector-identity{display:grid;gap:9px;margin:10px 12px 12px;border:1px solid #c4dce8;border-radius:12px;padding:11px;background:#f5fafc}
+.inspector-identity-top{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.inspector-identity-icon{width:55px;height:55px;flex:none;border:1px solid #aecddf;background:#fff;color:#456d84;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.inspector-identity-icon>svg:first-child{width:30px;height:30px}.inspector-identity-icon .inspector-icon-pencil{position:absolute;right:3px;bottom:3px;color:#326784}
+.inspector-identity-icon:hover,.inspector-identity-icon:focus-visible{border-color:#367b9f;box-shadow:0 0 0 2px #a9d8ee}
+.inspector-identity-main{min-width:0;flex:1;display:grid;gap:5px}
+.inspector-identity-main>small{font-size:10px;font-weight:800;color:#64869a;letter-spacing:.04em}
+.inspector-identity-main label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:850;color:#385f76}
+.inspector-identity-main input{border:1px solid #c0d6e2;background:#fff;border-radius:8px;padding:9px;font-size:15px;font-weight:700;color:#2c4b62;width:100%;min-width:0;min-height:44px}
+.inspector-identity-actions{display:flex;gap:8px;align-items:end}
+.inspector-identity-actions label{display:grid;gap:4px;flex:1;min-width:0;font-size:11px;font-weight:850;color:#5a778a}
+.inspector-identity-actions select{font-size:12px;min-height:40px;max-width:100%;min-width:0;width:100%;border:1px solid #d5e5ed;border-radius:8px;padding:7px;color:#365970;background:#fff}
+.inspector-identity-actions button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 10px;border:1px solid #d0e0e9;border-radius:8px;background:white;color:#486d85;font-size:12px;font-weight:800}
+.inspector-identity-help{margin:0;color:#7790a0;font-size:10px;line-height:1.5}
+.inspector-identity-palette{max-height:275px;overflow-y:auto;overscroll-behavior:contain}
+.inspector-identity-palette .visual-icon-picker{padding:8px}
+.inspector-identity-palette .visual-icon-suggested{grid-template-columns:repeat(auto-fill,minmax(53px,1fr))}
+@media(max-width:900px){.inspector-identity-main input{font-size:16px}}

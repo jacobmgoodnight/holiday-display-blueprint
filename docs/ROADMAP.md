@@ -4,6 +4,8 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Shipped and testable
 
+- **Selected-component-first inspector and direct node quick edits:** name, icon, zone and photos are visible before any source selection; current feed is summarized in an expandable section and advanced hardware details are collapsed. Double-click/right-click to rename on the diagram, icon tap/click for palette in normal editor and fullscreen Builder. Fullscreen Explore remains read-only; labels and artwork never rewire equipment.
+
 - **Multi-season local-first records:** Halloween/Christmas years, graphs with directed feeds, output ports, validation, asset details, notes, reference photos, verified/draft states, IndexedDB and JSON backups. Per-project serialized writes, local saved/saving/failed indicators, retries, and safe flush during project switches.
 - **Master references:** private two-season initial master snapshot distributed through the encrypted GitHub Pages recovery file; source-aware Halloween structured-sheet and Christmas narrative-sheet import (new drafts, no auto merge).
 - **Mobile header navigation:** a clearly labeled single menu drawer with setup views and quick import/export/backup/sync actions; the desktop three-dot More actions dropdown remains distinct, with outside-tap and Escape dismissal.

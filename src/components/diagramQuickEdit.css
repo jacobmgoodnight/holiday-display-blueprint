@@ -1,0 +1,15 @@
+.diagram-quick-editor{position:absolute;z-index:40;width:min(320px,calc(100% - 16px));max-height:min(390px,calc(100% - 16px));overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #b7cbd9;border-radius:13px;box-shadow:0 13px 45px #122d4560;color:#36556d;padding:10px;display:grid;gap:10px;pointer-events:auto}
+.diagram-quick-editor header{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.diagram-quick-editor header>div{display:grid;gap:3px;min-width:0;flex:1}
+.diagram-quick-editor header strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.diagram-quick-editor header small{font-size:10px;color:#7b8e9c}
+.diagram-quick-editor header button{border:1px solid #d7e5eb;border-radius:8px;min-height:35px;min-width:35px;background:#f7fafc;color:#4e7589}
+.diagram-quick-tabs{display:flex;gap:5px}.diagram-quick-tabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;min-height:42px;border-radius:8px;border:1px solid #d8e4ec;background:#fff;color:#537487;font-size:12px;font-weight:800}
+.diagram-quick-tabs button.active{background:#2d6581;color:white;border-color:#2d6581}
+.diagram-quick-name{display:grid;gap:7px}.diagram-quick-name label{font-size:12px;font-weight:800}.diagram-quick-name input{font-size:15px;min-height:44px;border:1px solid #b9d1df;border-radius:8px;padding:10px;color:#2f5268;width:100%}
+.diagram-quick-name>button{min-height:44px;border:0;border-radius:8px;background:#2e795d;color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px}
+.diagram-quick-name small{color:#68869b;font-size:10px;line-height:1.5}
+.diagram-quick-icons{display:grid;gap:7px}.diagram-current-icon{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800}
+.diagram-quick-icons>.visual-icon-picker{padding:7px;min-width:0}.diagram-quick-icons .visual-icon-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.diagram-quick-editor .visual-icon-suggested{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:720px){.diagram-quick-editor{width:min(320px,calc(100% - 14px));max-height:min(350px,calc(100% - 14px))}}

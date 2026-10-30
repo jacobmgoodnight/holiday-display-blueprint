@@ -31,6 +31,14 @@ Open **Inventory → Lighting counts** in your Christmas project. Lighting inven
 - Optional diagram component links are for lookup only, never a new AC power feed.
 - Totals retain explicit unknown quantities, and exports contain only entered counts. Historical Excel workbook originals are not modified.
 
+## Selected item first: rename directly in the wiring diagram
+
+Under **Diagram editor → Component details**, choosing a component now puts that item's icon, **editable name**, zone and photo control at the very top. The existing wiring/source picker is available immediately below in the expandable **Where does it plug in?** section, which shows its current feed in the section summary. Output names, trace tools, advanced equipment specs and Find another item remain available but no longer bury the ordinary rename task.
+
+On desktop, **double-click** or **right-click** a diagram node to open a small rename/icon editor over the canvas; click the node icon to open directly in icon-selection mode. On a phone, tap the node icon in the regular editor or fullscreen Builder. Enter commits a renamed label; Escape cancels; click or tap an icon to apply it. Choosing an icon never changes component kind, actual wiring, source port or load ratings. Fullscreen **Explore** remains read-only and does not expose those editing controls.
+
+The popup does not scale with diagram zoom and is bounded to the canvas to avoid tiny, inaccessible controls. Existing automatic local save + encrypted sync persists the change. Field installation status stays unchanged for cosmetic name/icon edits; changing electrical specifications still requires re-verification.
+
 ## Fast item editing and safe duplication in Builder
 
 To rename or edit a component, use **Field → Fullscreen diagram → Builder** and tap that item. It opens **Quick edit** (or choose the Quick edit tab manually). Change the name, zone, wire/item color, storage location and installation notes in the compact panel. The changes join the normal local auto-save queue and encrypted cloud synchronization; look for **Saved locally** and cloud sync status rather than relying on the form to claim completion. Expand **Diagram icon and output labels** only when needed.
