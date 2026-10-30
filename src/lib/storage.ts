@@ -4,9 +4,11 @@ import {kinds} from './model';
 import {validateGraph} from './graph';
 import {exampleProjects} from '../fixtures/examples';
 export const DB_NAME='holiday-display-blueprint-v1';
+export type SavedVersion={id:string;projectId:string;createdAt:string;label:string;bytes:number;snapshot:Project};
 export class BlueprintDB extends Dexie{
  projects!:EntityTable<Project,'id'>;
- constructor(name=DB_NAME){super(name);this.version(1).stores({projects:'id,season,year,updatedAt'});}
+ versions!:EntityTable<SavedVersion,'id'>;
+ constructor(name=DB_NAME){super(name);this.version(1).stores({projects:'id,season,year,updatedAt'});this.version(2).stores({projects:'id,season,year,updatedAt',versions:'id,projectId,createdAt'});}
 }
 export const db=new BlueprintDB();
 export async function initialize(dbInstance:BlueprintDB=db):Promise<Project[]>{

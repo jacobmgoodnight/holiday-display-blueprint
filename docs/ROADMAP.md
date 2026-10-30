@@ -34,6 +34,11 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 - Four main phone navigation choices; Install/Teardown share a Tasks view. Compact inventory fields and printable stock labels.
 - Base-path-aware installable PWA app-shell caching, requiring an initial online visit; no promise of completed iOS offline smoke test.
 
+## Local change recovery
+
+- A separately stored browser-local restore-point list (IndexedDB v2 additive migration) lets you save up to eight complete manual project checkpoints, compare graph changes, download a snapshot, and restore after first preserving the current plan. Restore resets field checks and returns Draft.
+- Continuous automatically recorded versions, full graph-step undo, photos over the snapshot size limit, cloud-synced history, and multi-device deletion tombstones are still future work.
+
 ## Highest-priority next improvements
 
 1. **Safer source reconciliation (large impact).** Match a changed workbook's IDs against the current synced master, present a side-by-side diff of additions, removals and upstream/port changes, require explicit per-change approval, and avoid overwriting field photos/checklist states.

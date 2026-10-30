@@ -1,0 +1,18 @@
+.history-overlay{position:fixed;inset:0;z-index:850;background:#092239b8;display:flex;align-items:center;justify-content:center;padding:12px}
+.history-card{background:#fff;width:min(690px,100%);max-height:94dvh;border-radius:14px;display:flex;flex-direction:column;color:#31556d;box-shadow:0 20px 60px #061a2b66}
+.history-card header{display:flex;justify-content:space-between;align-items:start;gap:12px;padding:15px;border-bottom:1px solid #deebf0}
+.history-card h2{display:flex;gap:8px;align-items:center;font-size:19px;margin:0}
+.history-card header p{font-size:12px;color:#6b8799;margin:5px 0 0}
+.history-card header button{border:1px solid #d4e3eb;border-radius:8px;background:#f7fafc;min-height:42px;min-width:42px}
+.history-body{padding:15px;overflow:auto;display:grid;gap:12px}
+.history-intro{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.history-intro p{font-size:13px;line-height:1.5;margin:0;flex:1;min-width:220px;color:#678497}
+.history-intro button,.history-actions button{display:flex;align-items:center;gap:7px;padding:10px;border-radius:8px;border:1px solid #d0e0ea;background:#f6fafc;color:#42647a;font-size:12px;font-weight:800;min-height:44px}
+.history-intro .history-create{background:#2b735e;color:white}
+.history-entry{border:1px solid #d7e3eb;border-radius:11px;padding:11px;display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.history-entry>div:first-child{flex:1;min-width:200px}.history-entry strong{font-size:13px}.history-entry small{display:flex;align-items:center;gap:5px;color:#7b8fa0;font-size:10px;margin-top:5px}
+.history-entry p{font-size:11px;color:#668599;line-height:1.45;margin:7px 0 0}
+.history-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.history-actions .history-restore{background:#fff9ee;color:#845d37;border-color:#e7d7b7}
+.history-caveat,.history-empty{color:#7890a1;font-size:12px;line-height:1.5}.history-error{font-size:12px;color:#a04642;background:#fff3f3;border:1px solid #edc5c5;padding:10px}
+@media(max-width:580px){.history-overlay{padding:6px;align-items:flex-end}.history-card{border-radius:15px 15px 5px 5px}.history-entry{align-items:stretch}.history-actions{width:100%}.history-actions button{flex:1;justify-content:center}}
