@@ -35,7 +35,7 @@ The normal **Diagram editor** and fullscreen **Builder** now provide **Undo / Re
 
 A reversed power connection is validated again and its affected component field checks and obsolete connection tasks are invalidated. Unrelated checklist entries remain. **Undo never means a connection was electrically checked**. Photo-heavy plans that exceed the bounded session history limit can still be edited, but the app asks you to save a private restore point rather than promising undo.
 
-Diagram item labels now distinguish **Field checked**, **Needs field check** and **Example only**. These reflect recorded documentation, not electrical certification. Clicking a wire shows its source/receiver and whether that setup checklist step is marked done. The inspector asks for an explicit physical on-site confirmation before recording a new component field check.
+The diagram no longer displays per-node field-check status badges. Clicking a wire still shows its source, receiver, and whether that specific setup checklist step was checked. Existing optional verification records remain available in Component Details and the separate audit.
 
 If encrypted sync detects conflicting device changes, resolving the conflict now initiates a private JSON backup download before replacing either version. Verify that the download was saved. Cloud choices remain deliberate, and a conflicting version is not automatically overwritten.
 
