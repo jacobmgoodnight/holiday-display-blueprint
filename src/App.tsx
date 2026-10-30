@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {ReactFlow,Background,Controls,MiniMap,ReactFlowProvider,useReactFlow,MarkerType,type Edge,type Connection as FlowConnection} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Box,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,History,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Smartphone,Maximize2,Minimize2,ZoomIn,ZoomOut,Eye,SlidersHorizontal,PenTool,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowDownToLine,ArrowRight,ArrowUpRight,BookOpen,Check,CheckCircle2,ChevronDown,CircuitBoard,ClipboardCheck,Copy,Download,FileSpreadsheet,ImagePlus,Layers,Link2,History,Map,MoreVertical,Package,PlugZap,Plus,Printer,LockKeyhole,Search,ShieldAlert,Smartphone,Maximize2,Minimize2,ZoomIn,ZoomOut,Eye,SlidersHorizontal,PenTool,Trash2,Unplug,Upload,WifiOff,X} from 'lucide-react';
 import type {Component,Kind,Project,Season,Zone} from './lib/model';
 import {categories,makeNode,now,outputCount} from './lib/model';
 import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSummary,type Task} from './lib/graph';
@@ -15,7 +15,7 @@ import {ComponentPhotoGallery} from './components/ComponentPhotoGallery';
 import {BuilderQuickEdit} from './components/BuilderQuickEdit';
 import {duplicateEquipment} from './lib/duplicateEquipment';
 import {quickAddConnected} from './lib/quickAdd';
-import {defaultVisualIcon,getVisualIcon} from './lib/visualIcons';
+import {defaultVisualIcon} from './lib/visualIcons';
 import {addComponentPhoto,promoteComponentPhoto,removeComponentPhoto,photoCount,type PhotoRole} from './lib/componentPhotos';
 import {ExcelWizard} from './components/ExcelWizard';
 import {ConnectionFinder} from './components/ConnectionFinder';
@@ -61,7 +61,6 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showHistory,setShowHistory]=useState(false);const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
- const [inspectorIconOpen,setInspectorIconOpen]=useState(false);
  const [diagramQuickEdit,setDiagramQuickEdit]=useState<DiagramQuickEditState|null>(null);
  const [deletedReceipt,setDeletedReceipt]=useState<DeletedComponent|null>(null);
  const [fullscreen,setFullscreen]=useState(false);
@@ -80,7 +79,6 @@ function AppContent(){
  const [insertName,setInsertName]=useState('');
  const [showInsertPreview,setShowInsertPreview]=useState(false);
  const workspaceEditable=workspaceCanEdit(fullscreen,fullMode);
- useEffect(()=>{setInspectorIconOpen(false);},[selected,active]);
  const openDiagramQuickEdit=useCallback((id:string,x:number,y:number,mode:'name'|'icon')=>{
   if(!workspaceEditable)return;
   const bounds=document.getElementById('diagram-canvas')?.getBoundingClientRect();
@@ -548,7 +546,8 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
          {project.wiringHistory?.some(entry=>entry.targetId===selectedNode.id)&&<details className="wiring-history"><summary>Recent wiring changes</summary>{[...project.wiringHistory].filter(entry=>entry.targetId===selectedNode.id).slice(-5).reverse().map(entry=><p key={entry.id}><strong>{entry.action}</strong> · {new Date(entry.at).toLocaleString()}<span>{entry.fromId||'No source'}{entry.fromPort!==undefined?` (output ${entry.fromPort+1})`:''} → {entry.toId||'Disconnected'}{entry.toPort!==undefined?` (output ${entry.toPort+1})`:''}</span></p>)}</details>}
          <div className="inspector-quick-actions"><button onClick={()=>duplicateSelectedItem(selectedNode.id)}><Copy size={15}/> Duplicate item</button><button onClick={()=>setGalleryId(selectedNode.id)}><ImagePlus size={15}/> Photos ({photoCount(selectedNode.photo,selectedNode.photoGallery)})</button></div>
          <details className="inspector-advanced"><summary>Equipment specs, storage & notes</summary>
-          <div className="inspector-fields">          <div className="form-grid"><label>Type<select value={selectedNode.kind} onChange={e=>{const kind=e.target.value as Kind;patchComponent(selectedNode.id,{kind,outputs:outputCount(kind)});}}>{categories.map(c=><option key={c.kind} value={c.kind}>{c.label}</option>)}</select></label><label>Outputs<input type="number" min={0} max={16} value={selectedNode.outputs} onChange={e=>patchComponent(selectedNode.id,{outputs:Number(e.target.value)})}/></label></div>
+          <div className="inspector-fields">
+          <div className="form-grid"><label>Type<select value={selectedNode.kind} onChange={e=>{const kind=e.target.value as Kind;patchComponent(selectedNode.id,{kind,outputs:outputCount(kind)});}}>{categories.map(c=><option key={c.kind} value={c.kind}>{c.label}</option>)}</select></label><label>Outputs<input type="number" min={0} max={16} value={selectedNode.outputs} onChange={e=>patchComponent(selectedNode.id,{outputs:Number(e.target.value)})}/></label></div>
           <div className="form-grid"><label>Input plug<select disabled={selectedNode.kind==='outlet'} value={selectedNode.inputGender||''} onChange={e=>patchComponent(selectedNode.id,{inputGender:e.target.value?e.target.value as 'male'|'female':undefined})}><option value="">Unknown</option><option value="male">Male</option><option value="female">Female</option></select></label><label>Output connector<select disabled={selectedNode.outputs===0} value={selectedNode.outputGender||''} onChange={e=>patchComponent(selectedNode.id,{outputGender:e.target.value?e.target.value as 'male'|'female':undefined})}><option value="">Unknown</option><option value="female">Female</option><option value="male">Male</option></select></label></div>
           <label className="field-verified"><input type="checkbox" checked={!!selectedNode.verified} onChange={e=>patchComponent(selectedNode.id,{verified:e.target.checked})}/> Verified this component on site (not electrical certification)</label>
           <label>Wire / cord construction<input placeholder="e.g. outdoor 16/3, SPT-1" value={selectedNode.cordType||''} onChange={e=>patchComponent(selectedNode.id,{cordType:e.target.value})}/></label>
