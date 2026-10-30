@@ -272,3 +272,9 @@
  .fullscreen-selection{bottom:8px}
 }
 @media print{.fullscreen-controls,.fullscreen-builder,.port-label-details{display:none!important}}
+
+/* Two clear inventory views; lights are physical quantities, not more power nodes. */
+.inventory-mode-switch{display:flex;align-items:center;gap:6px;margin:0 0 3px;padding:9px 15px 0;flex-wrap:wrap}
+.inventory-mode-switch button{border:1px solid #d5e2ea;background:#fff;border-radius:9px;color:#52748c;padding:10px 15px;min-height:42px;font-size:12px;font-weight:800}
+.inventory-mode-switch button.active{background:#2d5b77;color:#fff;border-color:#2d5b77}
+@media(max-width:720px){.inventory-mode-switch{padding:8px 12px 0}.inventory-mode-switch button{flex:1}}
