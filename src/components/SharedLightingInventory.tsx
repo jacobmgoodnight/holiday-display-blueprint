@@ -1,5 +1,5 @@
 import {useMemo,useState} from 'react';
-import {Box,Copy,Download,PackagePlus,Printer,Search,Trash2} from 'lucide-react';
+import {Copy,Download,PackagePlus,Printer,Search,Trash2} from 'lucide-react';
 import type {LightingArea,LightingType,LightPlacement,LightStock,Project,SharedLighting} from '../lib/model';
 import {lightingAreas,lightingTypes} from '../lib/lightingInventory';
 import {safeYearStockRows,totals} from '../lib/sharedLighting';
