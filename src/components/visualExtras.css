@@ -1,0 +1,68 @@
+.visual-icon-picker{padding:10px;border:1px solid #d6e3ec;border-radius:10px;background:#f7fafc;min-width:0}
+.visual-icon-heading{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:9px;font-size:11px;color:#365a75}
+.visual-icon-heading span{font-size:10px;color:#6a8496}
+.visual-icon-suggested,.visual-icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.visual-icon-suggested button,.visual-icon-grid button{background:#fff;border:1px solid #d7e3eb;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;padding:5px 3px;min-height:53px;color:#4e718a;min-width:0;font-size:10px}
+.visual-icon-suggested button.selected,.visual-icon-grid button.selected{background:#e3f4ea;border-color:#429577;box-shadow:inset 0 0 0 1px #429577}
+.visual-icon-suggested button span,.visual-icon-grid button span{font-size:23px;line-height:1.25}
+.visual-icon-suggested button small,.visual-icon-grid button small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#59758a}
+.visual-icon-all{margin-top:7px}.visual-icon-all summary{font-weight:800;font-size:11px;color:#547d99;cursor:pointer;padding:7px}
+.visual-icon-all section{margin-top:10px}.visual-icon-all h4{font-size:11px;font-weight:800;color:#496d85;margin:4px 0 7px}
+.node-visual{display:block;line-height:1;font-size:21px}
+.component-photo-backdrop{position:fixed;inset:0;z-index:950;display:flex;align-items:center;justify-content:center;background:#102c40b8;padding:12px;pointer-events:auto}
+.component-photo-card{background:#fff;border-radius:15px;max-width:530px;width:100%;max-height:min(94dvh,850px);display:flex;flex-direction:column;box-shadow:0 15px 55px #071d2b62;overflow:hidden;color:#2c526c}
+.component-photo-card>header{padding:13px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #e2eaf0}
+.component-photo-card>header button{border:1px solid #d8e4ed;border-radius:8px;background:#f8fafc;color:#42647b;padding:7px;flex:none}
+.photo-card-title{display:flex;align-items:center;gap:10px;min-width:0}
+.photo-card-title strong{font-size:14px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.photo-card-title small{display:block;margin-top:4px;font-size:10px;color:#7990a1}
+.photo-card-emoji{font-size:26px;flex:none}
+.photo-card-content{overflow-y:auto;padding:13px;overscroll-behavior:contain}
+.photo-hero{border:1px solid #d8e4eb;background:#f5f8fa;border-radius:10px;width:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:8px;gap:6px}
+.photo-hero img{object-fit:contain;display:block;max-height:36dvh;max-width:100%;border-radius:7px}
+.photo-hero span{display:inline-flex;gap:5px;align-items:center;font-size:10px;color:#55748b}
+.photo-empty{display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:center;text-align:center;padding:20px;background:#f6f9fb;border:1px dashed #c9dce8;border-radius:10px;color:#6b899b}
+.photo-empty p{font-size:11px;line-height:1.5;max-width:320px;margin:0}
+.photo-thumb-row{display:flex;overflow-x:auto;gap:6px;margin:10px 0}
+.photo-thumb-row button{flex:0 0 68px;padding:4px;border:1px solid #d7e2e9;border-radius:8px;background:white}
+.photo-thumb-row button.active{border:2px solid #2f8e70}
+.photo-thumb-row img{height:48px;width:100%;object-fit:cover;border-radius:5px}
+.photo-thumb-row small{font-size:9px;color:#688294;display:block}
+.photo-info{display:grid;gap:7px;padding:10px 0}
+.photo-info p{display:grid;grid-template-columns:85px minmax(0,1fr);gap:8px;margin:0;font-size:11px;line-height:1.5}
+.photo-info strong{color:#698498;display:flex;align-items:center;gap:5px}
+.photo-info span{overflow-wrap:anywhere}
+.photo-edit{padding:11px;background:#f5f9fc;border:1px solid #d9e7ef;border-radius:11px;margin-top:9px}
+.photo-edit-title{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:11px}
+.photo-edit-title select{border:1px solid #d5e2eb;border-radius:7px;padding:8px;background:#fff;color:#4b6d83;max-width:170px;font-size:11px}
+.photo-edit-actions{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.photo-edit-actions button,.photo-edit-actions label,.photo-open-editor{display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:white;border:1px solid #d3e2eb;border-radius:8px;color:#3e637c;font-size:11px;font-weight:800;min-height:40px;cursor:pointer}
+.photo-edit-actions label input{display:none}
+.photo-edit-actions label.disabled{opacity:.4;pointer-events:none}
+.photo-edit-actions .photo-remove{color:#9c5345;background:#fff7f4}
+.photo-edit>small{font-size:10px;color:#6f8998;line-height:1.5}
+.photo-open-editor{width:100%;margin-top:11px;background:#e8f3fc}
+.photo-lightbox{position:fixed;inset:0;z-index:1000;background:#04121ff4;display:flex;align-items:center;justify-content:center;padding:15px}
+.photo-lightbox img{max-height:94dvh;max-width:95vw;object-fit:contain}
+.photo-lightbox button{position:absolute;right:18px;top:18px;background:#f5f9fd;color:#294c66;border:0;border-radius:9px;padding:9px}
+.quick-source-ports{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0}
+.quick-source-ports>strong{font-size:11px;color:#436781}
+.quick-source-ports button{min-height:39px}
+.quick-source-ports button.selected{background:#2c775e;color:#fff;border-color:#2c775e}
+.quick-add-note{font-size:10px;color:#6e8797;line-height:1.5;margin:3px 0}
+.quick-add-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.quick-add-actions button{flex:1}
+.builder-add-composer{display:grid;gap:8px;max-width:100%}
+.builder-add-composer>.visual-icon-picker{max-height:190px;overflow-y:auto}
+.inspector-photo-button{display:flex;align-items:center;gap:7px;justify-content:center;width:calc(100% - 24px);margin:10px 12px;padding:10px;border-radius:8px;background:#eef6f9;border:1px solid #cfdfea;color:#376784;font-size:11px;font-weight:800}
+.inspector-icon-picker{margin:10px 12px}
+@media(max-width:720px){
+ .component-photo-backdrop{padding:6px;align-items:flex-end}
+ .component-photo-card{max-height:94dvh;border-radius:16px 16px 8px 8px}
+ .photo-card-content{padding:10px}
+ .builder-add-composer>.visual-icon-picker{max-height:145px}
+ .visual-icon-suggested,.visual-icon-grid{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
+ .visual-icon-suggested button small,.visual-icon-grid button small{font-size:8px}
+ .quick-source-ports{gap:5px}
+ .quick-source-ports button{font-size:10px}
+}

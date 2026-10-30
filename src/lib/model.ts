@@ -1,3 +1,4 @@
+import type {PhotoAttachment} from './componentPhotos';
 export const kinds = ['outlet','smart-plug','cord','spt-1','splitter','inline-tap','light-strand','decoration','projector','spotlight','controller','accessory'] as const;
 export type Kind = typeof kinds[number];
 export type Season = 'Halloween'|'Christmas';
@@ -7,7 +8,7 @@ export type Inventory = {quantity?:number;storage?:string;purchaseDate?:string;p
 export type Component = {
   id:string; assetId?:string; name:string; kind:Kind; zone:Zone; position:Position;
   outputs:number; portLabels?:Record<string,string>; inputGender?:'male'|'female'; outputGender?:'male'|'female'; color?:string; lengthFt?:number; cordType?:string;
-  ratedWatts?:number; expectedWatts?:number; notes?:string; photo?:string;
+  ratedWatts?:number; expectedWatts?:number; notes?:string; photo?:string; photoGallery?:PhotoAttachment[]; visualIcon?:string;
   verified?:boolean; inventory?:Inventory; metadata?:Record<string, unknown>;
 };
 export type Connection = {id:string;source:string;sourcePort:number;target:string;notes?:string;metadata?:Record<string,unknown>};

@@ -17,6 +17,14 @@ The **Export Excel reference** action creates a convenient *new workbook* contai
 
 **iPhone usability:** Fullscreen defaults to a legible view near the current outlet, not the whole tiny circuit. Use **Fit** for overview; pinch to zoom. The top bar is compact and search/Path-only options live behind **Tools**. The persistent tip bubble is hidden on phones; landscape gets smaller toolbars. Chrome controlled by the ChatGPT/Safari browser isn't removable by Blueprint.
 
+## Quick Add and photo-backed equipment reference
+
+**One-tap wiring additions:** Open Fullscreen → Builder → **Add item**, then tap an outlet/cord/splitter. A row of currently unused numbered or named outputs appears. Choose the **specific physical output**, select the new item type and optional diagram icon, then **Add & connect**. The edit is validated against occupied ports, connector compatibility and cycle rules. The new item and connection remain unverified until inspected in the yard. If the actual output is unknown, use **Add unconnected** and record that gap rather than invent a connection.
+
+**Icons:** Builder's appearance/port panel and the normal inspector let you change how a component looks on the graph independently from its electrical type. Suggestions are grouped by season, with Skelly, pumpkins, C9 roofline, reindeer, snowman, splitters and other equipment options. This visual choice does not update actual hardware ratings or confirm a real plug.
+
+**Photo cards:** Tap a node in fullscreen Explore to see its equipment card, existing primary photo, storage and notes. In Builder select the component then **Port names / appearance → Photos & details** (or use the standard inspector). Use the phone camera for installed and plug close-ups, or upload photos of storage and other details. A gallery holds one cover photo and additional labeled images, up to eight compressed photos per component. Pick **Use as cover** to promote a secondary photo. Photos remain in the private backup/sync, not the public repository; large collections can reach cloud upload limits.
+
 ## Fullscreen wiring exploration and safe building
 
 Use **Field → Fullscreen diagram** on a phone, or **Wiring → Fullscreen** on a desktop. The first mode is **Explore**, which disables dragging and connecting nodes: drag empty space to pan; scroll/pinch or use the small ±/Fit buttons to zoom; switch the outlet filter; search any component across the full project; tap a component to trace its upstream feed; use Path only to isolate that chain. The **Exit** control returns to normal Blueprint.
