@@ -34,6 +34,11 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 - Four main phone navigation choices; Install/Teardown share a Tasks view. Compact inventory fields and printable stock labels.
 - Base-path-aware installable PWA app-shell caching, requiring an initial online visit; no promise of completed iOS offline smoke test.
 
+## Lighting stock reference evidence
+
+- Added optional photo per permanent light stock record, phone camera capture and private sync. Stock quantity changes now have dated audit messages; annual placement changes never log an owned-stock purchase.
+- Storage labels use permanent stock IDs instead of year-specific record names. More sophisticated printable QR label batches are still future work.
+
 ## Local change recovery
 
 - A separately stored browser-local restore-point list (IndexedDB v2 additive migration) lets you save up to eight complete manual project checkpoints, compare graph changes, download a snapshot, and restore after first preserving the current plan. Restore resets field checks and returns Draft.

@@ -38,7 +38,9 @@ export function updateStock(x:SharedLighting,id:string,patch:Partial<LightStock>
  validateStockCount(patch.owned);
  validateStockCount(patch.bulbsPerStrand);
  const row={...old,...patch,id:old.id};
- return {...x,stock:x.stock.map(s=>s.id===id?row:s)};
+ const qtyChanged='owned' in patch&&old.owned!==patch.owned;
+ const changes=qtyChanged?[...(x.changes||[]),{at:now(),summary:'Updated '+old.name+' from '+(old.owned===undefined?'unknown':old.owned)+' to '+(row.owned===undefined?'unknown':row.owned)+' '+old.unit}].slice(-100):x.changes;
+ return {...x,stock:x.stock.map(s=>s.id===id?row:s),changes};
 }
 export function addPlacement(x:SharedLighting,stockId:string,season:Season,year:number,area:LightingArea,qty?:number):SharedLighting{
  if(!x.stock.some(s=>s.id===stockId))throw Error('Select existing physical lighting stock');

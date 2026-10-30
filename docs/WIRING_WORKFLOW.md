@@ -8,6 +8,10 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Photos and stock-change records
+
+Permanent lighting stock now supports an optional private reference photo (e.g. C9 socket detail, storage bin, mini-light packaging) uploaded through the phone camera. The compressed photo travels with the stock item across Christmas years and syncs within private vault size limits. Use **Owned inventory → select stock → Add stock photo**. When the physical owned bulb or strand count changes, Blueprint keeps a short dated quantity-change log so next year's purchases are distinguishable from merely reassigning the same strands.
+
 ## Permanent light counts across years
 
 **Count your lights once.** Inventory → Lighting counts now includes **Owned inventory** for physical C9 bulb stock and mini-light string groups, plus **This year's placement** for locations and quantities. Enter bulb/strand counts only upon first inventory or physical purchase/disposal/repair. Reuse last year's locations as Planned for a new season without recounting stock.
