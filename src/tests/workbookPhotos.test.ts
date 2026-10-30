@@ -22,7 +22,7 @@ describe('private workbook picture review',()=>{
   expect(photos[0].blob.type).toBe('image/jpeg');
   expect('componentId' in photos[0]).toBe(false);
   releaseWorkbookPhotos(photos);expect(revoke).toHaveBeenCalledWith('blob:photo1');
-  delete (URL as {createObjectURL?:typeof url}).createObjectURL;delete (URL as {revokeObjectURL?:typeof revoke}).revokeObjectURL;
+  Reflect.deleteProperty(URL,'createObjectURL');Reflect.deleteProperty(URL,'revokeObjectURL');
  });
  it('refuses legacy xls and non-workbook formats without touching saved projects',async()=>{
   await expect(extractWorkbookPhotos({name:'legacy.xls',size:100} as File)).rejects.toThrow(/xlsx/);
