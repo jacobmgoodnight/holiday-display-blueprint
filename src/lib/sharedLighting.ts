@@ -26,6 +26,26 @@ export function totals(stock:readonly LightStock[],placements:readonly LightPlac
   needsReview:filtered.filter(s=>s.owned===undefined&&usedByStock.has(s.id)).length
  };
 }
+/** A per-stock, per-year allocation view. Never subtract last year's placements
+ * from this year's physical stock and never present unknown counts as spares. */
+export type StockAvailability={
+ plannedKnown:number;installedKnown:number;assignedKnown:number;unknownPlacements:number;
+ spareKnown?:number;shortKnown?:number;
+};
+export function stockAvailability(stock:LightStock,placements:readonly LightPlacement[],season:Season,year:number):StockAvailability{
+ const assigned=placements.filter(p=>p.stockId===stock.id&&p.season===season&&p.year===year);
+ const plannedKnown=assigned.filter(p=>p.status==='planned').reduce((n,p)=>n+(p.quantity??0),0);
+ const installedKnown=assigned.filter(p=>p.status==='installed').reduce((n,p)=>n+(p.quantity??0),0);
+ const unknownPlacements=assigned.filter(p=>p.quantity===undefined).length;
+ const assignedKnown=plannedKnown+installedKnown;
+ // Damaged/repair stock is not usable spare stock, regardless of its owned count.
+ if(stock.condition!=='good')return {plannedKnown,installedKnown,assignedKnown,unknownPlacements};
+ return {plannedKnown,installedKnown,assignedKnown,unknownPlacements,
+  spareKnown:stock.owned===undefined||unknownPlacements?undefined:Math.max(0,stock.owned-assignedKnown),
+  // Even with uncounted placements, this is a known minimum shortage.
+  shortKnown:stock.owned===undefined?undefined:Math.max(0,assignedKnown-stock.owned)};
+}
+
 export function validateStockCount(value:number|undefined):void{
  if(value!==undefined&&(!Number.isSafeInteger(value)||value<0))throw Error('Quantity must be a whole number, zero or blank');
 }
