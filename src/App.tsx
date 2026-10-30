@@ -555,6 +555,7 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
         onMigrate={()=>{const legacy=(project.lightingInventory||[]).filter(x=>!sharedLighting.stock.some(s=>s.id===x.id));if(!legacy.length)return;if(!confirm('Import '+legacy.length+' previous annual rows as permanent inventory? If these are repeated records of the same physical lights across years, import them only once. Original annual entries remain in your backup.'))return;updateShared(x=>importLegacyLighting(x,legacy,project.season,project.year));setMessage('Existing light counts moved to shared stock. Verify unique physical items once.');}}
         onCreate={type=>updateShared(x=>addStock(x,type))}
         onChangeStock={(id,fields)=>{try{updateShared(x=>updateStock(x,id,fields));}catch(e){setMessage(String(e));}}}
+        onPhoto={async(id,file)=>{try{const photo=await readPhoto(file);updateShared(x=>updateStock(x,id,{photo}));setMessage('Private stock photo saved on this device; cloud sync will transfer it when possible.');}catch(e){setMessage('Photo could not be saved: '+String(e));}}}
         onDeleteStock={id=>{if(sharedLighting.placements.some(p=>p.stockId===id)){setMessage('Referenced in another year; remove assignments first.');return;}updateShared(x=>({...x,stock:x.stock.filter(s=>s.id!==id)}));}}
         onPlace={(id,area)=>updateShared(x=>addPlacement(x,id,project.season,project.year,area))}
         onChangePlacement={(id,fields)=>{try{updateShared(x=>updatePlacement(x,id,fields));}catch(e){setMessage(String(e));}}}
