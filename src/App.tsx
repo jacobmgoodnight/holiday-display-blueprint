@@ -8,6 +8,11 @@ import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSumma
 import {db,initialize,createBackup,parseBackup,restoreBackup,downloadText} from './lib/storage';
 import {readPhoto} from './lib/photos';
 import {BlueprintNode,type BlueprintFlowNode} from './components/BlueprintNode';
+import {VisualIconPicker} from './components/VisualIconPicker';
+import {ComponentPhotoGallery} from './components/ComponentPhotoGallery';
+import {quickAddConnected} from './lib/quickAdd';
+import {defaultVisualIcon,getVisualIcon} from './lib/visualIcons';
+import {addComponentPhoto,promoteComponentPhoto,removeComponentPhoto,photoCount,type PhotoRole} from './lib/componentPhotos';
 import {ExcelWizard} from './components/ExcelWizard';
 import {ConnectionFinder} from './components/ConnectionFinder';
 import {InstallationGuide} from './components/InstallationGuide';
@@ -54,6 +59,9 @@ function AppContent(){
  const [builderSource,setBuilderSource]=useState<string|null>(null);
  const [builderPort,setBuilderPort]=useState(0);
  const [builderName,setBuilderName]=useState('');
+ const [quickAddPort,setQuickAddPort]=useState<number|null>(null);
+ const [builderIcon,setBuilderIcon]=useState<string|undefined>(undefined);
+ const [galleryId,setGalleryId]=useState<string|null>(null);
  const [fullToolsOpen,setFullToolsOpen]=useState(false);
  const [insertEdgeId,setInsertEdgeId]=useState('');
  const [insertKind,setInsertKind]=useState<Kind>('splitter');
@@ -140,7 +148,7 @@ function AppContent(){
     style:{stroke:insertEdgeId===e.id?'#327963':selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:insertEdgeId===e.id?4:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},
     markerEnd:{type:MarkerType.ArrowClosed,color:'#8296a9'}};
  })||[],[project,visibleIds,selected,highlighted,insertEdgeId]);
- function chooseProject(id:string){setFullscreen(false);setBuilderSource(null);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
+ function chooseProject(id:string){setGalleryId(null);setQuickAddPort(null);setFullscreen(false);setBuilderSource(null);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
  function changeView(next:View){setView(next);setShowInsertPreview(false);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
  function jumpToNode(id:string){setTab('diagram');setDiagramMode('map');if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function openFinder(){setInspectorOpen(true);if(window.innerWidth<720)setTimeout(()=>document.getElementById('connection-finder')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
@@ -175,15 +183,42 @@ function AppContent(){
    setMessage('Item inserted. New connections need physical verification and the old wiring step was reset.');
   }catch(error){setMessage(error instanceof Error?error.message:String(error));}
  }
+ function quickAddItem(){
+  if(!project||!selected||quickAddPort===null)return;
+  const source=project.nodes.find(n=>n.id===selected);
+  if(!source)return;
+  if(!freeOutputPorts(project,source.id).includes(quickAddPort)){setMessage('That output is already occupied. Pick another free port.');return;}
+  try{
+   const next=quickAddConnected(project,{sourceId:source.id,port:quickAddPort,kind:addKind,name:builderName,visualIcon:builderIcon});
+   update(()=>next);
+   setBuilderName('');setBuilderIcon(undefined);setQuickAddPort(null);
+   setTrace('downstream');
+   setMessage('Item added to '+source.name+' / '+portName(source,quickAddPort)+'. New connection is unverified.');
+  }catch(err){setMessage(err instanceof Error?err.message:String(err));}
+ }
+ async function addEquipmentPhoto(id:string,file:File,role:PhotoRole){
+  try{
+   const data=await readPhoto(file);
+   const n=project?.nodes.find(n=>n.id===id);
+   if(!n||photoCount(n.photo,n.photoGallery)>=8){setMessage('This item is missing or its gallery is full (8 photos).');return;}
+   update(p=>addComponentPhoto(p,id,data,role));
+   setMessage('Photo attached to equipment. Encrypted sync will transfer it when online.');
+  }catch(error){setMessage(error instanceof Error?error.message:String(error));}
+ }
+ function changeEquipmentPhoto(id:string,photoId:string,action:'promote'|'remove'){
+  try{update(p=>action==='promote'?promoteComponentPhoto(p,id,photoId):removeComponentPhoto(p,id,photoId));}
+  catch(error){setMessage(error instanceof Error?error.message:String(error));}
+ }
  function addBuilderItem(){
   if(!project)return;
   const zone:Zone=zones.includes(view as Zone)?view as Zone:'Front porch';
   const count=project.nodes.filter(n=>n.zone===zone).length;
   const position=layoutMode==='manual'?screenToFlowPosition({x:window.innerWidth/2,y:window.innerHeight/2}):{x:110+(count%4)*215,y:100+Math.floor(count/4)*120};
   const n=makeNode(addKind,zone,position);
+  n.visualIcon=builderIcon||defaultVisualIcon(project.season,addKind);
   if(builderName.trim())n.name=builderName.trim().slice(0,100);
   update(p=>({...p,nodes:[...p.nodes,n],status:'draft'}));
-  setSelected(n.id);setTrace('none');setBuilderName('');
+  setSelected(n.id);setTrace('none');setBuilderName('');setBuilderIcon(undefined);
   setMessage('Added an unverified item. Choose an existing upstream power source to connect it.');
  }
  function chooseBuilderSource(){
@@ -254,6 +289,7 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
  function updateTask(id:string,fields:{done?:boolean;notes?:string;photo?:string}){update(p=>({...p,checklist:{...p.checklist,[id]:{...p.checklist[id],...fields,done:fields.done??p.checklist[id]?.done??false}}}));}
  function renderTask(t:Task){const state=project?.checklist[t.id];return <article className={`task ${state?.done?'task-done':''}`} key={t.id}><label className="task-check"><input type="checkbox" checked={!!state?.done} onChange={e=>updateTask(t.id,{done:e.target.checked})}/><span className="task-check-icon">{state?.done?<Check size={22}/>:null}</span><span>{t.label}</span></label><div className="task-foot"><button className="plain-link" onClick={()=>{setTab('diagram');if(t.nodeId)jumpToNode(t.nodeId);}}>Show on diagram <ArrowUpRight size={13}/></button><input aria-label={`Notes for ${t.label}`} placeholder="Notes / exceptions" value={state?.notes||''} onChange={e=>updateTask(t.id,{notes:e.target.value})}/><label className="task-photo-action" title="Attach task photo"><ImagePlus size={17}/><input type="file" accept="image/*" capture="environment" onChange={async e=>{const file=e.target.files?.[0];if(file)try{updateTask(t.id,{photo:await readPhoto(file)});}catch(err){setMessage(String(err));}e.target.value='';}}/></label></div>{state?.photo&&<img className="task-photo" src={state.photo} alt={`Reference for ${t.label}`}/>}</article>;}
  const selectedNode=project?.nodes.find(n=>n.id===selected);
+ const galleryNode=project?.nodes.find(n=>n.id===galleryId);
  const warnings=project?warningSummary(project):[];
  const audit=useMemo(()=>project?getVerificationIssues(project):[],[project]);
  const auditSummary=useMemo(()=>auditCounts(audit),[audit]);
@@ -345,7 +381,7 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
         <VerificationAudit project={project} scope={baseVisibleIds} scopeLabel={view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8))?.name||view:view} onLocate={jumpToNode} onVerify={id=>{const component=project.nodes.find(n=>n.id===id);if(!component)return;if(confirm(`Have you physically checked ${component.name} at the display? This marks it field-verified, not electrically certified.`)){patchComponent(id,{verified:true});setMessage(`${component.name} marked checked in the field. Any missing wiring or rating details remain outstanding.`);}}}/></>}
        {diagramMode==='guide'&&<InstallationGuide key={project.id} project={project} scope={baseVisibleIds} scopeLabel={view.startsWith('Outlet: ')?project.nodes.find(n=>n.id===view.slice(8))?.name||view:view} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})}/>}
       {diagramMode==='map'&&<div role={fullscreen?'dialog':undefined} aria-modal={fullscreen||undefined} aria-label={fullscreen?'Fullscreen wiring workspace':undefined} className={`diagram-layout ${!inspectorOpen?'diagram-wide':''} ${fullscreen?'diagram-fullscreen':''}`}><div className="diagram-card"><div className="canvas-label"><span className="canvas-live-dot"/> {view==='All zones'?'FULL SYSTEM':view.toUpperCase()} <span>· draft wiring view</span></div><div id="diagram-canvas" className="canvas-wrap" style={project.backgroundPhoto?{backgroundImage:`linear-gradient(#f9fafbcc,#f9fafbcc),url(${project.backgroundPhoto})`,backgroundSize:'contain',backgroundPosition:'center',backgroundRepeat:'no-repeat'}:undefined}>
-       <ReactFlow<BlueprintFlowNode,Edge> nodes={flowNodes} edges={flowEdges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:0.22}} minZoom={0.08} maxZoom={3} nodesDraggable={workspaceEditable&&layoutMode==='manual'} nodesConnectable={workspaceEditable} edgesReconnectable={false} onNodesChange={changes=>{if(!workspaceEditable||layoutMode!=='manual')return;for(const change of changes){if(change.type==='position'&&change.position){update(p=>({...p,nodes:p.nodes.map(n=>n.id===change.id?{...n,position:change.position!}:n)}));}}}} onNodeClick={(_,n)=>{if(fullscreen&&fullMode==='builder'&&builderSource){selectBuilderTarget(n.id);return;}setSelected(n.id);setTrace(n.data.component.kind==='outlet'?'downstream':'upstream');if(!fullscreen)setInspectorOpen(true);}} onPaneClick={()=>{setSelected(null);setTrace('none');}} onConnect={connection=>{if(workspaceEditable)onConnect(connection);}} onEdgeClick={(_,edge)=>{if(fullscreen&&fullMode==='builder'){setInsertEdgeId(edge.id);setBuilderPanel('insert');setShowInsertPreview(false);return;}const target=project.nodes.find(n=>n.id===edge.target);if(target){setSelected(target.id);setTrace('upstream');if(!fullscreen)setInspectorOpen(true);}}} onEdgesDelete={deleted=>{if(!workspaceEditable)return;for(const e of deleted){if(confirm('Disconnect this power feed and mark downstream items for verification?'))changePowerFeed(e.target,null);}}} onNodesDelete={deleted=>{if(deleted.length===1)removeComponent(deleted[0].id);else setMessage('Delete nodes one at a time from the component inspector.')}} deleteKeyCode={null}>
+       <ReactFlow<BlueprintFlowNode,Edge> nodes={flowNodes} edges={flowEdges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:0.22}} minZoom={0.08} maxZoom={3} nodesDraggable={workspaceEditable&&layoutMode==='manual'} nodesConnectable={workspaceEditable} edgesReconnectable={false} onNodesChange={changes=>{if(!workspaceEditable||layoutMode!=='manual')return;for(const change of changes){if(change.type==='position'&&change.position){update(p=>({...p,nodes:p.nodes.map(n=>n.id===change.id?{...n,position:change.position!}:n)}));}}}} onNodeClick={(_,n)=>{if(fullscreen&&fullMode==='builder'&&builderSource){selectBuilderTarget(n.id);return;}setSelected(n.id);setTrace(n.data.component.kind==='outlet'?'downstream':'upstream');if(fullscreen&&fullMode==='explore')setGalleryId(n.id);else if(!fullscreen)setInspectorOpen(true);if(fullscreen&&fullMode==='builder'){setQuickAddPort(null);}}} onPaneClick={()=>{setSelected(null);setTrace('none');}} onConnect={connection=>{if(workspaceEditable)onConnect(connection);}} onEdgeClick={(_,edge)=>{if(fullscreen&&fullMode==='builder'){setInsertEdgeId(edge.id);setBuilderPanel('insert');setShowInsertPreview(false);return;}const target=project.nodes.find(n=>n.id===edge.target);if(target){setSelected(target.id);setTrace('upstream');if(!fullscreen)setInspectorOpen(true);}}} onEdgesDelete={deleted=>{if(!workspaceEditable)return;for(const e of deleted){if(confirm('Disconnect this power feed and mark downstream items for verification?'))changePowerFeed(e.target,null);}}} onNodesDelete={deleted=>{if(deleted.length===1)removeComponent(deleted[0].id);else setMessage('Delete nodes one at a time from the component inspector.')}} deleteKeyCode={null}>
         <Background gap={24} size={1} color="#e1e7ed"/>{!fullscreen&&<Controls showInteractive={false}/>}<MiniMap pannable zoomable nodeColor={n=>n.data?.component&&(n.data.component as Component).kind==='outlet'?'#d68b3e':'#6289aa'} style={{width:130,height:85,display:fullscreen?'none':undefined}}/>
        </ReactFlow>
        {fullscreen&&<div className="fullscreen-workspace-ui">
