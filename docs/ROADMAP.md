@@ -1,10 +1,10 @@
 # Roadmap — Holiday Display Blueprint
 
-_Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
+_Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
 
 ## Shipped and testable
 
-- **Selected-component-first inspector and direct node quick edits:** name, icon, zone and photos are visible before any source selection; current feed is summarized in an expandable section and advanced hardware details are collapsed. Double-click/right-click to rename on the diagram, icon tap/click for palette in normal editor and fullscreen Builder. Fullscreen Explore remains read-only; labels and artwork never rewire equipment.
+- **Selected-component-first inspector and direct node quick edits:** name, icon, zone and photos are visible before any source selection; current feed is summarized in an expandable section and advanced hardware details are collapsed. Double-click/right-click or select and press F2 to rename on the diagram, icon tap/click for palette in normal editor and fullscreen Builder. Renames commit with Done/Enter, while Escape/close safely discards the draft; clicking a wire visibly highlights the chosen connection. Fullscreen Explore remains read-only; labels and artwork never rewire equipment.
 
 - **Multi-season local-first records:** Halloween/Christmas years, graphs with directed feeds, output ports, validation, asset details, notes, reference photos, verified/draft states, IndexedDB and JSON backups. Per-project serialized writes, local saved/saving/failed indicators, retries, and safe flush during project switches.
 - **Master references:** private two-season initial master snapshot distributed through the encrypted GitHub Pages recovery file; source-aware Halloween structured-sheet and Christmas narrative-sheet import (new drafts, no auto merge).
@@ -31,7 +31,7 @@ _Last reviewed: October 29, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Shipped in count-once inventory and UI consolidation
 
-- One permanent shared private lighting stock catalog, separate from yearly C9/mini assignments. Counts, brand, type and storage carry across Christmas years without re-entry; adding a purchase changes inventory once.
+- One permanent shared private lighting stock catalog, separate from yearly C9/mini assignments. Counts, brand, type and storage carry across Christmas years without re-entry; adding a purchase changes inventory once. Each stock card now reports that year's planned and installed counts, known usable spares and known minimum shortages; unknown allocations and repair stock cannot appear as spares.
 - Explicit legacy import and reusable prior-year placements instead of cloning counts. Planned/Installed summaries and known shortages stay in their own units.
 - Four main phone navigation choices; Install/Teardown share a Tasks view. Compact inventory fields and printable stock labels.
 - Base-path-aware installable PWA app-shell caching, requiring an initial online visit; no promise of completed iOS offline smoke test.
