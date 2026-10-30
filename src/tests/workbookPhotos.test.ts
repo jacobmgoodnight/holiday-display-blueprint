@@ -13,8 +13,8 @@ describe('private workbook picture review',()=>{
    'xl/media/image1.jpg':new Uint8Array([255,216,255,217])
   };
   const bytes=zipSync(files);
-  const url=vi.spyOn(URL,'createObjectURL').mockReturnValue('blob:photo1');
-  const revoke=vi.spyOn(URL,'revokeObjectURL').mockImplementation(()=>{});
+  const url=vi.fn(()=>'blob:photo1');Object.defineProperty(URL,'createObjectURL',{configurable:true,value:url});
+  const revoke=vi.fn();Object.defineProperty(URL,'revokeObjectURL',{configurable:true,value:revoke});
   const file={name:'Halloween.xlsx',size:bytes.byteLength,arrayBuffer:async()=>bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)} as File;
   const photos=await extractWorkbookPhotos(file);
   expect(photos).toHaveLength(1);
@@ -22,7 +22,7 @@ describe('private workbook picture review',()=>{
   expect(photos[0].blob.type).toBe('image/jpeg');
   expect('componentId' in photos[0]).toBe(false);
   releaseWorkbookPhotos(photos);expect(revoke).toHaveBeenCalledWith('blob:photo1');
-  url.mockRestore();revoke.mockRestore();
+  delete (URL as {createObjectURL?:typeof url}).createObjectURL;delete (URL as {revokeObjectURL?:typeof revoke}).revokeObjectURL;
  });
  it('refuses legacy xls and non-workbook formats without touching saved projects',async()=>{
   await expect(extractWorkbookPhotos({name:'legacy.xls',size:100} as File)).rejects.toThrow(/xlsx/);
