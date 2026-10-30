@@ -17,7 +17,7 @@ const zones:Zone[]=['Front porch','Garage & driveway','Backyard','Other'];
 export function BuilderQuickEdit({component:n,season,onPatch,onPortLabel,onPhotos,onDuplicate}:Props){
  if(!n)return <div className="bqe-empty">Tap an item on the diagram to edit its name, appearance, location or notes.</div>;
  return <div className="builder-quick-edit" aria-label={`Quick edit ${n.name}`}>
-  <div className="bqe-title"><strong>Quick Edit · {n.kind.replace(/-/g,' ')}</strong><span>Auto-saved</span></div>
+  <div className="bqe-title"><strong>Quick Edit · {n.kind.replace(/-/g,' ')}</strong><span>Auto-save on</span></div>
   <div className="bqe-fields">
    <label className="bqe-wide">Name <input aria-label="Quick edit item name" maxLength={100} value={n.name} onChange={e=>onPatch({name:e.target.value})}/></label>
    <label>Zone <select aria-label="Quick edit zone" value={n.zone} onChange={e=>onPatch({zone:e.target.value as Zone})}>{zones.map(zone=><option key={zone} value={zone}>{zone}</option>)}</select></label>
