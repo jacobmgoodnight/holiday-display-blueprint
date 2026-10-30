@@ -20,6 +20,7 @@ import {ConnectionFinder} from './components/ConnectionFinder';
 import {InstallationGuide} from './components/InstallationGuide';
 import {FieldMode} from './components/FieldMode';
 import {SharedLightingInventory} from './components/SharedLightingInventory';
+import {VersionHistory} from './components/VersionHistory';
 import {isSharedLightingRecord,createSharedLightingRecord,availableStock,addStock,updateStock,addPlacement,updatePlacement,repeatLastYearAssignments,importLegacyLighting,stockCsv} from './lib/sharedLighting';
 
 import {VerificationAudit} from './components/VerificationAudit';
@@ -56,7 +57,7 @@ function AppContent(){
  const [diagramMode,setDiagramMode]=useState<'map'|'guide'|'audit'>('map');const [layoutMode,setLayoutMode]=useState<'auto'|'manual'>('auto');const [pathOnly,setPathOnly]=useState(false);const [focusRequest,setFocusRequest]=useState<{id:string;seq:number}|null>(null);
  const [inventoryMode,setInventoryMode]=useState<'equipment'|'lighting'>('equipment');
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
- const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
+ const [showHistory,setShowHistory]=useState(false);const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
  const [deletedReceipt,setDeletedReceipt]=useState<DeletedComponent|null>(null);
  const [fullscreen,setFullscreen]=useState(false);
@@ -339,7 +340,8 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
    <button type="button" className="icon-button desktop-more-button" aria-label="More actions" aria-controls="more-actions-menu" aria-expanded={showMenu} onClick={()=>{setShowSidebar(false);setShowMenu(x=>!x)}}><MoreVertical size={20}/></button>{showMenu&&<div id="more-actions-menu" className="action-menu" aria-label="More actions">
     <button onClick={()=>makeNew(false)}><Plus size={16}/> New blank project</button><button onClick={()=>makeNew(true)}><Copy size={16}/> Copy into next year</button>
     <button onClick={()=>{setShowWizard(true);setShowMenu(false);}}><FileSpreadsheet size={16}/> Import Excel workbook</button>
-    <button onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setShowMenu(false);}}><Download size={16}/> Back up all projects (JSON)</button>
+    <button onClick={()=>{setShowHistory(true);setShowMenu(false)}}><History size={16}/> Restore points / history</button>
+     <button onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setShowMenu(false);}}><Download size={16}/> Back up all projects (JSON)</button>
     <label className="menu-upload"><Upload size={16}/> Restore JSON backup<input type="file" accept=".json" onChange={e=>{void importBackup(e.target.files?.[0]);setShowMenu(false);e.target.value='';}}/></label>
     <button onClick={()=>{setShowMenu(false);setShowTransfer(true);}}><Upload size={16}/> Back up / move plans</button>
     {cloud.enabled&&<button onClick={()=>{if(confirm('Disconnect encrypted sync on this device? Local projects will remain here.'))cloud.disconnect();setShowMenu(false);}}><LockKeyhole size={16}/> Stop syncing this device</button>}
@@ -362,7 +364,8 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
       <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('map');setShowSidebar(false)}}><CircuitBoard size={18}/> Wiring diagram editor</button>
       <button className="nav-link" onClick={()=>{setShowWizard(true);setShowSidebar(false)}}><FileSpreadsheet size={18}/> Import Excel workbook</button>
       <button className="nav-link" onClick={()=>{downloadWiringReference(project,sharedLighting);setShowSidebar(false);setMessage('Private Excel reference exported. Continue editing in Blueprint.')}}><Download size={18}/> Export Excel reference</button>
-      <button className="nav-link" onClick={()=>{exportPrivateBackup();setShowSidebar(false)}}><Download size={18}/> Back up all projects</button>
+      <button className="nav-link" onClick={()=>{setShowHistory(true);setShowSidebar(false)}}><History size={18}/> Restore points / history</button>
+       <button className="nav-link" onClick={()=>{exportPrivateBackup();setShowSidebar(false)}}><Download size={18}/> Back up all projects</button>
       {cloud.enabled&&<button className="nav-link" onClick={()=>{setShowSidebar(false);void cloud.syncNow()}}><LockKeyhole size={18}/> Sync now</button>}
       <button className="nav-link" onClick={()=>{setShowSidebar(false);setShowTransfer(true)}}><Upload size={18}/> Backup / device options</button>
      </nav>
@@ -564,6 +567,7 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
   {message&&<div className="toast" role="status"><span>{message}</span><button aria-label="Dismiss message" onClick={()=>setMessage('')}><X size={16}/></button></div>}
   {showTransfer&&<DeviceTransfer hasRealPlans={!examplesOnly} projectCount={availableProjects.length} onExport={exportPrivateBackup} onImport={importBackup} onClose={()=>setShowTransfer(false)}/>}
   {galleryNode&&<ComponentPhotoGallery key={galleryNode.id} project={project} component={galleryNode} canEdit={!fullscreen||fullMode==='builder'} onClose={()=>setGalleryId(null)} onAdd={(file,role)=>addEquipmentPhoto(galleryNode.id,file,role)} onPromote={id=>changeEquipmentPhoto(galleryNode.id,id,'promote')} onRemove={id=>changeEquipmentPhoto(galleryNode.id,id,'remove')} onEdit={()=>{if(fullscreen){setFullMode('builder');setBuilderPanel('edit');}else{setSelected(galleryNode.id);setInspectorOpen(true);}setGalleryId(null);}}/>}
+   {showHistory&&<VersionHistory project={project} onClose={()=>setShowHistory(false)} onRestore={restored=>{update(()=>restored);setMessage('Restore point applied as Draft. Recheck all connections and sync status.');}}/>}
    {showWizard&&<ExcelWizard project={project} onSave={p=>{update(()=>p);setMessage('Workbook rows imported as draft. Review each mapping and save a backup.');}} onImportMaster={p=>{setProjects(all=>[...all,p]);setActive(p.id);setView(p.nodes.length>25&&p.nodes.some(n=>n.kind==='outlet')?`Outlet: ${p.nodes.find(n=>n.kind==='outlet')!.id}`:'All zones');setSelected(null);setTrace('none');setMessage(`${p.season} workbook imported as a separate DRAFT. Check every connection and export a private backup.`);}} onClose={()=>setShowWizard(false)}/>}
  </div>;
 }
