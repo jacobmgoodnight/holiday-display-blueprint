@@ -184,7 +184,15 @@ function AppContent(){
    const history=recordGraphStep(graphHistory,project,next,label);
    update(current=>graphFingerprint(current)===graphFingerprint(project)?next:current);
    setGraphHistory(history);
-  }catch(error){setMessage('Change not saved: '+String(error));}
+  }catch(error){
+   if(String(error).includes('session undo limit')){
+    // Large private photo-rich projects must still be editable; simply refuse to
+    // claim we can keep an oversized in-memory history.
+    update(current=>graphFingerprint(current)===graphFingerprint(project)?next:current);
+    setGraphHistory(emptyGraphHistory());
+    setMessage('Change saved, but this photo-heavy plan is too large for session undo. Make a private restore point before further rewiring.');
+   }else setMessage('Change not saved: '+String(error));
+  }
  }
  function stepGraph(direction:'undo'|'redo'){
   if(!project||cloud.status==='conflict')return;
