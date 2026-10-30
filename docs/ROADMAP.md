@@ -4,6 +4,10 @@ _Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Shipped and testable
 
+- **Bounded diagram undo/redo (session-only):** up to ten safely guarded node/connection and standard-inspector identity changes; invalidates affected field checks when wiring changes, preserves unrelated tasks, rejects stale/cloud-replaced graphs, and works in fullscreen Builder. No cloud history or persistent full-project undo claims.
+- **Visible field-check status:** equipment node badges distinguish recorded checks, pending checks and example fixtures; selected wires show setup-step completion, not safety certification. Direct inspector verification requires an on-site confirmation.
+- **Safer sync-conflict decisions:** a local private JSON backup download is initiated before a user-approved Use Cloud/Keep Device overwrite. Do not mistake this for an automatically verified backup or conflict-free multiuser editing.
+
 - **Selected-component-first inspector and direct node quick edits:** name, icon, zone and photos are visible before any source selection; current feed is summarized in an expandable section and advanced hardware details are collapsed. Double-click/right-click or select and press F2 to rename on the diagram, icon tap/click for palette in normal editor and fullscreen Builder. Renames commit with Done/Enter, while Escape/close safely discards the draft; clicking a wire visibly highlights the chosen connection. Fullscreen Explore remains read-only; labels and artwork never rewire equipment.
 
 - **Multi-season local-first records:** Halloween/Christmas years, graphs with directed feeds, output ports, validation, asset details, notes, reference photos, verified/draft states, IndexedDB and JSON backups. Per-project serialized writes, local saved/saving/failed indicators, retries, and safe flush during project switches.
@@ -44,13 +48,13 @@ _Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-te
 ## Local change recovery
 
 - A separately stored browser-local restore-point list (IndexedDB v2 additive migration) lets you save up to eight complete manual project checkpoints, compare graph changes, download a snapshot, and restore after first preserving the current plan. Restore resets field checks and returns Draft.
-- Continuous automatically recorded versions, full graph-step undo, photos over the snapshot size limit, cloud-synced history, and multi-device deletion tombstones are still future work.
+- Persisted cross-session edit history, complete undo of continuously edited text or dragged layouts, photos over restore limits, cloud-synced history, and multi-device deletion tombstones are still future work. Bounded session graph undo/redo now covers major structural operations and standard-inspector name/icon changes.
 
 ## Highest-priority next improvements
 
 1. **Safer source reconciliation (large impact).** Match a changed workbook's IDs against the current synced master, present a side-by-side diff of additions, removals and upstream/port changes, require explicit per-change approval, and avoid overwriting field photos/checklist states.
 2. **Deeper field evidence.** The Needs Verification dashboard now flags missing recorded feeds, cord lengths, load details, optional photos and component field-verification state. Next: require connector-specific field photos/inspection notes for uncertain C9 taps and splitter ports, plus date/inspector provenance.
-3. **Full project undo + deeper history.** The first version supports safe node removal/undo and guarded feed reversal. Remaining: The latest guided power-feed change can now be safely reversed, without re-verification. Next: undo component deletions, historical graph snapshots, cloud-aware conflict handling and "what changed since last installation?" reports; log all topology edits consistently.
+3. **Persistent edit history + deeper recovery.** Browser-session undo/redo now covers major diagram structure changes; manual IndexedDB restore points remain separately available. Next: persist bounded transactions across reloads safely, include drag/Builder text edits without noisy keystroke records, and add "what changed since last installation?" comparisons. Never replay stale cloud conflicts.
 4. **Image association.** Reconcile privately uploaded workbook-embedded photos/drawings with the matching component ID; show unmatched photos for manual assignment. No public household images.
 5. **More reliable shared editing.** Independent edits to different shared lighting items now have content-hash-based three-way reconciliation. Same-item conflicts or ambiguous deletions still require a manual choice. Other project data still uses whole-project conflict handling. Next: supported tombstones for intentional deletions, multi-device browser tests and safe per-checkbox reconciliation. Local per-project IndexedDB writes are now serialized, but cloud behavior still needs per-item/per-checkbox comparisons, correctly propagate intentional project deletions (tombstones); add end-to-end browser/device integration tests.
 6. **PWA offline launch.** Cache the app shell/assets for true offline use, test iOS Safari install/offline editing, and show last successful cloud sync per device.
