@@ -43,6 +43,23 @@ describe('fast diagram editing without rewiring',()=>{
   await act(async()=>{(host.querySelector('button') as HTMLButtonElement).click();});
   await act(async()=>root.unmount());host.remove();
  });
+ it('does not save an unfinished diagram rename when focus leaves or the user closes it',async()=>{
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
+  const onRename=vi.fn(),onClose=vi.fn();
+  await act(async()=>root.render(<DiagramQuickEdit item={item} season={season} position={{id:item.id,left:10,top:10,mode:'name'}} onRename={onRename} onIcon={()=>{}} onClose={onClose}/>));
+  const input=host.querySelector('input[aria-label="Rename diagram item"]') as HTMLInputElement;
+  await act(async()=>{
+   const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;
+   setter?.call(input,'Unfinished new label');
+   input.dispatchEvent(new Event('input',{bubbles:true}));
+   input.dispatchEvent(new FocusEvent('focusout',{bubbles:true}));
+  });
+  expect(onRename).not.toHaveBeenCalled();
+  await act(async()=>{(host.querySelector('button[aria-label="Close quick editor"]') as HTMLButtonElement).click();});
+  expect(onClose).toHaveBeenCalledOnce();
+  expect(onRename).not.toHaveBeenCalled();
+  await act(async()=>root.unmount());host.remove();
+ });
  it('supports icon quick-edit tab without calling rename',async()=>{
   const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
   const onRename=vi.fn(),onIcon=vi.fn(),onClose=vi.fn();
