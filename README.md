@@ -15,6 +15,14 @@
 
 Edits save locally in IndexedDB. The header reports **Saving locally**, **Saved locally**, or **Local save failed** with a retry; a separate cloud status reports encrypted sync. Online synchronization occurs while the app is open, not while a closed browser runs in the background.
 
+## Photo matching and a simpler checklist
+
+Choose **Diagram → Match workbook photos** to open the separate, private, review-before-import workflow. Select your original **.xlsx** workbook, preview embedded JPG/PNG/WebP images, and see their original worksheet/row when available. Every image starts as **Skip**; select a specific existing component and its purpose (installed / connector / storage / detail) before importing. A single confirmation adds only selected, compressed images to existing private galleries. Existing photos, wiring, stock, notes and checklist records are not replaced. The app does not automatically identify props from a generic image filename or screenshot. Max eight photos per component; confirm your browser can save and sync large galleries. Original workbooks stay unchanged.
+
+The **Tasks** view has two modes: **Install** and **Teardown**. Each is now split into three clear collapsible phases and grouped into **Front porch**, **Garage & driveway**, **Backyard** and **Other** areas, with progress and a next step. Every checkmark, task note and photo uses its previous storage key, so progress made in the old flat list is preserved. Setup order is place → connect downstream first → attended test; teardown is de-energize → unplug → pack. Showing a diagram step does not verify electrical safety.
+
+The temporary **Needs field check** badges added to every wiring node have been removed from the diagram; no stored verification record was deleted. Existing detailed verification and wiring-audit tools remain available separately.
+
 ## Faster diagram editing
 
 In the **Diagram editor**, selecting a component now puts its icon, editable name, zone and photo button at the **top of Component details**. "Where does it plug in?" shows the current upstream feed in a compact expandable section; output names, specs, storage and the connection finder are below. This avoids making a wiring change just to rename a decoration.
