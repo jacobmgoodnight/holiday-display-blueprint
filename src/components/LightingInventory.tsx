@@ -14,6 +14,7 @@ type Props={
  onExport:()=>void;
 };
 const readNumber=(value:string)=>value.trim()===''?undefined:Number(value);
+const validWhole=(value:string)=>value.trim()===''||(/^[0-9]+$/.test(value)&&Number.isSafeInteger(Number(value)));
 const formatTotal=(n:number,unknown:number,unit:string)=>unknown?`${n.toLocaleString()} known ${unit} + ${unknown} uncounted row${unknown===1?'':'s'}`:`${n.toLocaleString()} ${unit}`;
 export function LightingInventory({project,onAdd,onAddChristmasSections,onChange,onRemove,onLocate,onExport}:Props){
  const items=project.lightingInventory||[];
@@ -71,10 +72,10 @@ export function LightingInventory({project,onAdd,onAddChristmasSections,onChange
         <label>Light type<select aria-label="Lighting run type" value={entry.type} onChange={e=>patch({type:e.target.value as LightingType})}>{lightingTypes.map(t=><option key={t}>{t}</option>)}</select></label>
         <label>Area<select aria-label="Lighting run area" value={entry.area} onChange={e=>patch({area:e.target.value as LightingArea})}>{lightingAreas.map(a=><option key={a}>{a}</option>)}</select></label>
         <label>Use / stock status<select aria-label="Lighting run status" value={entry.status} onChange={e=>patch({status:e.target.value as LightingStatus})}>{lightingStatuses.map(s=><option key={s} value={s}>{s==='spare'?'Spare / stored':s==='repair'?'Needs repair':s==='planned'?'Planned':'Installed / counted'}</option>)}</select></label>
-        <label>Number of strands / runs<input aria-label="Number of strands" inputMode="numeric" min={0} step={1} type="number" value={entry.strandCount??''} placeholder="Unknown" onChange={e=>patch({strandCount:readNumber(e.target.value)})}/></label>
-        <label>Bulbs per strand<input aria-label="Bulbs per strand" inputMode="numeric" min={0} step={1} type="number" value={entry.bulbsPerStrand??''} placeholder="Unknown" onChange={e=>patch({bulbsPerStrand:readNumber(e.target.value)})}/></label>
-        <label>Custom total bulbs (overrides calculation)<input aria-label="Custom total bulbs" inputMode="numeric" min={0} step={1} type="number" value={entry.totalBulbs??''} placeholder="For irregular C9 run" onChange={e=>patch({totalBulbs:readNumber(e.target.value)})}/></label>
-        <label>Length per strand (ft)<input aria-label="Length per strand" inputMode="decimal" min={0} step="any" type="number" value={entry.lengthPerStrandFt??''} placeholder="Not measured" onChange={e=>patch({lengthPerStrandFt:readNumber(e.target.value)})}/></label>
+        <label>Number of strands / runs<input aria-label="Number of strands" inputMode="numeric" min={0} step={1} type="number" value={entry.strandCount??''} placeholder="Unknown" onChange={e=>{if(validWhole(e.target.value))patch({strandCount:readNumber(e.target.value)})}}/></label>
+        <label>Bulbs per strand<input aria-label="Bulbs per strand" inputMode="numeric" min={0} step={1} type="number" value={entry.bulbsPerStrand??''} placeholder="Unknown" onChange={e=>{if(validWhole(e.target.value))patch({bulbsPerStrand:readNumber(e.target.value)})}}/></label>
+        <label>Custom total bulbs (overrides calculation)<input aria-label="Custom total bulbs" inputMode="numeric" min={0} step={1} type="number" value={entry.totalBulbs??''} placeholder="For irregular C9 run" onChange={e=>{if(validWhole(e.target.value))patch({totalBulbs:readNumber(e.target.value)})}}/></label>
+        <label>Length per strand (ft)<input aria-label="Length per strand" inputMode="decimal" min={0} step="any" type="number" value={entry.lengthPerStrandFt??''} placeholder="Not measured" onChange={e=>{const x=readNumber(e.target.value);if(x===undefined||(Number.isFinite(x)&&x>=0))patch({lengthPerStrandFt:x})}}/></label>
         <label>Technology<select aria-label="Bulb technology" value={entry.bulbTechnology||'Unknown'} onChange={e=>patch({bulbTechnology:e.target.value as LightingEntry['bulbTechnology']})}><option>Unknown</option><option>LED</option><option>Incandescent</option></select></label>
         <label>Bulb color / tone<input aria-label="Bulb color" value={entry.bulbColor||''} placeholder="Sun warm white, multicolor…" onChange={e=>patch({bulbColor:e.target.value})}/></label>
         <label>Wire color<input aria-label="Lighting wire color" value={entry.wireColor||''} placeholder="Green, white…" onChange={e=>patch({wireColor:e.target.value})}/></label>
