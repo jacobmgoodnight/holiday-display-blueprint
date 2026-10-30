@@ -12,9 +12,9 @@ describe('cross-device shared stock item reconciliation',()=>{
  it('merges independent changes to different owned groups using item baselines',()=>{
   const a=updateStock(s1,s1.stock[0].id,{owned:8});
   const b=updateStock(two,s1.stock[1].id,{owned:150});
-  const hashBase={'stock:'+s1.stock[0].id:'base0','stock:'+s1.stock[1].id:'base1'};
-  const lHash={'stock:'+s1.stock[0].id:'changed0','stock:'+s1.stock[1].id:'base1'};
-  const rHash={'stock:'+s1.stock[0].id:'base0','stock:'+s1.stock[1].id:'changed1'};
+  const hashBase={['stock:'+s1.stock[0].id]:'base0',['stock:'+s1.stock[1].id]:'base1'};
+  const lHash={['stock:'+s1.stock[0].id]:'changed0',['stock:'+s1.stock[1].id]:'base1'};
+  const rHash={['stock:'+s1.stock[0].id]:'base0',['stock:'+s1.stock[1].id]:'changed1'};
   const merged=mergeConcurrentLighting({...base,sharedLighting:a},{...base,sharedLighting:b},hashBase,lHash,rHash);
   expect(merged).not.toBeNull();
   expect(merged!.sharedLighting?.stock.map(x=>x.owned)).toEqual([8,150]);
