@@ -8,6 +8,8 @@ import {downstream,generatedTasks,sourcePath,upstream,validateGraph,warningSumma
 import {db,initialize,createBackup,parseBackup,restoreBackup,downloadText} from './lib/storage';
 import {readPhoto} from './lib/photos';
 import {BlueprintNode,type BlueprintFlowNode} from './components/BlueprintNode';
+import {DiagramQuickEdit,type DiagramQuickEditState,tidyComponentName} from './components/DiagramQuickEdit';
+import {VisualIconArtwork} from './components/VisualIconArtwork';
 import {VisualIconPicker} from './components/VisualIconPicker';
 import {ComponentPhotoGallery} from './components/ComponentPhotoGallery';
 import {BuilderQuickEdit} from './components/BuilderQuickEdit';
@@ -59,6 +61,8 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showHistory,setShowHistory]=useState(false);const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
+ const [inspectorIconOpen,setInspectorIconOpen]=useState(false);
+ const [diagramQuickEdit,setDiagramQuickEdit]=useState<DiagramQuickEditState|null>(null);
  const [deletedReceipt,setDeletedReceipt]=useState<DeletedComponent|null>(null);
  const [fullscreen,setFullscreen]=useState(false);
  const [fullMode,setFullMode]=useState<'explore'|'builder'>('explore');
@@ -76,6 +80,19 @@ function AppContent(){
  const [insertName,setInsertName]=useState('');
  const [showInsertPreview,setShowInsertPreview]=useState(false);
  const workspaceEditable=workspaceCanEdit(fullscreen,fullMode);
+ useEffect(()=>{setInspectorIconOpen(false);},[selected,active]);
+ const openDiagramQuickEdit=useCallback((id:string,x:number,y:number,mode:'name'|'icon')=>{
+  if(!workspaceEditable)return;
+  const bounds=document.getElementById('diagram-canvas')?.getBoundingClientRect();
+  if(!bounds)return;
+  const width=Math.min(320,Math.max(200,bounds.width-16));
+  const left=Math.max(8,Math.min(x-bounds.left+12,bounds.width-width-8));
+  const top=Math.max(8,Math.min(y-bounds.top+10,Math.max(8,bounds.height-285)));
+  setDiagramQuickEdit({id,left,top,mode});
+  setSelected(id);setTrace('none');
+  if(fullscreen&&fullMode==='builder'){setBuilderSource(null);setBuilderPanel('edit');}
+  else setInspectorOpen(true);
+ },[workspaceEditable,fullscreen,fullMode]);
  useEffect(()=>{
   if(!fullscreen)return;
   const previous=document.body.style.overflow;document.body.style.overflow='hidden';
@@ -149,7 +166,7 @@ function AppContent(){
  const autoPositions=useMemo(()=>layoutMode==='auto'&&project
    ?powerFlowLayout(project.nodes.filter(n=>visibleIds.has(n.id)),project.edges.filter(e=>visibleIds.has(e.source)&&visibleIds.has(e.target)))
    :new globalThis.Map<string,{x:number;y:number}>(),[project,visibleIds,layoutMode]);
- const flowNodes:BlueprintFlowNode[]=useMemo(()=>project?.nodes.filter(n=>visibleIds.has(n.id)).map(n=>({id:n.id,type:'blueprint' as const,position:layoutMode==='auto'?(autoPositions.get(n.id)||n.position):n.position,data:{component:n,highlight:highlighted.has(n.id),dim:!!selected&&trace!=='none'&&!highlighted.has(n.id)},selected:n.id===selected}))||[],[project,visibleIds,highlighted,selected,trace,autoPositions,layoutMode]);
+ const flowNodes:BlueprintFlowNode[]=useMemo(()=>project?.nodes.filter(n=>visibleIds.has(n.id)).map(n=>({id:n.id,type:'blueprint' as const,position:layoutMode==='auto'?(autoPositions.get(n.id)||n.position):n.position,data:{component:n,highlight:highlighted.has(n.id),dim:!!selected&&trace!=='none'&&!highlighted.has(n.id),canQuickEdit:workspaceEditable,onIconEdit:(event)=>openDiagramQuickEdit(n.id,event.clientX,event.clientY,'icon')},selected:n.id===selected}))||[],[project,visibleIds,highlighted,selected,trace,autoPositions,layoutMode,workspaceEditable,openDiagramQuickEdit]);
  const fullscreenMatches=useMemo(()=>project?searchComponents(project,fullSearch,8):[],[project,fullSearch]);
  const insertEdge=project?.edges.find(e=>e.id===insertEdgeId);
  const insertFrom=project?.nodes.find(n=>n.id===insertEdge?.source);
@@ -168,9 +185,9 @@ function AppContent(){
     style:{stroke:insertEdgeId===e.id?'#327963':selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:insertEdgeId===e.id?4:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},
     markerEnd:{type:MarkerType.ArrowClosed,color:'#8296a9'}};
  })||[],[project,visibleIds,selected,highlighted,insertEdgeId]);
- function chooseProject(id:string){setGalleryId(null);setQuickAddPort(null);setFullscreen(false);setBuilderSource(null);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
- function changeView(next:View){setView(next);setShowInsertPreview(false);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
- function jumpToNode(id:string){setTab('diagram');setDiagramMode('map');if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
+ function chooseProject(id:string){setDiagramQuickEdit(null);setGalleryId(null);setQuickAddPort(null);setFullscreen(false);setBuilderSource(null);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
+ function changeView(next:View){setDiagramQuickEdit(null);setView(next);setShowInsertPreview(false);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
+ function jumpToNode(id:string){setDiagramQuickEdit(null);setTab('diagram');setDiagramMode('map');if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function openFinder(){setInspectorOpen(true);if(window.innerWidth<720)setTimeout(()=>document.getElementById('connection-finder')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
 
@@ -320,6 +337,7 @@ function undoDeletion(){if(!project||!deletedReceipt||deletedReceipt.projectId!=
  function updateTask(id:string,fields:{done?:boolean;notes?:string;photo?:string}){update(p=>({...p,checklist:{...p.checklist,[id]:{...p.checklist[id],...fields,done:fields.done??p.checklist[id]?.done??false}}}));}
  function renderTask(t:Task){const state=project?.checklist[t.id];return <article className={`task ${state?.done?'task-done':''}`} key={t.id}><label className="task-check"><input type="checkbox" checked={!!state?.done} onChange={e=>updateTask(t.id,{done:e.target.checked})}/><span className="task-check-icon">{state?.done?<Check size={22}/>:null}</span><span>{t.label}</span></label><div className="task-foot"><button className="plain-link" onClick={()=>{setTab('diagram');if(t.nodeId)jumpToNode(t.nodeId);}}>Show on diagram <ArrowUpRight size={13}/></button><input aria-label={`Notes for ${t.label}`} placeholder="Notes / exceptions" value={state?.notes||''} onChange={e=>updateTask(t.id,{notes:e.target.value})}/><label className="task-photo-action" title="Attach task photo"><ImagePlus size={17}/><input type="file" accept="image/*" capture="environment" onChange={async e=>{const file=e.target.files?.[0];if(file)try{updateTask(t.id,{photo:await readPhoto(file)});}catch(err){setMessage(String(err));}e.target.value='';}}/></label></div>{state?.photo&&<img className="task-photo" src={state.photo} alt={`Reference for ${t.label}`}/>}</article>;}
  const selectedNode=project?.nodes.find(n=>n.id===selected);
+ const diagramEditNode=project?.nodes.find(n=>n.id===diagramQuickEdit?.id);
  const galleryNode=project?.nodes.find(n=>n.id===galleryId);
  const warnings=project?warningSummary(project):[];
  const audit=useMemo(()=>project?getVerificationIssues(project):[],[project]);
