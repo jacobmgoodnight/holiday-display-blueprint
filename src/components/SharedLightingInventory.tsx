@@ -2,7 +2,7 @@ import {useMemo,useState} from 'react';
 import {Camera,Copy,Download,PackagePlus,Printer,Search,Trash2} from 'lucide-react';
 import type {LightingArea,LightingType,LightPlacement,LightStock,Project,SharedLighting} from '../lib/model';
 import {lightingAreas,lightingTypes} from '../lib/lightingInventory';
-import {safeYearStockRows,totals} from '../lib/sharedLighting';
+import {safeYearStockRows,stockAvailability,totals} from '../lib/sharedLighting';
 import './sharedLightingInventory.css';
 type Props={project:Project;catalog:SharedLighting;legacyRows:number;onMigrate:()=>void;onCreate:(type:LightingType)=>void;onChangeStock:(id:string,change:Partial<LightStock>)=>void;onPhoto:(id:string,file:File)=>Promise<void>;onDeleteStock:(id:string)=>void;onPlace:(id:string,area:LightingArea)=>void;onChangePlacement:(id:string,patch:Partial<LightPlacement>)=>void;onRemovePlacement:(id:string)=>void;onCopyPrevious:()=>void;onExport:()=>void};
 const count=(value:string)=>value.trim()===''?undefined:/^\d+$/.test(value)&&Number.isSafeInteger(Number(value))?Number(value):null;
@@ -16,6 +16,8 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
  const changeCount=(raw:string,onValid:(n:number|undefined)=>void)=>{const n=count(raw);if(n!==null)onValid(n)};
  const yearPlans=catalog.placements.filter(p=>p.season===project.season&&p.year===project.year);
  const shortages=[c9,mini].reduce((n,t)=>n+t.shortKnown,0);
+ const uncounted=c9.unknownOwned+mini.unknownOwned+c9.unknownPlaced+mini.unknownPlaced;
+ const repairAssigned=catalog.stock.filter(s=>s.condition==='repair'&&yearPlans.some(p=>p.stockId===s.id)).length;
  return <section className="shared-lighting" aria-label="Reusable Christmas lighting inventory">
   <header className="shared-lighting-header"><div><h2>Count your lights once</h2><p>Physical stock stays the same across years. Each year's roofline, bushes and fence placements are separate, reusable plans.</p></div><button className="button secondary" onClick={onExport} disabled={!catalog.stock.length}><Download size={16}/> Private CSV</button></header>
   {legacyRows>0&&<div className="shared-migration"><div><strong>Previous inventory entries found ({legacyRows})</strong><p>Convert these Christmas rows into reusable stock without removing the original records. Review duplicate rows first: importing multiple copies can overstate what you own.</p></div><button className="button secondary" onClick={onMigrate}>Review and import this year’s counts</button></div>}
@@ -23,7 +25,7 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
    <div><span>Owned, counted C9 bulbs</span><strong>{c9.ownedKnown.toLocaleString()}{c9.unknownOwned?' + ?':''}</strong><small>{c9.unknownOwned} stock group(s) uncounted</small></div>
    <div><span>Owned mini strands</span><strong>{mini.ownedKnown.toLocaleString()}{mini.unknownOwned?' + ?':''}</strong><small>{mini.unknownOwned} stock group(s) uncounted</small></div>
    <div><span>{project.year} planned / installed</span><strong>{c9.plannedKnown} / {c9.installedKnown} C9</strong><small>{mini.plannedKnown} / {mini.installedKnown} mini strands · {c9.unknownPlaced+mini.unknownPlaced} placement count(s) missing</small></div>
-   <div><span>Shopping shortages</span><strong>{shortages?'Review needs':'No known shortage'}</strong><small>{c9.shortKnown} C9 bulbs · {mini.shortKnown} mini strands short{c9.needsReview+mini.needsReview?' · unknown stock still needs counting':''}</small></div>
+   <div><span>Shopping shortages</span><strong>{shortages?'Review needs':uncounted||repairAssigned?'Counts to review':'No known shortage'}</strong><small>{c9.shortKnown} C9 bulbs · {mini.shortKnown} mini strands short{uncounted?' · '+uncounted+' unknown counts':''}{repairAssigned?' · '+repairAssigned+' repair stock group(s) assigned':''}</small></div>
   </div>
   <div className="shared-lighting-tabs" role="group" aria-label="Lighting inventory view">
    <button className={mode==='placements'?'active':''} aria-pressed={mode==='placements'} onClick={()=>setMode('placements')}>This year's placement</button>
@@ -39,10 +41,12 @@ export function SharedLightingInventory({project,catalog,legacyRows,onMigrate,on
   {mode==='placements'&&!current.length&&catalog.stock.length>0&&<div className="shared-empty">No lights assigned for {project.year} yet. Choose an owned item below or reuse last year's layout. Physical bulb counts won't change.</div>}
   <div className="shared-stock-list">{showing.map(({stock,placements})=>{
    const editing=expanded===stock.id;
+   const availability=stockAvailability(stock,catalog.placements,project.season,project.year);
    return <article key={stock.id} className={editing?'shared-stock-row expanded':'shared-stock-row'}>
     <button className="shared-stock-summary" onClick={()=>setExpanded(editing?null:stock.id)} aria-expanded={editing}>
      <span className="shared-stock-icon">{stock.photo?<img className="shared-stock-thumb" src={stock.photo} alt=""/>:stock.type==='C9'?'💡':stock.type==='Mini'?'✨':'🔆'}</span>
-     <span className="shared-stock-name"><strong>{stock.name}</strong><small>{stock.type} · {stock.storage||'Storage not recorded'} · {stock.condition==='repair'?'Needs repair':stock.unit==='bulbs'?'C9 bulbs':'strings'}</small></span>
+     <span className="shared-stock-name"><strong>{stock.name}</strong><small>{stock.type} · {stock.storage||'Storage not recorded'} · {stock.condition==='repair'?'Needs repair':stock.unit==='bulbs'?'C9 bulbs':'strings'}</small>
+      <small className="shared-stock-allocation">{stock.condition==='repair'?'Repair stock · not counted as usable spares':`${availability.plannedKnown} planned · ${availability.installedKnown} installed · ${availability.spareKnown===undefined?'spares unknown':availability.spareKnown+' spare'}${availability.shortKnown?' · at least '+availability.shortKnown+' more needed':''}${availability.unknownPlacements?' · '+availability.unknownPlacements+' uncounted placement(s)':''}`}</small></span>
      <span className="shared-stock-number"><strong>{stock.owned??'?'}</strong><small>owned {stock.unit}</small></span>
      <span className="shared-stock-toggle">{editing?'Close':'Edit'}</span>
     </button>
