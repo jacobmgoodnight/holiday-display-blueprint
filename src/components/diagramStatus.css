@@ -1,8 +1,5 @@
 /* One source of truth: status comes from the existing component and checklist records. */
-.node-verification{display:inline-flex!important;align-items:center;gap:4px;margin-top:5px;padding:2px 6px;border-radius:6px;font-size:9px!important;line-height:1.4;font-weight:750;white-space:nowrap}
-.node-field-checked{background:#e5f4ed;color:#267353}
-.node-check-pending{background:#fff4e4;color:#93672c}
-.node-example{background:#edf1f7;color:#59718a}
+/* Field-check badges deliberately omitted from the main wiring diagram. */
 .diagram-history-actions,.builder-history-actions{display:flex;align-items:center;gap:5px}
 .diagram-history-actions .button{padding:8px!important;min-height:38px;font-size:11px}
 .diagram-history-actions .button:disabled,.builder-history-actions button:disabled{opacity:.45;cursor:not-allowed}

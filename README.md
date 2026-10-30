@@ -15,6 +15,14 @@
 
 Edits save locally in IndexedDB. The header reports **Saving locally**, **Saved locally**, or **Local save failed** with a retry; a separate cloud status reports encrypted sync. Online synchronization occurs while the app is open, not while a closed browser runs in the background.
 
+## Photo matching and a simpler checklist
+
+Choose **Diagram → Match workbook photos** to open the separate, private, review-before-import workflow. Select your original **.xlsx** workbook, preview embedded JPG/PNG/WebP images, and see their original worksheet/row when available. Every image starts as **Skip**; select a specific existing component and its purpose (installed / connector / storage / detail) before importing. A single confirmation adds only selected, compressed images to existing private galleries. Existing photos, wiring, stock, notes and checklist records are not replaced. The app does not automatically identify props from a generic image filename or screenshot. Max eight photos per component; confirm your browser can save and sync large galleries. Original workbooks stay unchanged.
+
+The **Tasks** view has two modes: **Install** and **Teardown**. Each is now split into three clear collapsible phases and grouped into **Front porch**, **Garage & driveway**, **Backyard** and **Other** areas, with progress and a next step. Every checkmark, task note and photo uses its previous storage key, so progress made in the old flat list is preserved. Setup order is place → connect downstream first → attended test; teardown is de-energize → unplug → pack. Showing a diagram step does not verify electrical safety.
+
+The temporary **Needs field check** badges added to every wiring node have been removed from the diagram; no stored verification record was deleted. Existing detailed verification and wiring-audit tools remain available separately.
+
 ## Faster diagram editing
 
 In the **Diagram editor**, selecting a component now puts its icon, editable name, zone and photo button at the **top of Component details**. "Where does it plug in?" shows the current upstream feed in a compact expandable section; output names, specs, storage and the connection finder are below. This avoids making a wiring change just to rename a decoration.
@@ -27,7 +35,7 @@ The normal **Diagram editor** and fullscreen **Builder** now provide **Undo / Re
 
 A reversed power connection is validated again and its affected component field checks and obsolete connection tasks are invalidated. Unrelated checklist entries remain. **Undo never means a connection was electrically checked**. Photo-heavy plans that exceed the bounded session history limit can still be edited, but the app asks you to save a private restore point rather than promising undo.
 
-Diagram item labels now distinguish **Field checked**, **Needs field check** and **Example only**. These reflect recorded documentation, not electrical certification. Clicking a wire shows its source/receiver and whether that setup checklist step is marked done. The inspector asks for an explicit physical on-site confirmation before recording a new component field check.
+The diagram no longer displays per-node field-check status badges. Clicking a wire still shows its source, receiver, and whether that specific setup checklist step was checked. Existing optional verification records remain available in Component Details and the separate audit.
 
 If encrypted sync detects conflicting device changes, resolving the conflict now initiates a private JSON backup download before replacing either version. Verify that the download was saved. Cloud choices remain deliberate, and a conflicting version is not automatically overwritten.
 

@@ -4,6 +4,10 @@ _Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Shipped and testable
 
+- **Workbook photo review:** private .xlsx embedded-image preview with source sheet/row hints, per-photo manual component and purpose selection, default Skip, and atomic appended gallery import. No automatic matching of schematic images to equipment; no silent gallery replacement.
+- **Useful install/teardown phases:** collapsible three-phase execution with per-zone sections, completed/total counters and next step; all historic checklist IDs, notes and photos preserved.
+- **Cleaner diagrams:** removed newly introduced field-check badges from nodes, keeping persisted verification data and the separate optional audit intact.
+
 - **Bounded diagram undo/redo (session-only):** up to ten safely guarded node/connection and standard-inspector identity changes; invalidates affected field checks when wiring changes, preserves unrelated tasks, rejects stale/cloud-replaced graphs, and works in fullscreen Builder. No cloud history or persistent full-project undo claims.
 - **Visible field-check status:** equipment node badges distinguish recorded checks, pending checks and example fixtures; selected wires show setup-step completion, not safety certification. Direct inspector verification requires an on-site confirmation.
 - **Safer sync-conflict decisions:** a local private JSON backup download is initiated before a user-approved Use Cloud/Keep Device overwrite. Do not mistake this for an automatically verified backup or conflict-free multiuser editing.

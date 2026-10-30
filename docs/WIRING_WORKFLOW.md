@@ -12,9 +12,15 @@ The **Export Excel reference** action creates a convenient *new workbook* contai
 
 In the standard **Diagram editor** or fullscreen **Builder**, use **Undo / Redo** to reverse recent diagram changes; desktop keyboard shortcuts work when a text field is not focused. Undo is limited to up to ten browser-session edits, rather than a server-synced history. Major actions include add/connect/disconnect/rewire/insert/duplicate/remove, and standard-inspector name/icon edits. Fullscreen continuous text edits and drag moves are not yet covered individually. An undo that would replay over another device's changed diagram is refused.
 
-Restoring a previous physical feed returns affected components to **Draft / Needs field check**, removes obsolete link checkmarks and does **not** reinstate old completion or safety certification. Unrelated checklist notes survive. The on-node **Field checked** indicator only reflects recorded inspection, **Example only** is never a real inspection, and a selected wire's **Setup step checked** means that specific checklist step was completed. Manual confirmation is required when marking a component field-checked.
+Restoring a previous physical feed returns affected components to **Draft / Needs field check**, removes obsolete link checkmarks and does **not** reinstate old completion or safety certification. Unrelated checklist notes survive. Per-node field-check badges have been removed to reduce clutter. The existing Component Details checkbox and Needs Verification audit still retain optional recorded checks. A selected wire's **Step checked** only means that checklist step was completed; it is not electrical certification.
 
 For oversized photo-rich plans, create a private manual restore point before rewiring. The current editing action remains possible, but in-memory undo may be unavailable. Before using a cloud conflict resolution button, the app starts a private JSON backup download; confirm it was saved before leaving the page. Historical Excel workbooks are private references and have not been silently imported or photo-matched.
+
+## Workbook image review and phased tasks
+
+**Diagram → Match workbook photos** opens the separate photo review screen. Select a local .xlsx workbook and review each embedded image, its original worksheet/anchor row where supported, and the equipment record to attach it to. The default for every image is **Skip**. Choose the component and photo purpose; only approved selections are compressed and appended to private galleries. No workbook images or filenames are published to GitHub, and no electrical links are created. Existing photos remain, capped at eight per component. Diagrams/screenshots without a meaningful component match should remain skipped.
+
+**Install/Teardown** now uses three expandable phases and groups checkboxes by display area. Old task IDs, notes and attached photos are reused; finished tasks are not reset. Install: position, connect downstream first, then attend final power-on tests. Teardown: power off, unplug, then pack and document storage. Look at the next unchecked step or filter by area; use **Diagram** to see the real recorded connection. The separate field-verification audit remains available, but distracting new node-level check badges were removed.
 
 ## Photos and stock-change records
 
