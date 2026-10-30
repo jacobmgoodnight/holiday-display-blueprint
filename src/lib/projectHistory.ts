@@ -17,7 +17,7 @@ export async function createRestorePoint(project:Project,label='Manual checkpoin
  return item;
 }
 export function listRestorePoints(projectId:string,database:BlueprintDB=db):Promise<SavedVersion[]>{
- return database.versions.where('projectId').equals(projectId).reverse().sortBy('createdAt').then(rows=>rows.reverse());
+ return database.versions.where('projectId').equals(projectId).sortBy('createdAt').then(rows=>rows.reverse());
 }
 export function compareRestorePoint(current:Project,earlier:Project){
  const priorNodes=new Map(earlier.nodes.map(n=>[n.id,n])),latestNodes=new Map(current.nodes.map(n=>[n.id,n]));
