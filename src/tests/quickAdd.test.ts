@@ -29,7 +29,8 @@ describe('Quick Add at a physical output',()=>{
  it('suggests seasonal icons without changing electrical kinds',()=>{
   expect(getVisualIcon('skelly')?.emoji).toBe('💀');
   expect(getVisualIcon('roof-c9')?.label).toContain('Roofline');
-  expect(defaultVisualIcon('Christmas','light-strand')).toBe('roof-c9');
+  expect(defaultVisualIcon('Christmas','light-strand')).toBeUndefined();
+  expect(suggestedIcons('Christmas','light-strand').some(i=>i.id==='roof-c9')).toBe(true);
   expect(suggestedIcons('Halloween','decoration')[0].group).toBe('Halloween');
  });
 });
