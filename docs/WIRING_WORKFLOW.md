@@ -8,6 +8,14 @@ Keep the original Halloween and Christmas **master Excel workbooks as historical
 
 The **Export Excel reference** action creates a convenient *new workbook* containing current component IDs, from/to/port connections, notes, checklists, review items and a wiring-change log. That export is a *snapshot*, not a round-trip synchronization format; edits to that file **do not update Blueprint**. Photos are excluded from the spreadsheet export; a private JSON backup includes photos.
 
+## Reversing diagram edits and checking verification
+
+In the standard **Diagram editor** or fullscreen **Builder**, use **Undo / Redo** to reverse recent diagram changes; desktop keyboard shortcuts work when a text field is not focused. Undo is limited to up to ten browser-session edits, rather than a server-synced history. Major actions include add/connect/disconnect/rewire/insert/duplicate/remove, and standard-inspector name/icon edits. Fullscreen continuous text edits and drag moves are not yet covered individually. An undo that would replay over another device's changed diagram is refused.
+
+Restoring a previous physical feed returns affected components to **Draft / Needs field check**, removes obsolete link checkmarks and does **not** reinstate old completion or safety certification. Unrelated checklist notes survive. The on-node **Field checked** indicator only reflects recorded inspection, **Example only** is never a real inspection, and a selected wire's **Setup step checked** means that specific checklist step was completed. Manual confirmation is required when marking a component field-checked.
+
+For oversized photo-rich plans, create a private manual restore point before rewiring. The current editing action remains possible, but in-memory undo may be unavailable. Before using a cloud conflict resolution button, the app starts a private JSON backup download; confirm it was saved before leaving the page. Historical Excel workbooks are private references and have not been silently imported or photo-matched.
+
 ## Photos and stock-change records
 
 Permanent lighting stock now supports an optional private reference photo (e.g. C9 socket detail, storage bin, mini-light packaging) uploaded through the phone camera. The compressed photo travels with the stock item across Christmas years and syncs within private vault size limits. Use **Owned inventory → select stock → Add stock photo**. When the physical owned bulb or strand count changes, Blueprint keeps a short dated quantity-change log so next year's purchases are distinguishable from merely reassigning the same strands.

@@ -1,0 +1,14 @@
+/* One source of truth: status comes from the existing component and checklist records. */
+.node-verification{display:inline-flex!important;align-items:center;gap:4px;margin-top:5px;padding:2px 6px;border-radius:6px;font-size:9px!important;line-height:1.4;font-weight:750;white-space:nowrap}
+.node-field-checked{background:#e5f4ed;color:#267353}
+.node-check-pending{background:#fff4e4;color:#93672c}
+.node-example{background:#edf1f7;color:#59718a}
+.diagram-history-actions,.builder-history-actions{display:flex;align-items:center;gap:5px}
+.diagram-history-actions .button{padding:8px!important;min-height:38px;font-size:11px}
+.diagram-history-actions .button:disabled,.builder-history-actions button:disabled{opacity:.45;cursor:not-allowed}
+.builder-history-actions{justify-content:flex-end;padding:5px 7px;border-bottom:1px solid #dfe7ec}
+.builder-history-actions button{display:flex;align-items:center;gap:5px;padding:7px 10px;min-height:36px;background:#f8fbfc;color:#42667d;border:1px solid #d2e1e9;border-radius:7px;font-size:12px;font-weight:700}
+.diagram-selected-wire{position:absolute;left:12px;bottom:12px;z-index:8;display:flex;align-items:center;gap:7px;max-width:calc(100% - 24px);background:#fbfffef2;color:#2d6653;border:1px solid #add5c6;border-radius:9px;padding:8px 10px;box-shadow:0 4px 14px #112d2819;font-size:11px;line-height:1.4}
+.diagram-selected-wire span{overflow:hidden;text-overflow:ellipsis}
+.diagram-selected-wire button{flex:none;background:transparent;color:#3d7463;border:0;min-width:30px;min-height:30px;display:grid;place-items:center}
+@media(max-width:720px){.diagram-history-actions{width:auto;flex-wrap:nowrap}.diagram-history-actions .button{padding:8px 6px!important;font-size:10px}.diagram-selected-wire{bottom:8px;left:8px;max-width:calc(100% - 16px);font-size:10px}}
