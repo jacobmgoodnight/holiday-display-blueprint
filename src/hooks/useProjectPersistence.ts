@@ -35,5 +35,5 @@ export function useProjectPersistence(projects:Project[],active:string,loaded:bo
  },[loaded,storageReady]);
  void revision;
  const current:SaveState=!storageReady?{phase:'failed',message:'Browser storage unavailable'}:queue.current.getState(active);
- return {saveState:current,flushAll:()=>queue.current.flushAll(),flushProject:(id:string)=>queue.current.flush(id),discardProject:(id:string)=>queue.current.discard(id)};
+ return {saveState:current,getState:(id:string)=>queue.current.getState(id),flushAll:()=>queue.current.flushAll(),flushProject:(id:string)=>queue.current.flush(id),discardProject:(id:string)=>queue.current.discard(id)};
 }
