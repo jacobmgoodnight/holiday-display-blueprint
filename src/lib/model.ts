@@ -12,6 +12,17 @@ export type Component = {
   verified?:boolean; inventory?:Inventory; metadata?:Record<string, unknown>;
 };
 export type Connection = {id:string;source:string;sourcePort:number;target:string;notes?:string;metadata?:Record<string,unknown>};
+/** Lighting inventory documents physical runs/strands, not a second AC power graph. */
+export type LightingType='C9'|'Mini'|'Other';
+export type LightingArea='First-floor roofline'|'Second-floor roofline'|'Covered porch'|'Morning-room roofline'|'Mulch beds'|'Bushes'|'Trees'|'Fence'|'Porch columns'|'Storage / spare'|'Other';
+export type LightingStatus='planned'|'installed'|'spare'|'repair';
+export type LightingEntry={
+ id:string;label:string;type:LightingType;area:LightingArea;status:LightingStatus;
+ strandCount?:number;bulbsPerStrand?:number;totalBulbs?:number;
+ lengthPerStrandFt?:number;bulbTechnology?:'LED'|'Incandescent'|'Unknown';
+ bulbColor?:string;wireColor?:string;brand?:string;model?:string;storage?:string;notes?:string;
+ componentId?:string;
+};
 export type ChecklistState = Record<string,{done:boolean;notes?:string;photo?:string}>;
 export type WiringEdit={
  id:string;at:string;action:'connected'|'rewired'|'disconnected';targetId:string;targetName:string;
@@ -20,7 +31,7 @@ export type WiringEdit={
 export type Project = {
   id:string;season:Season;year:number;name:string;status:'draft'|'verified';
   nodes:Component[];edges:Connection[];checklist:ChecklistState;
-  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];verificationReview?:{reviewedAt:string;notes:string;exceptions:string[]};
+  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];lightingInventory?:LightingEntry[];verificationReview?:{reviewedAt:string;notes:string;exceptions:string[]};
 };
 export const outputCount = (kind:Kind):number => ({outlet:2,'smart-plug':2,cord:1,'spt-1':1,splitter:4,'inline-tap':2,'light-strand':1,decoration:0,projector:0,spotlight:0,controller:0,accessory:0})[kind];
 export const categories:{kind:Kind;label:string}[] = [
