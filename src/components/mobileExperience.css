@@ -53,3 +53,17 @@
  .mobile-diagram-actions button{font-size:11px;gap:3px}
 }
 @media print{.mobile-diagram-actions,.mobile-selected-item{display:none!important}}
+
+@media(max-width:720px){
+ .diagram-layout:not(.diagram-fullscreen) .react-flow__minimap,
+ .diagram-layout:not(.diagram-fullscreen) .react-flow__controls{display:none}
+ /* The Builder is a touch-friendly bottom sheet, not a 200-pixel strip. */
+ .diagram-fullscreen .fullscreen-builder{max-height:min(55dvh,495px);overscroll-behavior:contain}
+ .diagram-fullscreen .fullscreen-builder input,
+ .diagram-fullscreen .fullscreen-builder textarea,
+ .diagram-fullscreen .fullscreen-builder select{font-size:16px}
+ .diagram-fullscreen .fullscreen-builder .builder-tabs button{min-height:43px}
+}
+@media(max-height:530px) and (orientation:landscape){
+ .diagram-fullscreen .fullscreen-builder{max-height:55dvh}
+}
