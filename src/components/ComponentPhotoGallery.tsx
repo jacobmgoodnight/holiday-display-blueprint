@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {Camera,Check,ImagePlus,MapPin,Trash2,X,ZoomIn} from 'lucide-react';
 import type {Component,Project} from '../lib/model';
 import {getVisualIcon} from '../lib/visualIcons';
+import {VisualIconArtwork} from './VisualIconArtwork';
 import {MAX_COMPONENT_PHOTOS,photoCount,photoRoles,type PhotoRole} from '../lib/componentPhotos';
 import {sourcePath} from '../lib/graph';
 import './visualExtras.css';
@@ -18,7 +19,7 @@ export function ComponentPhotoGallery({project,component:n,canEdit,onClose,onAdd
  const upload=async(file?:File)=>{if(!file||!canEdit)return;setBusy(true);try{await onAdd(file,role);}finally{setBusy(false);}};
  return <div className="component-photo-backdrop" onClick={onClose}>
   <section className="component-photo-card" role="dialog" aria-modal="true" aria-label={'Photos and details for '+n.name} onClick={e=>e.stopPropagation()}>
-   <header><div className="photo-card-title"><span className="photo-card-emoji">{icon?.emoji||'📷'}</span><div><strong>{n.name}</strong><small>{n.kind} · {n.zone}</small></div></div><button aria-label="Close equipment details" onClick={onClose}><X size={21}/></button></header>
+   <header><div className="photo-card-title"><span className="photo-card-emoji">{icon?<VisualIconArtwork id={icon.id}/>: '📷'}</span><div><strong>{n.name}</strong><small>{n.kind} · {n.zone}</small></div></div><button aria-label="Close equipment details" onClick={onClose}><X size={21}/></button></header>
    <div className="photo-card-content">
     {current?<button className="photo-hero" onClick={()=>setLarge(true)} aria-label="View photo larger"><img src={current.src} alt={n.name+' photo'}/><span><ZoomIn size={15}/> Expand photo</span></button>:<div className="photo-empty"><Camera size={28}/><p>No photos yet. Add a real installation, plug, or storage photo to recognize this equipment next year.</p></div>}
     {photos.length>1&&<div className="photo-thumb-row" aria-label="Equipment photo thumbnails">{photos.map(p=><button key={p.id} className={p.id===current?.id?'active':''} onClick={()=>setActive(p.id)} title={p.role}><img src={p.src} alt={p.role+' view'}/><small>{p.role}</small></button>)}</div>}
