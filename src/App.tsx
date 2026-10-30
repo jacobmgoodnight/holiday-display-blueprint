@@ -461,7 +461,6 @@ function AppContent(){
    </aside>
    <main className="content">
     {localSaving.saveState.phase==='failed'&&<div className="sync-alert" role="alert"><AlertTriangle size={17}/><span>Local save failed: {localSaving.saveState.message}. Changes remain on-screen. Retry saving now or make a private backup before leaving.</span><button className="button secondary" onClick={()=>void localSaving.flushAll()}>Retry local save</button></div>}
-    {deletedReceipt?.projectId===project.id&&<div className="sync-alert" role="status"><span>A component was removed and affected branches require checking.</span><button className="button secondary" onClick={undoDeletion}>Undo component removal</button><button className="icon-button" aria-label="Dismiss undo option" onClick={()=>setDeletedReceipt(null)}><X size={16}/></button></div>}
     {cloud.enabled&&<div className={`sync-bar sync-${cloud.status}`} role="status">
       <LockKeyhole size={16}/><span><strong>{cloud.status==='synced'?'Private sync on':cloud.status==='conflict'?'Sync needs your choice':cloud.status==='offline'?'Offline — changes saved here':'Checking encrypted cloud…'}</strong>{cloud.lastSynced&&cloud.status==='synced'?` · Last synced ${cloud.lastSynced}`:''}</span>
       <button className="button secondary" onClick={()=>void cloud.syncNow()} disabled={cloud.status==='saving'}>Sync now</button>
