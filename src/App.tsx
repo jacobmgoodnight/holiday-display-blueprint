@@ -94,10 +94,10 @@ function AppContent(){
  useEffect(()=>{
   if(!fullscreen)return;
   const previous=document.body.style.overflow;document.body.style.overflow='hidden';
-  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){setFullscreen(false);setBuilderSource(null);setFullSearch('');setShowInsertPreview(false);}};
+  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){if(diagramQuickEdit){setDiagramQuickEdit(null);return;}setFullscreen(false);setBuilderSource(null);setFullSearch('');setShowInsertPreview(false);}};
   document.addEventListener('keydown',onKey);
   return()=>{document.body.style.overflow=previous;document.removeEventListener('keydown',onKey);};
- },[fullscreen]);
+ },[fullscreen,diagramQuickEdit]);
  useEffect(()=>{
   if(!fullscreen||tab!=='diagram'||diagramMode!=='map'||!project)return;
   const timer=setTimeout(()=>{
