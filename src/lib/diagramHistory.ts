@@ -38,8 +38,10 @@ function changedTopology(a:GraphFrame,b:GraphFrame){
   const x=ae.get(id),y=be.get(id);
   if(JSON.stringify(x)!==JSON.stringify(y)){
    changedEdges.add(id);
-   if(x){affected.add(x.source);affected.add(x.target);}
-   if(y){affected.add(y.source);affected.add(y.target);}
+   // The receiver's feed changed. Do not invalidate sibling branches on the
+   // same upstream outlet/splitter merely because they share the source.
+   if(x)affected.add(x.target);
+   if(y)affected.add(y.target);
   }
  }
  // Any existing descendants of a changed physical feed require a new field check.
