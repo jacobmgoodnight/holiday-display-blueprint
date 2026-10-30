@@ -79,6 +79,10 @@ function AppContent(){
  const [insertName,setInsertName]=useState('');
  const [showInsertPreview,setShowInsertPreview]=useState(false);
  const workspaceEditable=workspaceCanEdit(fullscreen,fullMode);
+ // A new selection must always begin at the selected item's identity, even
+ // if the previous inspector was scrolled into its electrical specifications.
+ useEffect(()=>{const inspector=document.querySelector<HTMLElement>('.inspector');if(inspector)inspector.scrollTop=0;},[selected,active,inspectorOpen,fullscreen]);
+ useEffect(()=>{setDiagramQuickEdit(null);},[active,tab,diagramMode]);
  const openDiagramQuickEdit=useCallback((id:string,x:number,y:number,mode:'name'|'icon')=>{
   if(!workspaceEditable)return;
   const bounds=document.getElementById('diagram-canvas')?.getBoundingClientRect();
