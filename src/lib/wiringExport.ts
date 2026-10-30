@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import {generatedTasks,warningSummary} from './graph';
 import {portName} from './portLabels';
 import {computedBulbs} from './lightingInventory';
-import type {Project} from './model';
+import type {Project,SharedLighting} from './model';
 import type {ProjectWithWiringHistory} from './wiringEdits';
 
 /** Readable Excel snapshot for reference/archive. NOT an editable round-trip master. */
@@ -12,7 +12,7 @@ const rows=(headings:string[],records:(string|number|boolean)[][])=>{
  if(records.length)sheet['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:records.length,c:headings.length-1}})};
  return sheet;
 };
-export function createWiringReferenceWorkbook(project:Project):XLSX.WorkBook{
+export function createWiringReferenceWorkbook(project:Project,shared?:SharedLighting):XLSX.WorkBook{
  const wb=XLSX.utils.book_new();
  const current=new Map(project.nodes.map(n=>[n.id,n]));
  const notes=[
@@ -48,7 +48,7 @@ export function createWiringReferenceWorkbook(project:Project):XLSX.WorkBook{
   const records=tasks.map((t,i)=>[i+1,t.phase,t.label,t.nodeId||'',project.checklist[t.id]?.done?'Done':'Not done',project.checklist[t.id]?.notes||'']);
   XLSX.utils.book_append_sheet(wb,rows(['Step','Phase','Instructions','Component ID','Status','Notes'],records),mode==='setup'?'Setup Steps':'Teardown Steps');
  }
- const lighting=(project.lightingInventory||[]).map(x=>[
+ const lighting=shared?shared.stock.flatMap(stock=>{const placed=shared.placements.filter(p=>p.stockId===stock.id&&p.season===project.season&&p.year===project.year);return (placed.length?placed:[undefined]).map(p=>[stock.name,stock.type,p?.area||'Storage / spare',p?.status||'spare',stock.owned??'',stock.bulbsPerStrand??'',p?.quantity??'',stock.type==='C9'?(p?.quantity??''):(p?.quantity!==undefined&&stock.bulbsPerStrand!==undefined?p.quantity*stock.bulbsPerStrand:''),'',stock.bulbTechnology||'',stock.bulbColor||'',stock.wireColor||'',stock.brand||'',stock.model||'',stock.storage||'',p?.componentId||'',stock.notes||'']);}):(project.lightingInventory||[]).map(x=>[
   x.label,x.type,x.area,x.status,x.strandCount??'',x.bulbsPerStrand??'',x.totalBulbs??'',computedBulbs(x)??'',x.lengthPerStrandFt??'',x.bulbTechnology||'',x.bulbColor||'',x.wireColor||'',x.brand||'',x.model||'',x.storage||'',x.componentId||'',x.notes||''
  ]);
  XLSX.utils.book_append_sheet(wb,rows(
@@ -61,8 +61,8 @@ export function createWiringReferenceWorkbook(project:Project):XLSX.WorkBook{
   log.map(x=>[x.at,x.action,x.targetId,x.targetName,x.fromId||'',x.fromPort!==undefined?x.fromPort+1:'',x.toId||'',x.toPort!==undefined?x.toPort+1:''])),'Wiring Changes');
  return wb;
 }
-export function downloadWiringReference(project:Project):void{
- const wb=createWiringReferenceWorkbook(project);
+export function downloadWiringReference(project:Project,shared?:SharedLighting):void{
+ const wb=createWiringReferenceWorkbook(project,shared);
  const binary=XLSX.write(wb,{type:'array',bookType:'xlsx',compression:true});
  const blob=new Blob([binary],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
  const url=URL.createObjectURL(blob);
