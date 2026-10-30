@@ -28,6 +28,6 @@ export function InspectorIdentity({component,season,onName,onIcon,onZone,onPhoto
   </div>
   <div className="inspector-identity-actions"><label>Zone <select aria-label="Selected component zone" value={component.zone} onChange={e=>onZone(e.target.value as Zone)}>{zones.map(z=><option key={z}>{z}</option>)}</select></label><button type="button" onClick={onPhotos}><ImagePlus size={15}/> Photos</button></div>
   {showIcons&&<div className="inspector-identity-palette"><VisualIconPicker compact season={season} kind={component.kind} value={component.visualIcon} onChange={v=>{onIcon(v);setShowIcons(false)}}/></div>}
-  <p className="inspector-identity-help">Rename above or click its icon. Double-click / right-click the item in the diagram for quick edits.</p>
+  <p className="inspector-identity-help">Rename above or click its icon. Double-click, right-click, or select the item and press F2 to edit on the diagram.</p>
  </section>;
 }

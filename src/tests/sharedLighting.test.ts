@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {addStock,addPlacement,availableStock,createSharedLightingRecord,importLegacyLighting,isSharedLightingRecord,repeatLastYearAssignments,SHARED_LIGHTING_ID,stockCsv,totals,updatePlacement,updateStock} from '../lib/sharedLighting';
+import {addStock,addPlacement,availableStock,createSharedLightingRecord,importLegacyLighting,isSharedLightingRecord,repeatLastYearAssignments,SHARED_LIGHTING_ID,stockAvailability,stockCsv,totals,updatePlacement,updateStock} from '../lib/sharedLighting';
 import {exampleProjects} from '../fixtures/examples';
 import {createBackup,parseBackup} from '../lib/storage';
 
@@ -53,6 +53,30 @@ describe('count once, reuse lighting stock across Christmas years',()=>{
   expect(totals(stock.stock,stock.placements,'Christmas',2026,'Mini').shortKnown).toBe(3);
   stock=updateStock(stock,stock.stock[0].id,{condition:'repair'});
   expect(totals(stock.stock,stock.placements,'Christmas',2026,'Mini').ownedKnown).toBe(0);
+ });
+ it('shows true yearly spares and never converts unknown placements into zero',()=>{
+  let x=addStock({stock:[],placements:[]},'C9');
+  const id=x.stock[0].id;
+  x=updateStock(x,id,{owned:100});
+  x=addPlacement(x,id,'Christmas',2026,'First-floor roofline',60);
+  x=addPlacement(x,id,'Christmas',2026,'Second-floor roofline',40);
+  x=updatePlacement(x,x.placements[1].id,{status:'installed'});
+  x=addPlacement(x,id,'Christmas',2027,'Covered porch',90);
+  let balance=stockAvailability(x.stock[0],x.placements,'Christmas',2026);
+  expect(balance).toMatchObject({plannedKnown:60,installedKnown:40,assignedKnown:100,spareKnown:0,shortKnown:0,unknownPlacements:0});
+  expect(stockAvailability(x.stock[0],x.placements,'Christmas',2027).spareKnown).toBe(10);
+  x=addPlacement(x,id,'Christmas',2026,'Trees');
+  balance=stockAvailability(x.stock[0],x.placements,'Christmas',2026);
+  expect(balance.spareKnown).toBeUndefined();
+  expect(balance.unknownPlacements).toBe(1);
+  x=updatePlacement(x,x.placements[3].id,{quantity:12});
+  expect(stockAvailability(x.stock[0],x.placements,'Christmas',2026).shortKnown).toBe(12);
+  x=updateStock(x,id,{condition:'repair'});
+  expect(stockAvailability(x.stock[0],x.placements,'Christmas',2026).spareKnown).toBeUndefined();
+  expect(stockAvailability(x.stock[0],x.placements,'Christmas',2026).shortKnown).toBeUndefined();
+  x=updateStock(x,id,{condition:'good',owned:undefined});
+  expect(stockAvailability(x.stock[0],x.placements,'Christmas',2026).spareKnown).toBeUndefined();
+  expect(stockAvailability(x.stock[0],x.placements,'Christmas',2026).shortKnown).toBeUndefined();
  });
  it('imports legacy records explicitly once and never deletes the original annual project',()=>{
   const project=exampleProjects()[1];

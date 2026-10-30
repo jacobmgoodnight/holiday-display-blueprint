@@ -18,7 +18,7 @@ Permanent lighting stock now supports an optional private reference photo (e.g. 
 
 The app uses a hidden private catalog inside the encrypted project vault, not new AC circuit nodes. Old per-year inventory rows remain available until you explicitly choose to import them into shared stock. Review possible duplicate physical items before importing old years. Never use a prior-year installation checkbox as proof of the new year's installation.
 
-This year's placement quantities can exceed recorded stock only as a **known shortage**; unknown owned quantities must remain unknown. C9 bulbs and mini-light strings are separate units and cannot be added into a single total. Print storage labels with the permanent stock ID rather than a year-specific string number.
+This year's placement quantities can exceed recorded stock only as a **known shortage**; unknown owned quantities must remain unknown. Each stock row summarizes this year's planned and installed allocations, usable spare stock and known minimum shortages. An uncounted placement makes its spare count unknown; repair stock is never presented as usable spare stock. C9 bulbs and mini-light strings are separate units and cannot be added into a single total. Print storage labels with the permanent stock ID rather than a year-specific string number.
 
 ## Counting Christmas C9 bulbs and mini-light strands
 
@@ -35,7 +35,7 @@ Open **Inventory → Lighting counts** in your Christmas project. Lighting inven
 
 Under **Diagram editor → Component details**, choosing a component now puts that item's icon, **editable name**, zone and photo control at the very top. The existing wiring/source picker is available immediately below in the expandable **Where does it plug in?** section, which shows its current feed in the section summary. Output names, trace tools, advanced equipment specs and Find another item remain available but no longer bury the ordinary rename task.
 
-On desktop, **double-click** or **right-click** a diagram node to open a small rename/icon editor over the canvas; click the node icon to open directly in icon-selection mode. On a phone, tap the node icon in the regular editor or fullscreen Builder. Enter commits a renamed label; Escape cancels; click or tap an icon to apply it. Choosing an icon never changes component kind, actual wiring, source port or load ratings. Fullscreen **Explore** remains read-only and does not expose those editing controls.
+On desktop, **double-click**, **right-click**, or select a node and press **F2** to open a small rename/icon editor over the canvas; click the node icon to open directly in icon-selection mode. On a phone, tap the node icon in the regular editor or fullscreen Builder. **Done / Enter** commits a renamed label; **Escape / close** discards an unfinished name, including when focus leaves the popup. Click or tap an icon to apply it. Choosing an icon never changes component kind, actual wiring, source port or load ratings. Fullscreen **Explore** remains read-only and does not expose those editing controls.
 
 The popup does not scale with diagram zoom and is bounded to the canvas to avoid tiny, inaccessible controls. Existing automatic local save + encrypted sync persists the change. Field installation status stays unchanged for cosmetic name/icon edits; changing electrical specifications still requires re-verification.
 

@@ -21,14 +21,14 @@ describe('fast diagram editing without rewiring',()=>{
   expect(html).toContain('Change icon for');
   expect(html).toContain('Photos');
   expect(html).toContain(item.name);
-  expect(html).toContain('Double-click / right-click');
+  expect(html).toContain('press F2');
  });
  it('shows on-diagram rename and icon tabs without changing electrical type or source',()=>{
   const html=renderToStaticMarkup(<DiagramQuickEdit item={item} season={season} position={{id:item.id,left:20,top:30,mode:'name'}} onRename={()=>{}} onIcon={()=>{}} onClose={()=>{}}/>);
   expect(html).toContain('Rename diagram item');
   expect(html).toContain('Rename');
   expect(html).toContain('Icon');
-  expect(html).toContain('Names change the label, not the wiring');
+  expect(html).toContain('Wiring is unchanged');
  });
  it('allows direct icon selection from the selected item header',async()=>{
   const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
@@ -41,6 +41,23 @@ describe('fast diagram editing without rewiring',()=>{
   await act(async()=>choose.click());
   expect(onIcon).toHaveBeenCalledTimes(1);
   await act(async()=>{(host.querySelector('button') as HTMLButtonElement).click();});
+  await act(async()=>root.unmount());host.remove();
+ });
+ it('does not save an unfinished diagram rename when focus leaves or the user closes it',async()=>{
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
+  const onRename=vi.fn(),onClose=vi.fn();
+  await act(async()=>root.render(<DiagramQuickEdit item={item} season={season} position={{id:item.id,left:10,top:10,mode:'name'}} onRename={onRename} onIcon={()=>{}} onClose={onClose}/>));
+  const input=host.querySelector('input[aria-label="Rename diagram item"]') as HTMLInputElement;
+  await act(async()=>{
+   const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;
+   setter?.call(input,'Unfinished new label');
+   input.dispatchEvent(new Event('input',{bubbles:true}));
+   input.dispatchEvent(new FocusEvent('focusout',{bubbles:true}));
+  });
+  expect(onRename).not.toHaveBeenCalled();
+  await act(async()=>{(host.querySelector('button[aria-label="Close quick editor"]') as HTMLButtonElement).click();});
+  expect(onClose).toHaveBeenCalledOnce();
+  expect(onRename).not.toHaveBeenCalled();
   await act(async()=>root.unmount());host.remove();
  });
  it('supports icon quick-edit tab without calling rename',async()=>{
