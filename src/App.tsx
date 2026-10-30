@@ -365,7 +365,7 @@ function AppContent(){
   changePowerFeed(target,source,free);
  }
  const onConnect=useCallback((params:FlowConnection)=>{if(!params.source||!params.target)return;const port=params.sourceHandle?.match(/^port-(\d+)$/)?.[1];addConnection(params.source,params.target,port===undefined?undefined:Number(port));},[project,active]);
- function patchComponent(id:string,fields:Partial<Component>){
+ function patchComponent(id:string,fields:Partial<Component>,recordHistory=false){
   if(!project)return;
   const before=project.nodes.find(n=>n.id===id);
   const electricalKeys=['kind','outputs','inputGender','outputGender','cordType','color','lengthFt','ratedWatts','expectedWatts'] as const;
@@ -373,7 +373,8 @@ function AppContent(){
   const nodes=project.nodes.map(n=>n.id===id?{...n,...fields,...(changedElectrical?{verified:false}:{})}:n);
   const errors=validateGraph(nodes,project.edges);
   if(errors.length){setMessage(errors[0].message);return;}
-  update(p=>({...p,nodes,status:changedElectrical?'draft':p.status}));
+  const next={...project,nodes,status:changedElectrical?'draft' as const:project.status};
+  if(recordHistory)commitGraphChange(next,'edit item appearance or name');else update(()=>next);
 }
  function duplicateSelectedItem(id:string){
   if(!project)return;
@@ -501,8 +502,8 @@ function AppContent(){
        </ReactFlow>
        {diagramQuickEdit&&diagramEditNode&&workspaceEditable&&<DiagramQuickEdit key={diagramEditNode.id} item={diagramEditNode} season={project.season} position={diagramQuickEdit}
          onClose={()=>setDiagramQuickEdit(null)}
-         onRename={name=>{const clean=tidyComponentName(name);if(clean)patchComponent(diagramEditNode.id,{name:clean});}}
-         onIcon={visualIcon=>patchComponent(diagramEditNode.id,{visualIcon})}/>}
+         onRename={name=>{const clean=tidyComponentName(name);if(clean)patchComponent(diagramEditNode.id,{name:clean},true);}}
+         onIcon={visualIcon=>patchComponent(diagramEditNode.id,{visualIcon},true)}/>}
        {fullscreen&&<div className="fullscreen-workspace-ui">
         <div className="fullscreen-topbar">
          <span className="fullscreen-title"><CircuitBoard size={18}/><strong>{project.season} {project.year}</strong><small>{fullMode==='explore'?'Explore wiring':'Build wiring'}</small></span>
@@ -601,7 +602,7 @@ function AppContent(){
        </div><div className="canvas-footer"><span><CheckCircle2 size={14}/> {warningErrors.length?'Graph has errors':'Connection graph valid'}</span><label className="photo-action"><ImagePlus size={15}/> Add property image<input type="file" accept="image/*" onChange={e=>{void attachPhoto(e.target.files?.[0]);e.target.value='';}}/></label></div></div>
        {inspectorOpen&&!fullscreen&&<div className="inspector"><div className="inspector-title"><strong>{selectedNode?'Component details':'Connection tools'}</strong><button className="icon-button" aria-label="Close inspector" onClick={()=>setInspectorOpen(false)}><X size={16}/></button></div>
         {!selectedNode&&<ConnectionFinder key={project.id} project={project} scope={baseVisibleIds} selected={selected} onSelect={jumpToNode}/>}
-        {selectedNode?<><InspectorIdentity key={selectedNode.id} component={selectedNode} season={project.season} onName={name=>patchComponent(selectedNode.id,{name})} onIcon={visualIcon=>patchComponent(selectedNode.id,{visualIcon})} onZone={zone=>patchComponent(selectedNode.id,{zone})} onPhotos={()=>setGalleryId(selectedNode.id)}/>
+        {selectedNode?<><InspectorIdentity key={selectedNode.id} component={selectedNode} season={project.season} onName={name=>patchComponent(selectedNode.id,{name},true)} onIcon={visualIcon=>patchComponent(selectedNode.id,{visualIcon},true)} onZone={zone=>patchComponent(selectedNode.id,{zone},true)} onPhotos={()=>setGalleryId(selectedNode.id)}/>
          <div className="trace-buttons"><button onClick={()=>setTrace('upstream')} className={trace==='upstream'?'active':''}><ArrowDownToLine size={15}/> Trace source</button><button onClick={()=>setTrace('outage')} className={trace==='outage'?'active':''}><WifiOff size={15}/> If unplugged</button></div>
          {trace==='upstream'&&<div className="trace-box"><strong>Power path back to source</strong>{sourcePath(selectedNode.id,project).map((n,i)=><div key={n.id}>{i>0?'↳ ':''}{n.name}</div>)}</div>}
          {trace==='outage'&&<div className="trace-box warning"><strong>Components losing this feed: {downstream(selectedNode.id,project.edges).size}</strong>{[...downstream(selectedNode.id,project.edges)].map(id=><div key={id}>{project.nodes.find(n=>n.id===id)?.name||id}</div>)}</div>}
@@ -613,7 +614,7 @@ function AppContent(){
           <div className="inspector-fields">
           <div className="form-grid"><label>Type<select value={selectedNode.kind} onChange={e=>{const kind=e.target.value as Kind;patchComponent(selectedNode.id,{kind,outputs:outputCount(kind)});}}>{categories.map(c=><option key={c.kind} value={c.kind}>{c.label}</option>)}</select></label><label>Outputs<input type="number" min={0} max={16} value={selectedNode.outputs} onChange={e=>patchComponent(selectedNode.id,{outputs:Number(e.target.value)})}/></label></div>
           <div className="form-grid"><label>Input plug<select disabled={selectedNode.kind==='outlet'} value={selectedNode.inputGender||''} onChange={e=>patchComponent(selectedNode.id,{inputGender:e.target.value?e.target.value as 'male'|'female':undefined})}><option value="">Unknown</option><option value="male">Male</option><option value="female">Female</option></select></label><label>Output connector<select disabled={selectedNode.outputs===0} value={selectedNode.outputGender||''} onChange={e=>patchComponent(selectedNode.id,{outputGender:e.target.value?e.target.value as 'male'|'female':undefined})}><option value="">Unknown</option><option value="female">Female</option><option value="male">Male</option></select></label></div>
-          <label className="field-verified"><input type="checkbox" checked={!!selectedNode.verified} onChange={e=>patchComponent(selectedNode.id,{verified:e.target.checked})}/> Verified this component on site (not electrical certification)</label>
+          <label className="field-verified"><input type="checkbox" checked={!!selectedNode.verified} onChange={e=>{if(!e.target.checked||confirm('Did you physically check this component on site? This is a documentation check, not electrical certification.'))patchComponent(selectedNode.id,{verified:e.target.checked});}}/> Verified this component on site (not electrical certification)</label>
           <label>Wire / cord construction<input placeholder="e.g. outdoor 16/3, SPT-1" value={selectedNode.cordType||''} onChange={e=>patchComponent(selectedNode.id,{cordType:e.target.value})}/></label>
           <div className="form-grid"><label>Wire color<input placeholder="e.g. Green" value={selectedNode.color||''} onChange={e=>patchComponent(selectedNode.id,{color:e.target.value})}/></label><label>Length (ft)<input type="number" min={0} value={selectedNode.lengthFt??''} onChange={e=>patchComponent(selectedNode.id,{lengthFt:e.target.value===''?undefined:Number(e.target.value)})}/></label></div>
           <div className="form-grid"><label>Rated watts<input type="number" min={0} value={selectedNode.ratedWatts??''} onChange={e=>patchComponent(selectedNode.id,{ratedWatts:e.target.value===''?undefined:Number(e.target.value)})}/></label><label>Expected load W<input type="number" min={0} value={selectedNode.expectedWatts??''} onChange={e=>patchComponent(selectedNode.id,{expectedWatts:e.target.value===''?undefined:Number(e.target.value)})}/></label></div>
