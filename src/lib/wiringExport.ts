@@ -31,7 +31,7 @@ export function createWiringReferenceWorkbook(project:Project,shared?:SharedLigh
  intro['!cols']=[{wch:26},{wch:95}];
  XLSX.utils.book_append_sheet(wb,intro,'Read Me');
  const components=project.nodes.map(n=>[
-  n.id,n.name,n.kind,n.zone,n.verified?'Yes':'No',n.outputs,n.color||'',n.lengthFt??'',n.cordType||'',
+  n.id,n.name,n.kind,n.zone,n.verified?'Yes':'No',n.outputsUnknown?'Unknown':n.outputs,n.color||'',n.lengthFt??'',n.cordType||'',
   n.expectedWatts??'',n.ratedWatts??'',n.inputGender||'',n.outputGender||'',n.inventory?.storage||'',n.notes||''
  ]);
  XLSX.utils.book_append_sheet(wb,rows(

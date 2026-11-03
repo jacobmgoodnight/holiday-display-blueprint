@@ -13,7 +13,7 @@ export function BlueprintNode({data,selected}:NodeProps<BlueprintFlowNode>){
  return <div className={`flow-node kind-${n.kind} ${highlight?'flow-node-highlight':''} ${dim?'flow-node-dim':''} ${selected?'flow-node-selected':''}`}>
   {n.kind!=='outlet'&&<Handle type="target" position={Position.Left} id="input" className="node-handle"/>}
   <div className="node-main">{data.canQuickEdit?<button type="button" className="node-icon node-icon-action nodrag nopan" aria-label={`Change icon for ${n.name}`} title="Change diagram icon" onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();data.onIconEdit?.(e);}}>{visual?<span className="node-visual" role="img" aria-label={visual.label}><VisualIconArtwork id={visual.id}/></span>:<Icon size={18}/>}</button>:<div className="node-icon">{visual?<span className="node-visual" role="img" aria-label={visual.label}><VisualIconArtwork id={visual.id}/></span>:<Icon size={18}/>}</div>}<div className="node-copy"><span className="node-kind">{kindNames[n.kind]||n.kind}</span><strong title={n.name}>{n.name}</strong><span className="node-details">{[n.color,n.lengthFt?`${n.lengthFt} ft`:null].filter(Boolean).join(' · ')||n.zone}</span></div></div>
-  {n.outputs>0&&<span className="node-port-count">{n.outputs} out</span>}
+  {n.outputsUnknown?<span className="node-port-count">Outputs unknown</span>:n.outputs>0&&<span className="node-port-count">{n.outputs} out</span>}
   {Array.from({length:n.outputs},(_,port)=><Handle key={port} type="source" position={Position.Right} id={`port-${port}`} className="node-handle" style={{top:`${(port+1)/(n.outputs+1)*100}%`}} title={portName(n,port)}/>)}
  </div>;
 }

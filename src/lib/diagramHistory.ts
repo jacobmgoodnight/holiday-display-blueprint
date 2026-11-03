@@ -31,7 +31,7 @@ function changedTopology(a:GraphFrame,b:GraphFrame){
  const affected=new Set<string>(),changedEdges=new Set<string>();
  for(const id of new Set([...am.keys(),...bm.keys()])){
   const x=am.get(id),y=bm.get(id);
-  if(!x||!y||x.kind!==y.kind||x.outputs!==y.outputs||x.inputGender!==y.inputGender||x.outputGender!==y.outputGender)affected.add(id);
+  if(!x||!y||x.kind!==y.kind||x.outputs!==y.outputs||!!x.outputsUnknown!==!!y.outputsUnknown||x.inputGender!==y.inputGender||x.outputGender!==y.outputGender)affected.add(id);
  }
  const ae=new Map(a.edges.map(e=>[e.id,e])),be=new Map(b.edges.map(e=>[e.id,e]));
  for(const id of new Set([...ae.keys(),...be.keys()])){

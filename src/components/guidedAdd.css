@@ -1,0 +1,23 @@
+.guided-add{background:#fff;color:#172a25;border-radius:16px;padding:18px;max-width:680px;margin:auto;box-sizing:border-box}
+.guided-add *{box-sizing:border-box}
+.guided-add-heading{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.guided-add h2{margin:0;font-size:1.25rem}.guided-add p{margin:6px 0 14px;line-height:1.4;color:#435b53}
+.guided-add button,.guided-add input,.guided-add select{font:inherit}
+.guided-add button{cursor:pointer;min-height:44px;border:1px solid #aebfb6;border-radius:9px;background:#fff;color:#1d3c32;padding:8px 12px}
+.guided-add button:disabled{opacity:.5;cursor:not-allowed}.guided-add button:focus-visible,.guided-add input:focus-visible,.guided-add select:focus-visible{outline:3px solid #bc7900;outline-offset:2px}
+.guided-add fieldset{border:0;border-top:1px solid #dce6df;padding:16px 0 4px;margin:0 0 10px;min-width:0}
+.guided-add legend{font-weight:700;padding:0 8px 0 0;color:#163f31}
+.guided-add label:not(.guided-add-radio){display:block;font-weight:600;margin:10px 0}
+.guided-add input:not([type=radio]),.guided-add select{display:block;width:100%;min-height:44px;border:1px solid #9eb2a7;border-radius:8px;background:white;color:#172a25;padding:8px;margin-top:5px}
+.guided-add small{display:block;font-size:.8rem;color:#536a60;font-weight:400;margin-top:5px;line-height:1.35}
+.guided-add-types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.guided-add-types button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;min-height:76px;font-weight:600;padding:8px 4px;font-size:.88rem}
+.guided-add-types button span{font-size:1.35rem}.guided-add-types button.selected{border:2px solid #216d4e;background:#e7f4eb;color:#164d35}
+.guided-add-radio{display:flex;gap:9px;align-items:center;margin:8px 0;min-height:38px;font-weight:500}.guided-add-radio input{width:20px;height:20px;accent-color:#216d4e}
+.guided-add-connection{background:#f2f7f3;padding:8px 12px;border-radius:8px}.guided-add .guided-add-primary{background:#1f684a;color:white;border-color:#1f684a;width:100%;font-weight:700}
+.guided-add .guided-add-success{background:#e3f4e9;color:#175435;border-radius:8px;padding:10px}.guided-add-reuse{border-top:1px solid #dce6df;margin-top:18px;padding-top:14px}.guided-add-reuse summary{cursor:pointer;font-weight:700;color:#205b41}.guided-add-reuse button{width:100%}
+
+.guided-add .guided-add-error{background:#fff0eb;color:#8c3020;border:1px solid #e8ab9b;border-radius:8px;padding:10px}
+.guided-add-backdrop{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;padding:12px;background:#0b1929b8;overscroll-behavior:contain}
+.guided-add-backdrop .guided-add{width:min(680px,100%);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+@media(max-width:720px){.guided-add-backdrop{padding:calc(8px + env(safe-area-inset-top,0px)) 8px calc(8px + env(safe-area-inset-bottom,0px))}.guided-add-backdrop .guided-add{max-height:calc(100dvh - 16px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}}

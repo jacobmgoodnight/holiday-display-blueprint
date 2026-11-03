@@ -1,4 +1,5 @@
 import type {PhotoAttachment} from './componentPhotos';
+import type {PropertyPhoto} from './propertyPhoto';
 export const kinds = ['outlet','smart-plug','cord','spt-1','splitter','inline-tap','light-strand','decoration','projector','spotlight','controller','accessory'] as const;
 export type Kind = typeof kinds[number];
 export type Season = 'Halloween'|'Christmas';
@@ -7,7 +8,7 @@ export type Position = {x:number,y:number};
 export type Inventory = {quantity?:number;storage?:string;purchaseDate?:string;price?:number;condition?:'good'|'missing'|'damaged'|'repair';repairHistory?:string};
 export type Component = {
   id:string; assetId?:string; name:string; kind:Kind; zone:Zone; position:Position;
-  outputs:number; portLabels?:Record<string,string>; inputGender?:'male'|'female'; outputGender?:'male'|'female'; color?:string; lengthFt?:number; cordType?:string;
+  outputs:number; outputsUnknown?:boolean; portLabels?:Record<string,string>; inputGender?:'male'|'female'; outputGender?:'male'|'female'; color?:string; lengthFt?:number; cordType?:string;
   ratedWatts?:number; expectedWatts?:number; notes?:string; photo?:string; photoGallery?:PhotoAttachment[]; visualIcon?:string;
   verified?:boolean; inventory?:Inventory; metadata?:Record<string, unknown>;
 };
@@ -35,7 +36,7 @@ export type WiringEdit={
 export type Project = {
   id:string;season:Season;year:number;name:string;status:'draft'|'verified';
   nodes:Component[];edges:Connection[];checklist:ChecklistState;
-  backgroundPhoto?:string;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];lightingInventory?:LightingEntry[];sharedLighting?:SharedLighting;verificationReview?:{reviewedAt:string;notes:string;exceptions:string[]};
+  backgroundPhoto?:string;propertyPhoto?:PropertyPhoto;createdAt:string;updatedAt:string;example?:boolean;wiringHistory?:WiringEdit[];lightingInventory?:LightingEntry[];sharedLighting?:SharedLighting;verificationReview?:{reviewedAt:string;notes:string;exceptions:string[]};
 };
 export const outputCount = (kind:Kind):number => ({outlet:2,'smart-plug':2,cord:1,'spt-1':1,splitter:4,'inline-tap':2,'light-strand':1,decoration:0,projector:0,spotlight:0,controller:0,accessory:0})[kind];
 export const categories:{kind:Kind;label:string}[] = [

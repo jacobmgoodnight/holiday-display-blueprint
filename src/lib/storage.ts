@@ -3,6 +3,7 @@ import type {Project} from './model';
 import {kinds} from './model';
 import {validateGraph} from './graph';
 import {exampleProjects} from '../fixtures/examples';
+import {isPropertyPhoto} from './propertyPhoto';
 export const DB_NAME='holiday-display-blueprint-v1';
 export type SavedVersion={id:string;projectId:string;createdAt:string;label:string;bytes:number;snapshot:Project};
 export class BlueprintDB extends Dexie{
@@ -28,6 +29,8 @@ export function parseBackup(input:unknown):Project[]{
  if(data.format!=='holiday-display-blueprint'||data.version!==1||!Array.isArray(data.projects))throw Error('Unsupported backup format/version');
  const seen=new Set<string>();
  for(const p of data.projects){if(!p||typeof p.id!=='string'||!Array.isArray(p.nodes)||!Array.isArray(p.edges)||!['Halloween','Christmas'].includes(p.season)||!['draft','verified'].includes(p.status)||!Number.isInteger(p.year)||!p.checklist||typeof p.checklist!=='object'||!p.nodes.every(n=>n&&typeof n.id==='string'&&typeof n.name==='string'&&kinds.includes(n.kind)&&Number.isInteger(n.outputs)&&n.outputs>=0&&n.outputs<=16&&n.position&&Number.isFinite(n.position.x)&&Number.isFinite(n.position.y))||!p.edges.every(e=>e&&typeof e.id==='string'&&typeof e.source==='string'&&typeof e.target==='string'&&Number.isInteger(e.sourcePort)))throw Error('Malformed project/component/connection');
+  if(p.propertyPhoto!==undefined&&!isPropertyPhoto(p.propertyPhoto))throw Error('Malformed property photo layout');
+  if(p.nodes.some(n=>n.outputsUnknown!==undefined&&(typeof n.outputsUnknown!=='boolean'||(n.outputsUnknown&&n.outputs!==0))))throw Error('Malformed unknown output count');
   if(seen.has(p.id))throw Error('Duplicate project');seen.add(p.id);
   const errs=validateGraph(p.nodes,p.edges);if(errs.length)throw Error(errs[0].message);
  }
