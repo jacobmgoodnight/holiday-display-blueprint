@@ -2,6 +2,10 @@
 
 _Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
 
+## In progress
+
+- **Mobile workflow follow-up:** area selection opens the relevant checklist section, filtered progress and empty states reflect that area, phone diagrams start at a readable scale, and asynchronous workbook-photo review releases previews and cannot apply after it is closed. Existing task keys and project data are retained. Physical-device testing remains outstanding.
+
 ## Shipped and testable
 
 - **Mobile primary-flow refinement:** compact View/Find/Add/More diagram actions, direct selected-item Edit details and Photos, an easy jump to the same inspector, fullscreen Add/Explore modes, a simplified phone drawer, whole-system-first Field Mode with a collapsed detailed guide, and a visible Install checklist shortcut. Existing graph, checklist and sync data stay unchanged.
@@ -14,7 +18,7 @@ _Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-te
 - **Cleaner diagrams:** removed newly introduced field-check badges from nodes, keeping persisted verification data and the separate optional audit intact.
 
 - **Bounded diagram undo/redo (session-only):** up to ten safely guarded node/connection and standard-inspector identity changes; invalidates affected field checks when wiring changes, preserves unrelated tasks, rejects stale/cloud-replaced graphs, and works in fullscreen Builder. No cloud history or persistent full-project undo claims.
-- **Visible field-check status:** equipment node badges distinguish recorded checks, pending checks and example fixtures; selected wires show setup-step completion, not safety certification. Direct inspector verification requires an on-site confirmation.
+- **Field-check details:** selected wires show setup-step completion, not safety certification. Verification remains in the inspector and optional audit; ordinary nodes do not display field-check badges. Direct inspector verification requires an on-site confirmation.
 - **Safer sync-conflict decisions:** a local private JSON backup download is initiated before a user-approved Use Cloud/Keep Device overwrite. Do not mistake this for an automatically verified backup or conflict-free multiuser editing.
 
 - **Selected-component-first inspector and direct node quick edits:** name, icon, zone and photos are visible before any source selection; current feed is summarized in an expandable section and advanced hardware details are collapsed. Double-click/right-click or select and press F2 to rename on the diagram, icon tap/click for palette in normal editor and fullscreen Builder. Renames commit with Done/Enter, while Escape/close safely discards the draft; clicking a wire visibly highlights the chosen connection. Fullscreen Explore remains read-only; labels and artwork never rewire equipment.

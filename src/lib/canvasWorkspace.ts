@@ -1,4 +1,13 @@
 import type {Project} from './model';
+/** Choose a visible starting point instead of shrinking a large phone diagram to fit. */
+export function phoneDiagramAnchor(project:Project,visibleIds:Set<string>,view:string,selected:string|null){
+ const visible=project.nodes.filter(n=>visibleIds.has(n.id));
+ const outletId=view.startsWith('Outlet: ')?view.slice(8):null;
+ return visible.find(n=>n.id===outletId)
+  ||visible.find(n=>n.id===selected)
+  ||visible.find(n=>n.kind==='outlet')
+  ||visible[0];
+}
 /** Explore is deliberately non-mutating. Embedded diagram retains its existing editing behavior. */
 export function workspaceCanEdit(fullscreen:boolean,mode:'explore'|'builder'):boolean{return !fullscreen||mode==='builder';}
 export function freeOutputPorts(project:Project,sourceId:string,targetId?:string):number[]{

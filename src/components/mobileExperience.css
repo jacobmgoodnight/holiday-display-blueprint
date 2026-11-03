@@ -5,6 +5,8 @@
  .leftbar.leftbar-open{padding-bottom:calc(95px + env(safe-area-inset-bottom,0px))}
 }
 @media(max-width:720px){
+ /* Keep editable text at iOS's readable size when the keyboard opens. */
+ .app-shell input:not([type="checkbox"]):not([type="radio"]),.app-shell textarea{font-size:16px}
  .page-head-field{display:none}
  .page-head-diagram .head-buttons{display:none}
  .page-head-diagram{margin-bottom:9px}

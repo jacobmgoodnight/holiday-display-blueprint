@@ -21,7 +21,11 @@ export function buildTaskPhases(project:Project,mode:'setup'|'teardown'):TaskPha
  return phases[mode].map(([id,title,instruction])=>{
   const phaseTasks=tasks.filter(t=>t.phase===id);
   const sections=zoneOrder.map(zone=>{
-   const scoped=phaseTasks.filter(t=>(t.nodeId?byId.get(t.nodeId)?.zone:'Power sources')===zone);
+   const scoped=phaseTasks.filter(t=>{
+    if(!t.nodeId)return zone==='Power sources';
+    const nodeZone=byId.get(t.nodeId)?.zone;
+    return (zoneOrder.includes(nodeZone as Zone)?nodeZone:'Other')===zone;
+   });
    return {zone,tasks:scoped,done:scoped.filter(t=>project.checklist[t.id]?.done).length};
   }).filter(s=>s.tasks.length);
   return {id,title,instruction,tasks:phaseTasks,done:phaseTasks.filter(t=>project.checklist[t.id]?.done).length,sections};
