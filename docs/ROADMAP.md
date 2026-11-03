@@ -4,7 +4,9 @@ _Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## In progress
 
-- **Mobile workflow follow-up:** area selection opens the relevant checklist section, filtered progress and empty states reflect that area, phone diagrams start at a readable scale, and asynchronous workbook-photo review releases previews and cannot apply after it is closed. Existing task keys and project data are retained. Physical-device testing remains outstanding.
+- **New-display start:** name a separate draft and choose its season and year; begin with a known source or equipment without an assigned source. The Builder asks for an area and the number of known outlet outputs. Further guided construction, custom sections and photo-based visual layout remain opportunities.
+
+- **Mobile workflow follow-up (merged in PR #25):** area selection opens the relevant checklist section, filtered progress and empty states reflect that area, phone diagrams start at a readable scale, and asynchronous workbook-photo review releases previews and cannot apply after it is closed. Existing task keys and project data are retained. Physical-device testing remains outstanding.
 
 ## Shipped and testable
 
