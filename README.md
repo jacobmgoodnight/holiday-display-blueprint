@@ -12,7 +12,11 @@ Open **Menu → New display** on a phone, or **More actions → New display** on
 
 Choose a type such as an extension cord, light strand, splitter or decoration, and choose its area. Add items one after another; enter known details or leave output counts unknown until you can check. You can leave a feed unconnected, choose its actual source and output while adding, or use **Connect an existing item** later. Reuse equipment from another display without copying its old power connections. New connections remain unverified.
 
-Choose **Diagram → Property photo**, or start with a photo from an empty display. Take or select a photo, pick an existing item and tap its location; move it later or use the fine-tuning controls. Select a marker to see notes and the recorded power path, or open its details. Positioning a marker does not change wiring. The separate photo is compressed and saved in the project, private JSON backup, and linked encrypted sync; it counts toward storage and sync limits. Replacing or removing the photo also removes its markers after confirmation. This is a location view, not a measured map or a drawing tool for light or cord routes.
+Choose **Diagram → Property photo**, or start with a photo from an empty display. Select an equipment type and area, then tap the photo to add and place items repeatedly; stop adding when finished. New items have no power connection, and their output counts remain unknown until you record them. You can also place an existing item, move it, or fine-tune its marker.
+
+Select a light strand or cord and choose **Draw route**; tap points along its path and save. Use Undo point, Cancel, or keyboard point controls as needed. Yellow lines represent lights and dashed blue lines represent cords. These routes are visual guides, not electrical connections or length measurements; unsaved route drafts remain only while the photo screen is open. To record wiring, select an unconnected item and choose **Connect**, then tap or choose its actual power source, record its output count if unknown, and explicitly select an available output. Connections remain unverified. Existing wiring and compatibility validation still apply.
+
+The compressed photo, markers and saved routes live in the project, private JSON backup and linked encrypted sync and count toward storage limits. Replacing or removing the image removes its markers and routes after confirmation. One photo per project is supported; calibration and length estimation are not yet available.
 
 ## Quick start
 
