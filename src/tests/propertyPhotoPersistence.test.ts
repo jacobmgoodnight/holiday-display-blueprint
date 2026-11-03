@@ -8,11 +8,13 @@ import {planMerge} from '../lib/cloudSync';
 describe('property photo persistence and recovery',()=>{
  it('round trips a layout and leaves diagram coordinates and task keys unchanged',()=>{
   const base=exampleProjects()[0],id=base.nodes[0].id;
-  const project={...base,example:false,propertyPhoto:{photo:'data:image/jpeg;base64,AA',placements:{[id]:{x:.2,y:.7}}},checklist:{...base.checklist,'legacy':{done:true}}};
+  const project={...base,example:false,propertyPhoto:{photo:'data:image/jpeg;base64,AA',placements:{[id]:{x:.2,y:.7}},routes:{[id]:{kind:'cord' as const,points:[{x:0,y:.2},{x:1,y:.8}]}}},checklist:{...base.checklist,'legacy':{done:true}}};
   const restored=parseBackup(JSON.parse(JSON.stringify(createBackup([project]))))[0];
   expect(restored.propertyPhoto).toEqual(project.propertyPhoto);
   expect(restored.nodes).toEqual(project.nodes);expect(restored.edges).toEqual(project.edges);expect(restored.checklist).toEqual(project.checklist);
   expect(()=>parseBackup({...createBackup([project]),projects:[{...project,propertyPhoto:{photo:'x',placements:{[id]:{x:2,y:0}}}}]})).toThrow('Malformed property photo');
+  expect(()=>parseBackup({...createBackup([project]),projects:[{...project,propertyPhoto:{photo:'x',placements:{},routes:{[id]:{kind:'cord',points:[{x:0,y:0},{x:2,y:0}]}}}}]})).toThrow('Malformed property photo');
+  expect(()=>parseBackup({...createBackup([project]),projects:[{...project,propertyPhoto:{photo:'x',placements:{},routes:{[id]:{kind:'other',points:[{x:0,y:0},{x:1,y:0}]}}}}]})).toThrow('Malformed property photo');
  });
  it('preserves a later photo edit through graph undo and flags concurrent sync edits',()=>{
   const base={...exampleProjects()[0],example:false};
