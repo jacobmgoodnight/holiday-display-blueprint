@@ -1,0 +1,11 @@
+.new-display-dialog{width:min(490px,95vw)}
+.new-display-dialog>p{color:#657889;font-size:13px;line-height:1.55;margin:8px 0 20px}
+.new-display-dialog form{display:grid;gap:15px}
+.new-display-dialog label{font-size:12px;color:#405669}
+.new-display-dialog input,.new-display-dialog select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #d7e2ea;border-radius:8px;background:#fff;color:#263d50;font-size:16px}
+.modal.new-display-dialog label select{font-size:16px}
+.new-display-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.new-display-dialog .new-display-note{color:#778b9a;font-size:12px;line-height:1.5;margin:0}
+.new-display-dialog .new-display-error{color:#a33c31;font-size:12px;font-weight:700;margin:0}
+.new-display-dialog .modal-actions{margin-top:2px}
+@media(max-width:480px){.new-display-backdrop{padding:12px;align-items:center}.new-display-dialog{width:100%;padding:20px}.new-display-dialog .modal-actions button{flex:1;min-height:44px}}

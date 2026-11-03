@@ -16,6 +16,10 @@ Restoring a previous physical feed returns affected components to **Draft / Need
 
 For oversized photo-rich plans, create a private manual restore point before rewiring. The current editing action remains possible, but in-memory undo may be unavailable. Before using a cloud conflict resolution button, the app starts a private JSON backup download; confirm it was saved before leaving the page. Historical Excel workbooks are private references and have not been silently imported or photo-matched.
 
+## Starting a new display
+
+Select **Menu → New display** on a phone or **More actions → New display** on a computer, then enter a name, season and year. The separate draft starts empty. Add a known power source, or add equipment first and leave it unconnected until its source is known. For an unconnected item, select its area; for an outlet, explicitly enter its known output count. Select the actual source output before using **Add & connect**. No physical connection is inferred and the recorded connection still requires field review.
+
 ## Phone navigation and fewer taps
 
 On a phone, use the four bottom tabs to move between Home, Diagram, Tasks and Inventory. The menu is for import/export/backup and less frequent tools. Home defaults to the whole system instead of an arbitrary first outlet. Choose O01/O02/O03 only when focusing on one circuit. The detailed wiring guide is collapsed until requested, and Install checklist opens Tasks directly.

@@ -69,3 +69,5 @@
 @media(max-height:530px) and (orientation:landscape){
  .diagram-fullscreen .fullscreen-builder{max-height:55dvh}
 }
+/* Builder feedback must remain visible above the fullscreen canvas. */
+.toast.toast-fullscreen{z-index:230;top:calc(116px + env(safe-area-inset-top,0px));bottom:auto}

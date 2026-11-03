@@ -6,6 +6,12 @@
 
 > **Safety and accuracy:** Bundled examples are illustrative only. Your actual Halloween/Christmas master plans stay private. A documented power-feed graph or **Verified as-installed** status is **not an electrical safety inspection or certification**.
 
+## Starting a new display
+
+Open **Menu → New display** on a phone, or **More actions → New display** on a computer. Name the plan and choose its season and year. It starts as a separate local draft with no equipment or connections. On Home, choose **Add a power source** if you know the outlet, or **Add equipment first** if the power source is not yet known.
+
+For an unconnected item, choose its area. For an outlet, also enter the number of known outputs; Blueprint does not choose an output for you. After adding a source, select its actual available output to add and connect an item, or add equipment unconnected and wire it later. Use the existing Builder and inspector to add details, photos and further items. New connections remain unverified.
+
 ## Quick start
 
 1. Open the [live app](https://jacobmgoodnight.github.io/holiday-display-blueprint/) from desktop or phone.

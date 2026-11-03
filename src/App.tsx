@@ -15,7 +15,7 @@ import {ComponentPhotoGallery} from './components/ComponentPhotoGallery';
 import {BuilderQuickEdit} from './components/BuilderQuickEdit';
 import {duplicateEquipment} from './lib/duplicateEquipment';
 import {quickAddConnected} from './lib/quickAdd';
-import {defaultVisualIcon} from './lib/visualIcons';
+import {addUnconnectedItem,createBlankDisplay,projectLabel} from './lib/newDisplay';
 import {addComponentPhoto,promoteComponentPhoto,removeComponentPhoto,photoCount,type PhotoRole} from './lib/componentPhotos';
 import {ExcelWizard} from './components/ExcelWizard';
 import {ConnectionFinder} from './components/ConnectionFinder';
@@ -23,6 +23,8 @@ import {InstallationGuide} from './components/InstallationGuide';
 import {SeasonTasks} from './components/SeasonTasks';
 import {PhotoImportReview,type PhotoImportAddition} from './components/PhotoImportReview';
 import {FieldMode} from './components/FieldMode';
+import {NewDisplay} from './components/NewDisplay';
+import {EmptyDisplayStart} from './components/EmptyDisplayStart';
 import {SharedLightingInventory} from './components/SharedLightingInventory';
 import {VersionHistory} from './components/VersionHistory';
 import {isSharedLightingRecord,createSharedLightingRecord,availableStock,addStock,updateStock,addPlacement,updatePlacement,repeatLastYearAssignments,importLegacyLighting,stockCsv} from './lib/sharedLighting';
@@ -54,8 +56,6 @@ const nodeTypes={blueprint:BlueprintNode};
 type Tab='field'|'diagram'|'setup'|'teardown'|'inventory';type View='All zones'|Zone|`Outlet: ${string}`;
 const zones:Zone[]=['Front porch','Garage & driveway','Backyard','Other'];
 const iconFor:Record<Tab,typeof Map>={field:Smartphone,diagram:Map,setup:ClipboardCheck,teardown:Unplug,inventory:Package};
-function blank(season:Season,year:number):Project{return {id:crypto.randomUUID(),season,year,name:`${season} ${year} · new plan`,status:'draft',nodes:[],edges:[],checklist:{},createdAt:now(),updatedAt:now(),example:false};}
-function projectLabel(p:Project){return `${p.season==='Halloween'?'🎃':'🎄'} ${p.year} · ${p.name.replace(/^(Halloween|Christmas)\s*(\d{4})?\s*[·\-]?\s*/,'').slice(0,36)}`;}
 const csvEscape=(s:unknown)=>`"${String(s??'').replace(/"/g,'""')}"`;
 function AppContent(){
  const {fitView,setCenter,zoomIn,zoomOut,screenToFlowPosition}=useReactFlow<BlueprintFlowNode,Edge>();
@@ -65,6 +65,8 @@ function AppContent(){
  const [inventoryMode,setInventoryMode]=useState<'equipment'|'lighting'>('equipment');
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showPhotoImport,setShowPhotoImport]=useState(false);
+ const [showNewDisplay,setShowNewDisplay]=useState(false);
+ const closeNewDisplay=useCallback(()=>{setShowNewDisplay(false);requestAnimationFrame(()=>document.querySelector<HTMLButtonElement>(window.matchMedia('(max-width:720px)').matches?'.mobile-header-menu':'.desktop-more-button')?.focus());},[]);
  const [showMobileDiagramTools,setShowMobileDiagramTools]=useState(false);
  const [showHistory,setShowHistory]=useState(false);const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
@@ -76,6 +78,8 @@ function AppContent(){
  const [builderSource,setBuilderSource]=useState<string|null>(null);
  const [builderPort,setBuilderPort]=useState(0);
  const [builderName,setBuilderName]=useState('');
+ const [builderZone,setBuilderZone]=useState<Zone|''>('');
+ const [builderOutletOutputs,setBuilderOutletOutputs]=useState('');
  const [quickAddPort,setQuickAddPort]=useState<number|null>(null);
  const [builderIcon,setBuilderIcon]=useState<string|undefined>(undefined);
  const [galleryId,setGalleryId]=useState<string|null>(null);
@@ -260,13 +264,13 @@ function AppContent(){
     style:{stroke:insertEdgeId===e.id?'#327963':selected&&highlighted.has(e.source)&&highlighted.has(e.target)?'#d68b3e':'#8296a9',strokeWidth:insertEdgeId===e.id?4:selected&&highlighted.has(e.source)&&highlighted.has(e.target)?3:1.8},
     markerEnd:{type:MarkerType.ArrowClosed,color:'#8296a9'}};
  })||[],[project,visibleIds,selected,highlighted,insertEdgeId]);
- function chooseProject(id:string){setShowMobileDiagramTools(false);setGraphHistory(emptyGraphHistory());setDiagramQuickEdit(null);setGalleryId(null);setQuickAddPort(null);setFullscreen(false);setBuilderSource(null);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
+ function chooseProject(id:string){setShowMobileDiagramTools(false);setGraphHistory(emptyGraphHistory());setDiagramQuickEdit(null);setGalleryId(null);setQuickAddPort(null);setFullscreen(false);setBuilderSource(null);setBuilderZone('');setBuilderOutletOutputs('');setBuilderName('');setBuilderIcon(undefined);setInsertEdgeId('');setShowInsertPreview(false);const next=projects.find(p=>p.id===id);const first=next?.nodes.find(n=>n.kind==='outlet');setActive(id);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);setView(next&&next.nodes.length>25&&first?`Outlet: ${first.id}`:'All zones');setShowMenu(false);setShowSidebar(false);}
  function changeView(next:View){setDiagramQuickEdit(null);setView(next);setShowInsertPreview(false);setSelected(null);setTrace('none');setPathOnly(false);setFocusRequest(null);}
  function jumpToNode(id:string){setDiagramQuickEdit(null);setTab('diagram');setDiagramMode('map');if(!baseVisibleIds.has(id))setView('All zones');setSelected(id);setTrace('upstream');setInspectorOpen(true);setFocusRequest(prev=>({id,seq:(prev?.seq||0)+1}));if(window.innerWidth<720)setTimeout(()=>document.getElementById('diagram-canvas')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function openFinder(){setInspectorOpen(true);if(window.innerWidth<720)setTimeout(()=>document.getElementById('connection-finder')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
 
- useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;setCenter(pos.x+105,pos.y+43,{zoom:window.innerWidth < 720 ? 0.85 : 1.1,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,diagramMode,project,focusRequest,layoutMode,autoPositions,setCenter]);
+ useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;const zoom=window.innerWidth<720?0.85:1.1;const canvas=document.getElementById('diagram-canvas')?.getBoundingClientRect();const panel=fullscreen&&fullMode==='builder'?document.querySelector('.fullscreen-builder')?.getBoundingClientRect():undefined;const clearCenter=canvas&&panel?Math.max(canvas.top+100,(canvas.top+100+Math.min(panel.top,canvas.bottom))/2):undefined;const offset=canvas&&clearCenter!==undefined?Math.max(0,(canvas.top+canvas.height/2-clearCenter)/zoom):0;setCenter(pos.x+105,pos.y+43+offset,{zoom,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,diagramMode,project,focusRequest,layoutMode,autoPositions,setCenter,fullscreen,fullMode]);
  function reviewInstallationStatus(value:'draft'|'verified'){
   if(!project)return;
   if(value==='draft'){update(p=>({...p,status:'draft'}));return;}
@@ -276,8 +280,14 @@ function AppContent(){
   try{const reviewed=reviewInstalledProject(project,note);if(!window.confirm(`Record this plan as verified-as-installed with ${reviewed.verificationReview?.exceptions.length||0} documented exception(s)? This is not an electrical safety certificate.`))return;update(()=>reviewed);setMessage('As-installed field review recorded with a timestamp. Outstanding issues remain visible in Needs Verification.');}
   catch(err){setMessage(err instanceof Error?err.message:String(err));}
  }
- function makeNew(duplicate:boolean){if(!project)return;const year=duplicate?project.year+1:project.year;const p=duplicate?{...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],verificationReview:undefined,createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false})),lightingInventory:undefined}:blank(project.season,year);
- setProjects(all=>[...all,p]);setActive(p.id);setSelected(null);setView('All zones');setShowMenu(false);setMessage(duplicate?'Copied plan is a DRAFT — verify every connection before use.':'Created a blank local project.');}
+ function createDisplay(details:{season:Season;year:number;name:string}){
+  const p=createBlankDisplay(details);
+  setProjects(all=>[...all,p]);chooseProject(p.id);setTab('field');setDiagramMode('map');setBuilderName('');setBuilderZone('');setBuilderIcon(undefined);setShowNewDisplay(false);
+  setMessage('New display created locally. Add your first item when you are ready.');
+ }
+ function copyNextYear(){if(!project)return;const year=project.year+1;const p={...structuredClone(project),id:crypto.randomUUID(),year,name:`${project.season} ${year} · copied plan`,status:'draft' as const,checklist:{},wiringHistory:[],verificationReview:undefined,createdAt:now(),updatedAt:now(),example:false,nodes:project.nodes.map(n=>({...n,verified:false})),lightingInventory:undefined};
+  setProjects(all=>[...all,p]);chooseProject(p.id);setMessage('Copied plan is a DRAFT — verify every connection before use.');}
+ function startAdding(kind:Kind){setTab('diagram');setDiagramMode('map');setView('All zones');setSelected(null);setTrace('none');setPathOnly(false);setAddKind(kind);setBuilderName('');setBuilderZone('');setBuilderOutletOutputs('');setBuilderIcon(undefined);setQuickAddPort(null);setBuilderSource(null);setBuilderPanel('add');setFullMode('builder');setFullToolsOpen(false);setFullscreen(true);}
  function applyPortLabel(id:string,index:number,label:string){
   if(!project)return;
   try{
@@ -323,15 +333,17 @@ function AppContent(){
  }
  function addBuilderItem(){
   if(!project)return;
-  const zone:Zone=zones.includes(view as Zone)?view as Zone:'Front porch';
+  if(!builderZone){setMessage('Choose the area for this item first.');return false;}
+  if(addKind==='outlet'&&!builderOutletOutputs){setMessage('Choose the number of known outputs first.');return false;}
+  const zone=builderZone;
   const count=project.nodes.filter(n=>n.zone===zone).length;
   const position=layoutMode==='manual'?screenToFlowPosition({x:window.innerWidth/2,y:window.innerHeight/2}):{x:110+(count%4)*215,y:100+Math.floor(count/4)*120};
-  const n=makeNode(addKind,zone,position);
-  n.visualIcon=builderIcon||defaultVisualIcon(project.season,addKind);
-  if(builderName.trim())n.name=builderName.trim().slice(0,100);
-  commitGraphChange({...project,nodes:[...project.nodes,n],status:'draft'},'add item');
-  setSelected(n.id);setTrace('none');setBuilderName('');setBuilderIcon(undefined);
-  setMessage('Added an unverified item. Choose an existing upstream power source to connect it.');
+  const {project:next,node:n}=addUnconnectedItem(project,{kind:addKind,zone,position,name:builderName,visualIcon:builderIcon,outletOutputs:builderOutletOutputs?Number(builderOutletOutputs):undefined});
+  commitGraphChange(next,'add item');
+  if(project.nodes.length===0)setFocusRequest(prev=>({id:n.id,seq:(prev?.seq||0)+1}));
+  setSelected(n.id);setTrace('none');setBuilderName('');setBuilderIcon(undefined);setBuilderOutletOutputs('');
+  setMessage(n.kind==='outlet'?'Power source added. Select its actual output to add the next connected item.':'Added an unverified item. Choose an existing upstream power source to connect it.');
+  return true;
  }
  function chooseBuilderSource(){
   if(!project||!selected)return;
@@ -435,7 +447,7 @@ function AppContent(){
    <div className="top-actions"><span className={`local-pill local-save-${inventorySaving.phase}`} title={inventorySaving.message||''} role="status"><span className="pulse-dot"/> {inventorySaving.phase==='saving'?'Saving on this device…':inventorySaving.phase==='failed'?'Local save failed':'Saved locally'}</span><button className="button secondary desktop-only" onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setMessage('Backup downloaded. Keep the file private — it may include photos and details.');}}><Download size={16}/> Backup</button>
    <MobileMenuToggle open={showSidebar} onToggle={()=>{setShowMenu(false);setShowSidebar(x=>!x)}}/>
    <button type="button" className="icon-button desktop-more-button" aria-label="More actions" aria-controls="more-actions-menu" aria-expanded={showMenu} onClick={()=>{setShowSidebar(false);setShowMenu(x=>!x)}}><MoreVertical size={20}/></button>{showMenu&&<div id="more-actions-menu" className="action-menu" aria-label="More actions">
-    <button onClick={()=>makeNew(false)}><Plus size={16}/> New blank project</button><button onClick={()=>makeNew(true)}><Copy size={16}/> Copy into next year</button>
+    <button onClick={()=>{setShowMenu(false);setShowNewDisplay(true)}}><Plus size={16}/> New display</button><button onClick={copyNextYear}><Copy size={16}/> Copy into next year</button>
     <button onClick={()=>{setShowWizard(true);setShowMenu(false);}}><FileSpreadsheet size={16}/> Import Excel workbook</button>
     <button onClick={()=>{setShowHistory(true);setShowMenu(false)}}><History size={16}/> Restore points / history</button>
      <button onClick={()=>{downloadText('holiday-display-blueprint-backup.json',JSON.stringify(createBackup(projects),null,2));setShowMenu(false);}}><Download size={16}/> Back up all projects (JSON)</button>
@@ -455,6 +467,8 @@ function AppContent(){
     <div className="side-section mobile-drawer-only">
      <p className="side-label">TOOLS & BACKUPS</p>
      <nav className="nav-list" aria-label="Mobile quick actions">
+      <button className="nav-link" onClick={()=>{setShowSidebar(false);setShowNewDisplay(true)}}><Plus size={16}/> New display</button>
+      <button className="nav-link" onClick={copyNextYear}><Copy size={16}/> Copy into next year</button>
       <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('guide');setShowSidebar(false)}}><ClipboardCheck size={18}/> Simplified install view</button>
       <button className="nav-link" onClick={()=>{setTab('diagram');setDiagramMode('audit');setShowSidebar(false)}}><AlertTriangle size={18}/> Needs verification</button>
       <button className="nav-link" onClick={()=>{setShowWizard(true);setShowSidebar(false)}}><FileSpreadsheet size={18}/> Import Excel workbook</button>
@@ -489,7 +503,7 @@ function AppContent(){
     <div className={`page-head ${tab==='field'?'page-head-field':''} ${tab==='diagram'?'page-head-diagram':''}`}><div><div className="eyebrow">{project.season.toUpperCase()} {project.year} / {tab==='diagram'?'SYSTEM OVERVIEW':tab.toUpperCase()}</div><h1>{({field:'Your yard companion.',diagram:'Your display, connected.',setup:'Install with confidence.',teardown:'Pack it right for next year.',inventory:inventoryMode==='lighting'?'Count once, reuse every year.':'Know what you own.'})[tab]}</h1><p>{({field:'Follow connections and setup steps without opening the graph editor.',diagram:'Plan the wiring once. Find every connection next season.',setup:'Ordered from your wiring graph. Check off each step as you work.',teardown:'Power off, disconnect, inspect and pack your components.',inventory:inventoryMode==='lighting'?'Permanent light stock with separate yearly placements.':'Storage, condition and repair history in one place.'})[tab]}</p></div>
      <div className="head-buttons">{tab==='diagram'?<><button className="button secondary" onClick={()=>setShowPhotoImport(true)}><ImagePlus size={16}/> <span className="desktop-only">Match workbook photos</span><span className="mobile-only">Photos</span></button><button className="button secondary" onClick={()=>setShowWizard(true)}><FileSpreadsheet size={16}/> <span className="desktop-only">Import workbook</span><span className="mobile-only">Import</span></button><button className="button secondary" onClick={()=>{downloadWiringReference(project,sharedLighting);setMessage('Reference workbook downloaded; original Excel master unchanged.');}}><FileSpreadsheet size={16}/> <span className="desktop-only">Export Excel reference</span><span className="mobile-only">Excel</span></button><button className="button secondary desktop-only" onClick={printAll}><Printer size={16}/> Print</button></>:null}
      {tab==='inventory'&&inventoryMode==='equipment'&&<button className="button secondary" onClick={()=>{const rows=[['ID','Name','Type','Zone','Color','Length ft','Storage','Quantity','Condition','Price','Repair history'],...project.nodes.map(n=>[n.id,n.name,n.kind,n.zone,n.color,n.lengthFt,n.inventory?.storage,n.inventory?.quantity,n.inventory?.condition,n.inventory?.price,n.inventory?.repairHistory])];downloadText(`inventory-${project.season}-${project.year}.csv`,rows.map(r=>r.map(csvEscape).join(',')).join('\r\n'),'text/csv');}}><Download size={16}/> CSV</button>}</div></div>
-    {tab==='field'&&<><div className="field-sync-line" role="status"><span>{localSaving.saveState.phase==='saved'?'Saved locally':localSaving.saveState.phase==='saving'?'Saving on this device…':'Local save failed'}</span><span>{!cloud.enabled?'Sync not linked':cloud.status==='synced'?'Private sync connected':cloud.status==='offline'?'Cloud offline; local edits retained':cloud.status==='conflict'?'Sync conflict needs review':'Cloud checking…'}</span></div><FieldMode key={project.id} project={project} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})} onExplore={()=>{setTab('diagram');setDiagramMode('map');setFullscreen(true);setFullMode('explore');setBuilderSource(null);setFullToolsOpen(false);setSelected(null);setView('All zones')}} onEdit={()=>{setTab('diagram');setDiagramMode('map');setSelected(null);setView('All zones')}} onTasks={()=>setTab('setup')}/></>}
+    {tab==='field'&&<><div className="field-sync-line" role="status"><span>{localSaving.saveState.phase==='saved'?'Saved locally':localSaving.saveState.phase==='saving'?'Saving on this device…':'Local save failed'}</span><span>{!cloud.enabled?'Sync not linked':cloud.status==='synced'?'Private sync connected':cloud.status==='offline'?'Cloud offline; local edits retained':cloud.status==='conflict'?'Sync conflict needs review':'Cloud checking…'}</span></div>{project.nodes.length===0?<EmptyDisplayStart onAddPowerSource={()=>startAdding('outlet')} onAddEquipment={()=>startAdding('decoration')}/>:<>{project.edges.length===0&&<div className="continue-display"><div><strong>Keep building your display</strong><span>Add equipment and record its connections when you know them.</span></div><button onClick={()=>startAdding('decoration')}><Plus size={16}/> Add equipment</button></div>}<FieldMode key={project.id} project={project} onLocate={jumpToNode} onTaskChange={(id,done)=>updateTask(id,{done})} onExplore={()=>{setTab('diagram');setDiagramMode('map');setFullscreen(true);setFullMode('explore');setBuilderSource(null);setFullToolsOpen(false);setSelected(null);setView('All zones')}} onEdit={()=>{setTab('diagram');setDiagramMode('map');setSelected(null);setView('All zones')}} onTasks={()=>setTab('setup')}/></>}</>}
     {tab==='diagram'&&<>
       <div className="stats"><div className="stat"><div className="stat-icon soft-blue"><Layers size={20}/></div><div><strong>{project.nodes.length}</strong><span>Components</span></div></div><div className="stat"><div className="stat-icon soft-amber"><Link2 size={20}/></div><div><strong>{project.edges.length}</strong><span>Connections</span></div></div><div className="stat"><div className="stat-icon soft-green"><PlugZap size={20}/></div><div><strong>{project.nodes.filter(n=>n.kind==='outlet').length}</strong><span>Power sources</span></div></div><div className="stat"><div className="stat-icon soft-red"><AlertTriangle size={20}/></div><div><strong>{auditSummary.critical+auditSummary.attention}</strong><span>Needs verification</span></div></div></div>
       <div className="circuit-shortcuts" role="group" aria-label="Quick outlet focus">
@@ -568,20 +582,22 @@ function AppContent(){
            
           </div>}
           {builderPanel==='add'&&<div className="builder-add-composer">
-           <p className="quick-add-note"><strong>Quick Add:</strong> Tap a powered item on the diagram, select an unused output below, then add and connect in one step. Or add an item without wiring.</p>
+           <p className="quick-add-note">{!project.nodes.length?'Name your first item and choose where it belongs. You can add its details later.':<><strong>Quick Add:</strong> Tap a powered item on the diagram, select an unused output below, then add and connect in one step. Or add an item without wiring.</>}</p>
            {selectedNode?.outputs?<>
             <div className="quick-source-ports"><strong>Connect from {selectedNode.name}:</strong>
              {freeOutputPorts(project,selectedNode.id).map(port=><button key={port} className={quickAddPort===port?'selected':''} aria-pressed={quickAddPort===port} onClick={()=>setQuickAddPort(port)}>{portName(selectedNode,port)}</button>)}
              {!freeOutputPorts(project,selectedNode.id).length&&<small>No unused outputs on this item</small>}
-            </div></>:<p className="quick-add-note">Select an outlet, cord, splitter or light strand on the diagram to see its free ports.</p>}
+           </div></>:project.nodes.length>0&&<p className="quick-add-note">Select an outlet, cord, splitter or light strand on the diagram to see its free ports.</p>}
            <div className="builder-add-row">
             <select aria-label="Quick Add item type" value={addKind} onChange={e=>{setAddKind(e.target.value as Kind);setBuilderIcon(undefined)}}>{categories.map(k=><option key={k.kind} value={k.kind}>{k.label}</option>)}</select>
             <input aria-label="Quick Add item name" placeholder="Name (optional)" value={builderName} maxLength={100} onChange={e=>setBuilderName(e.target.value)}/>
            </div>
-           <VisualIconPicker compact season={project.season} kind={addKind} value={builderIcon} onChange={setBuilderIcon}/>
+           <label className="builder-area-label">Area for an unconnected item <select aria-label="Area for unconnected item" value={builderZone} onChange={e=>setBuilderZone(e.target.value as Zone|'')}><option value="">Choose an area</option>{zones.map(zone=><option key={zone} value={zone}>{zone}</option>)}</select></label>
+           {addKind==='outlet'&&<label className="builder-area-label">Known outputs <select aria-label="Number of known outputs" value={builderOutletOutputs} onChange={e=>setBuilderOutletOutputs(e.target.value)}><option value="">Choose a count</option>{Array.from({length:16},(_,i)=><option value={i+1} key={i+1}>{i+1}</option>)}</select></label>}
+           {project.nodes.length>0&&<VisualIconPicker compact season={project.season} kind={addKind} value={builderIcon} onChange={setBuilderIcon}/>}
            <div className="quick-add-actions">
-            <button className="builder-primary" disabled={!selectedNode?.outputs||quickAddPort===null||addKind==='outlet'||!freeOutputPorts(project,selectedNode?.id||'').includes(quickAddPort)} onClick={quickAddItem}><Plus size={16}/> Add & connect</button>
-            <button onClick={()=>{addBuilderItem();setBuilderPanel('wire')}}><Plus size={15}/> Add unconnected</button>
+            {project.nodes.length>0&&<button className="builder-primary" disabled={!selectedNode?.outputs||quickAddPort===null||addKind==='outlet'||!freeOutputPorts(project,selectedNode?.id||'').includes(quickAddPort)} onClick={quickAddItem}><Plus size={16}/> Add & connect</button>}
+            <button className={!project.nodes.length?'builder-primary':undefined} disabled={!builderZone||(addKind==='outlet'&&!builderOutletOutputs)} onClick={()=>{const addingOutlet=addKind==='outlet';if(addBuilderItem()){if(addingOutlet){setAddKind('decoration');setBuilderPanel('add');}else setBuilderPanel('wire');}}}><Plus size={15}/> {addKind==='outlet'?'Add power source':'Add unconnected'}</button>
            </div>
           </div>}
           {builderPanel==='insert'&&<div className="builder-insert">
@@ -667,8 +683,9 @@ function AppContent(){
    </main>
   </div>
   <nav className="mobile-tabbar" aria-label="Mobile main navigation">{(['field','diagram','inventory','setup'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={tab===t||(t==='setup'&&tab==='teardown')?'active':''} onClick={()=>{setTab(t);setShowSidebar(false);setShowMenu(false)}}><Icon size={21}/><span>{({field:'Home',diagram:'Diagram',setup:'Tasks',teardown:'Tasks',inventory:'Inventory'})[t]}</span></button>;})}</nav>
-  {message&&<div className="toast" role="status"><span>{message}</span><button aria-label="Dismiss message" onClick={()=>setMessage('')}><X size={16}/></button></div>}
+  {message&&<div className={`toast${fullscreen?' toast-fullscreen':''}`} role="status"><span>{message}</span><button aria-label="Dismiss message" onClick={()=>setMessage('')}><X size={16}/></button></div>}
   {showTransfer&&<DeviceTransfer hasRealPlans={!examplesOnly} projectCount={availableProjects.length} onExport={exportPrivateBackup} onImport={importBackup} onClose={()=>setShowTransfer(false)}/>}
+  {showNewDisplay&&<NewDisplay initialSeason={project.season} initialYear={new Date().getFullYear()} onCreate={createDisplay} onClose={closeNewDisplay}/>}
   {galleryNode&&<ComponentPhotoGallery key={galleryNode.id} project={project} component={galleryNode} canEdit={!fullscreen||fullMode==='builder'} onClose={()=>setGalleryId(null)} onAdd={(file,role)=>addEquipmentPhoto(galleryNode.id,file,role)} onPromote={id=>changeEquipmentPhoto(galleryNode.id,id,'promote')} onRemove={id=>changeEquipmentPhoto(galleryNode.id,id,'remove')} onEdit={()=>{if(fullscreen){setFullMode('builder');setBuilderPanel('edit');}else{setSelected(galleryNode.id);setInspectorOpen(true);}setGalleryId(null);}}/>}
    {showHistory&&<VersionHistory project={project} onClose={()=>setShowHistory(false)} onRestore={restored=>{update(()=>restored);setMessage('Restore point applied as Draft. Recheck all connections and sync status.');}}/>}
    {showPhotoImport&&<PhotoImportReview key={project.id} project={project} onApply={applyReviewedPhotos} onClose={()=>setShowPhotoImport(false)}/>}
