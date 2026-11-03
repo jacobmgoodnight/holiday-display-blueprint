@@ -1,11 +1,12 @@
 # Roadmap — Holiday Display Blueprint
 
-_Last reviewed: October 30, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
+_Last reviewed: November 3, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
 
-## In progress
+## Recent development
 
-- **New-display start:** name a separate draft and choose its season and year; begin with a known source or equipment without an assigned source. The Builder asks for an area and the number of known outlet outputs. Further guided construction, custom sections and photo-based visual layout remain opportunities.
-
+- **Property-photo planner:** place and move markers for existing equipment on one private project photo; inspect notes and saved source paths. Marker coordinates are independent of the electrical diagram. Scaled measurement, drawing cord routes and multiple property photos remain future work.
+- **Guided construction:** add and reuse equipment repeatedly, record cord/light details, leave output counts and feeds unknown, or connect an existing unconnected item using an explicitly chosen source and output.
+- **New-display start (merged in PR #26):** name a separate draft and choose its season and year; begin with a known source or equipment without an assigned source.
 - **Mobile workflow follow-up (merged in PR #25):** area selection opens the relevant checklist section, filtered progress and empty states reflect that area, phone diagrams start at a readable scale, and asynchronous workbook-photo review releases previews and cannot apply after it is closed. Existing task keys and project data are retained. Physical-device testing remains outstanding.
 
 ## Shipped and testable

@@ -18,13 +18,15 @@ For oversized photo-rich plans, create a private manual restore point before rew
 
 ## Starting a new display
 
-Select **Menu → New display** on a phone or **More actions → New display** on a computer, then enter a name, season and year. The separate draft starts empty. Add a known power source, or add equipment first and leave it unconnected until its source is known. For an unconnected item, select its area; for an outlet, explicitly enter its known output count. Select the actual source output before using **Add & connect**. No physical connection is inferred and the recorded connection still requires field review.
+Select **Menu → New display** on a phone or **More actions → New display** on a computer, then enter a name, season and year. The separate draft starts empty. Add a known power source, add equipment first, or start with a property photo. The guided form lets you add cords, lights and other items repeatedly, reuse equipment, and connect an unconnected item later. Select an area and record the actual output count, or choose **Not sure yet**. An unknown count is displayed as unknown and cannot feed downstream items until updated in item details. Choose the actual source and port for any connection. No physical connection is inferred and the recorded connection still requires field review.
+
+**Diagram → Property photo** shows existing equipment on a separately saved photo. Select an item, choose Place, and tap its location; use Move or the fine-tuning controls to adjust it. Selecting a marker shows the saved power path and notes. Markers do not change electrical topology or manual diagram coordinates. Replacing or deleting the image also removes its markers after confirmation. The compressed photo is private project data and is included in JSON backups and linked encrypted sync, subject to storage limits; it is not included in the Excel reference export.
 
 ## Phone navigation and fewer taps
 
 On a phone, use the four bottom tabs to move between Home, Diagram, Tasks and Inventory. The menu is for import/export/backup and less frequent tools. Home defaults to the whole system instead of an arbitrary first outlet. Choose O01/O02/O03 only when focusing on one circuit. The detailed wiring guide is collapsed until requested, and Install checklist opens Tasks directly.
 
-On Diagram, the mobile top bar has **View**, **Find**, **Add** and **More**. View opens the read-only full-screen diagram; Add opens Builder with the add form already selected. Tap an item to see the inline **Edit details** and **Photos** actions; Edit details jumps to the existing component-first inspector beneath the diagram. More exposes advanced controls without crowding the screen.
+On Diagram, the mobile top bar has **View**, **Find**, **Add** and **More**. View opens the read-only full-screen diagram; Add opens the guided equipment form. Tap an item to see the inline **Edit details** and **Photos** actions; Edit details jumps to the existing component-first inspector beneath the diagram. More exposes advanced controls without crowding the screen.
 
 On Tasks, the next incomplete phase and area are expanded first. Select **Working in** to narrow the list, use **Find in checklist** to locate the next unchecked action, and expand **Notes / photo** directly below its step. Existing completion and reference images persist. In workbook photo review, search component names/IDs per image and filter by unassigned or selected. All images are skipped by default.
 

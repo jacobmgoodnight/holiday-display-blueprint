@@ -28,6 +28,7 @@ export function getVerificationIssues(project:Project,scope?:ReadonlySet<string>
    }
   }
   if(!n.verified)issues.push(issue(n.id,'verification','attention','Not marked verified in the yard','Inspect and confirm the real physical component and connection before marking field-verified.'));
+  if(n.outputsUnknown)issues.push(issue(n.id,'connector','attention','Number of outputs unknown','Record the actual number of outputs before connecting anything downstream.'));
   if(cordKinds.has(n.kind)&&(n.lengthFt===undefined||!Number.isFinite(n.lengthFt)||n.lengthFt<=0)){
    issues.push(issue(n.id,'cord','attention','Cord length not recorded','Measure or confirm the actual cable length; do not infer it from the diagram.'));
   }

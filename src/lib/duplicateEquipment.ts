@@ -16,6 +16,7 @@ export function duplicateEquipment(project:Project,componentId:string):{project:
   ...makeNode(source.kind,source.zone,{x:source.position.x+105,y:source.position.y+95}),
   name:copyName,
   outputs:source.outputs,
+  outputsUnknown:source.outputsUnknown,
   visualIcon:source.visualIcon,
   color:source.color,
   cordType:source.cordType,

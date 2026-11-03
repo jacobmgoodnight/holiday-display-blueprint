@@ -71,3 +71,5 @@
 }
 /* Builder feedback must remain visible above the fullscreen canvas. */
 .toast.toast-fullscreen{z-index:230;top:calc(116px + env(safe-area-inset-top,0px));bottom:auto}
+.property-view{margin-top:14px}
+@media(max-width:720px){.diagram-mode-switch{grid-template-columns:repeat(2,minmax(0,1fr))}}

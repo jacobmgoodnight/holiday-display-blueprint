@@ -22,6 +22,7 @@ export function BuilderQuickEdit({component:n,season,onPatch,onPortLabel,onPhoto
    <label className="bqe-wide">Name <input aria-label="Quick edit item name" maxLength={100} value={n.name} onChange={e=>onPatch({name:e.target.value})}/></label>
    <label>Zone <select aria-label="Quick edit zone" value={n.zone} onChange={e=>onPatch({zone:e.target.value as Zone})}>{zones.map(zone=><option key={zone} value={zone}>{zone}</option>)}</select></label>
    <label>Color / wire color <input aria-label="Quick edit wire color" value={n.color||''} placeholder="e.g. green" onChange={e=>onPatch({color:e.target.value})}/></label>
+   {n.outputsUnknown&&<label>Known outputs <input aria-label="Quick edit known outputs" type="number" min={0} max={16} placeholder="Unknown" value="" onChange={e=>{if(e.target.value!=='')onPatch({outputs:Number(e.target.value),outputsUnknown:false});}}/><small>Set the actual count before connecting another item.</small></label>}
    <label>Storage / bin <input aria-label="Quick edit storage location" value={n.inventory?.storage||''} placeholder="e.g. garage bin A" onChange={e=>onPatch({inventory:{...n.inventory,storage:e.target.value}})}/></label>
    <label className="bqe-wide">Notes <textarea aria-label="Quick edit item notes" rows={2} value={n.notes||''} placeholder="Installation instructions, connector details…" onChange={e=>onPatch({notes:e.target.value})}/></label>
   </div>
