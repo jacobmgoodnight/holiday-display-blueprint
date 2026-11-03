@@ -15,7 +15,7 @@ import {ComponentPhotoGallery} from './components/ComponentPhotoGallery';
 import {BuilderQuickEdit} from './components/BuilderQuickEdit';
 import {duplicateEquipment} from './lib/duplicateEquipment';
 import {quickAddConnected} from './lib/quickAdd';
-import {addUnconnectedItem,createBlankDisplay} from './lib/newDisplay';
+import {addUnconnectedItem,createBlankDisplay,projectLabel} from './lib/newDisplay';
 import {addComponentPhoto,promoteComponentPhoto,removeComponentPhoto,photoCount,type PhotoRole} from './lib/componentPhotos';
 import {ExcelWizard} from './components/ExcelWizard';
 import {ConnectionFinder} from './components/ConnectionFinder';
@@ -56,7 +56,6 @@ const nodeTypes={blueprint:BlueprintNode};
 type Tab='field'|'diagram'|'setup'|'teardown'|'inventory';type View='All zones'|Zone|`Outlet: ${string}`;
 const zones:Zone[]=['Front porch','Garage & driveway','Backyard','Other'];
 const iconFor:Record<Tab,typeof Map>={field:Smartphone,diagram:Map,setup:ClipboardCheck,teardown:Unplug,inventory:Package};
-function projectLabel(p:Project){return `${p.season==='Halloween'?'🎃':'🎄'} ${p.year} · ${p.name.replace(/^(Halloween|Christmas)\s*(\d{4})?\s*[·\-]?\s*/,'').slice(0,36)}`;}
 const csvEscape=(s:unknown)=>`"${String(s??'').replace(/"/g,'""')}"`;
 function AppContent(){
  const {fitView,setCenter,zoomIn,zoomOut,screenToFlowPosition}=useReactFlow<BlueprintFlowNode,Edge>();
@@ -67,7 +66,7 @@ function AppContent(){
  const [search,setSearch]=useState('');const [reuseId,setReuseId]=useState('');const [addKind,setAddKind]=useState<Kind>('decoration');const [connectFrom,setConnectFrom]=useState('');const [connectTo,setConnectTo]=useState('');
  const [showPhotoImport,setShowPhotoImport]=useState(false);
  const [showNewDisplay,setShowNewDisplay]=useState(false);
- const closeNewDisplay=useCallback(()=>setShowNewDisplay(false),[]);
+ const closeNewDisplay=useCallback(()=>{setShowNewDisplay(false);requestAnimationFrame(()=>document.querySelector<HTMLButtonElement>(window.matchMedia('(max-width:720px)').matches?'.mobile-header-menu':'.desktop-more-button')?.focus());},[]);
  const [showMobileDiagramTools,setShowMobileDiagramTools]=useState(false);
  const [showHistory,setShowHistory]=useState(false);const [showTransfer,setShowTransfer]=useState(false);const [dismissTransfer,setDismissTransfer]=useState(false);const [showWizard,setShowWizard]=useState(false);const [showMenu,setShowMenu]=useState(false);const [showSidebar,setShowSidebar]=useState(false);
  const [message,setMessage]=useState(''); const [inspectorOpen,setInspectorOpen]=useState(true);
@@ -271,7 +270,7 @@ function AppContent(){
  function openFinder(){setInspectorOpen(true);if(window.innerWidth<720)setTimeout(()=>document.getElementById('connection-finder')?.scrollIntoView({behavior:'smooth',block:'start'}),130);}
  function focusOutlet(id:string){changeView(`Outlet: ${id}`);setSelected(id);setTrace('downstream');}
 
- useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;setCenter(pos.x+105,pos.y+43,{zoom:window.innerWidth < 720 ? 0.85 : 1.1,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,diagramMode,project,focusRequest,layoutMode,autoPositions,setCenter]);
+ useEffect(()=>{if(tab!=='diagram'||diagramMode!=='map'||!project||!focusRequest)return;const node=project.nodes.find(n=>n.id===focusRequest.id);if(!node)return;const timer=setTimeout(()=>{const pos=layoutMode==='auto'?(autoPositions.get(node.id)||node.position):node.position;const zoom=window.innerWidth<720?0.85:1.1;const canvas=document.getElementById('diagram-canvas')?.getBoundingClientRect();const panel=fullscreen&&fullMode==='builder'?document.querySelector('.fullscreen-builder')?.getBoundingClientRect():undefined;const clearCenter=canvas&&panel?Math.max(canvas.top+100,(canvas.top+100+Math.min(panel.top,canvas.bottom))/2):undefined;const offset=canvas&&clearCenter!==undefined?Math.max(0,(canvas.top+canvas.height/2-clearCenter)/zoom):0;setCenter(pos.x+105,pos.y+43+offset,{zoom,duration:350});setFocusRequest(null);},240);return()=>clearTimeout(timer);},[tab,diagramMode,project,focusRequest,layoutMode,autoPositions,setCenter,fullscreen,fullMode]);
  function reviewInstallationStatus(value:'draft'|'verified'){
   if(!project)return;
   if(value==='draft'){update(p=>({...p,status:'draft'}));return;}
@@ -341,6 +340,7 @@ function AppContent(){
   const position=layoutMode==='manual'?screenToFlowPosition({x:window.innerWidth/2,y:window.innerHeight/2}):{x:110+(count%4)*215,y:100+Math.floor(count/4)*120};
   const {project:next,node:n}=addUnconnectedItem(project,{kind:addKind,zone,position,name:builderName,visualIcon:builderIcon,outletOutputs:builderOutletOutputs?Number(builderOutletOutputs):undefined});
   commitGraphChange(next,'add item');
+  if(project.nodes.length===0)setFocusRequest(prev=>({id:n.id,seq:(prev?.seq||0)+1}));
   setSelected(n.id);setTrace('none');setBuilderName('');setBuilderIcon(undefined);setBuilderOutletOutputs('');
   setMessage(n.kind==='outlet'?'Power source added. Select its actual output to add the next connected item.':'Added an unverified item. Choose an existing upstream power source to connect it.');
   return true;
@@ -683,7 +683,7 @@ function AppContent(){
    </main>
   </div>
   <nav className="mobile-tabbar" aria-label="Mobile main navigation">{(['field','diagram','inventory','setup'] as Tab[]).map(t=>{const Icon=iconFor[t];return <button key={t} className={tab===t||(t==='setup'&&tab==='teardown')?'active':''} onClick={()=>{setTab(t);setShowSidebar(false);setShowMenu(false)}}><Icon size={21}/><span>{({field:'Home',diagram:'Diagram',setup:'Tasks',teardown:'Tasks',inventory:'Inventory'})[t]}</span></button>;})}</nav>
-  {message&&<div className="toast" role="status"><span>{message}</span><button aria-label="Dismiss message" onClick={()=>setMessage('')}><X size={16}/></button></div>}
+  {message&&<div className={`toast${fullscreen?' toast-fullscreen':''}`} role="status"><span>{message}</span><button aria-label="Dismiss message" onClick={()=>setMessage('')}><X size={16}/></button></div>}
   {showTransfer&&<DeviceTransfer hasRealPlans={!examplesOnly} projectCount={availableProjects.length} onExport={exportPrivateBackup} onImport={importBackup} onClose={()=>setShowTransfer(false)}/>}
   {showNewDisplay&&<NewDisplay initialSeason={project.season} initialYear={new Date().getFullYear()} onCreate={createDisplay} onClose={closeNewDisplay}/>}
   {galleryNode&&<ComponentPhotoGallery key={galleryNode.id} project={project} component={galleryNode} canEdit={!fullscreen||fullMode==='builder'} onClose={()=>setGalleryId(null)} onAdd={(file,role)=>addEquipmentPhoto(galleryNode.id,file,role)} onPromote={id=>changeEquipmentPhoto(galleryNode.id,id,'promote')} onRemove={id=>changeEquipmentPhoto(galleryNode.id,id,'remove')} onEdit={()=>{if(fullscreen){setFullMode('builder');setBuilderPanel('edit');}else{setSelected(galleryNode.id);setInspectorOpen(true);}setGalleryId(null);}}/>}

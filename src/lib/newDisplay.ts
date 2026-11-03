@@ -2,6 +2,11 @@ import type {Kind, Position, Project, Season, Zone} from './model';
 import {makeNode, now} from './model';
 import {defaultVisualIcon} from './visualIcons';
 
+export function projectLabel(project:Pick<Project,'season'|'year'|'name'>){
+ const icon=project.season==='Halloween'?'🎃':'🎄';
+ return project.name.startsWith(`${project.season} ${project.year} · `)?`${icon} ${project.name}`:`${icon} ${project.year} · ${project.name}`;
+}
+
 export function createBlankDisplay(details:{name:string;season:Season;year:number}):Project{
  const timestamp=now();
  return {id:crypto.randomUUID(),...details,status:'draft',nodes:[],edges:[],checklist:{},createdAt:timestamp,updatedAt:timestamp,example:false};

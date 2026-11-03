@@ -1,9 +1,14 @@
 import {describe,expect,it} from 'vitest';
-import {addUnconnectedItem,createBlankDisplay} from '../lib/newDisplay';
+import {addUnconnectedItem,createBlankDisplay,projectLabel} from '../lib/newDisplay';
 import {quickAddConnected} from '../lib/quickAdd';
 import {validateGraph} from '../lib/graph';
 
 describe('starting a new display',()=>{
+ it('keeps user-entered seasonal words in the project picker',()=>{
+  expect(projectLabel({season:'Christmas',year:2027,name:'Christmas Lights'})).toBe('🎄 2027 · Christmas Lights');
+  expect(projectLabel({season:'Christmas',year:2027,name:'Christmas'})).toBe('🎄 2027 · Christmas');
+  expect(projectLabel({season:'Christmas',year:2027,name:'Christmas 2027 · copied plan'})).toBe('🎄 Christmas 2027 · copied plan');
+ });
  it('creates an independent empty draft and requires the actual outlet count',()=>{
   const plan=createBlankDisplay({name:'Example display',season:'Halloween',year:2027});
   expect(plan).toMatchObject({name:'Example display',season:'Halloween',year:2027,status:'draft',nodes:[],edges:[],checklist:{}});
