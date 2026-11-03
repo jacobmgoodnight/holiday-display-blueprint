@@ -30,4 +30,10 @@ describe('phone-first Field Mode',()=>{
   const html=renderToStaticMarkup(<FieldMode project={checked} onLocate={()=>{}} onTaskChange={()=>{}} onEdit={()=>{}}/>);
   expect(html).toContain('installation steps complete');
  });
+ it('does not report a blank plan as completed',()=>{
+  const empty={...project,nodes:[],edges:[],checklist:{}};
+  const html=renderToStaticMarkup(<FieldMode project={empty} onLocate={()=>{}} onTaskChange={()=>{}} onEdit={()=>{}}/>);
+  expect(html).toContain('No setup steps are recorded');
+  expect(html).not.toContain('All recorded setup steps for this circuit are checked');
+ });
 });

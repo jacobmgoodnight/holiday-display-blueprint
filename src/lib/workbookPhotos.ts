@@ -43,12 +43,16 @@ export async function extractWorkbookPhotos(file:File):Promise<WorkbookPhoto[]>{
    }
   }
  }
- return media.map(path=>{
-  const data=entries[path];const name=path.split('/').pop()!;
-  const ext=name.split('.').pop()?.toLowerCase();
-  const type=ext==='png'?'image/png':ext==='webp'?'image/webp':'image/jpeg';
-  const blob=new Blob([new Uint8Array(data)],{type});
-  return {id:path,name,...mapping.get(path),blob,url:URL.createObjectURL(blob)};
- });
+ const photos:WorkbookPhoto[]=[];
+ try{
+  for(const path of media){
+   const data=entries[path];const name=path.split('/').pop()!;
+   const ext=name.split('.').pop()?.toLowerCase();
+   const type=ext==='png'?'image/png':ext==='webp'?'image/webp':'image/jpeg';
+   const blob=new Blob([new Uint8Array(data)],{type});
+   photos.push({id:path,name,...mapping.get(path),blob,url:URL.createObjectURL(blob)});
+  }
+  return photos;
+ }catch(error){releaseWorkbookPhotos(photos);throw error;}
 }
 export function releaseWorkbookPhotos(photos:readonly WorkbookPhoto[]){for(const p of photos)URL.revokeObjectURL(p.url);}

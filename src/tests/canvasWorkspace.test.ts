@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {workspaceCanEdit,freeOutputPorts,searchComponents} from '../lib/canvasWorkspace';
+import {workspaceCanEdit,freeOutputPorts,phoneDiagramAnchor,searchComponents} from '../lib/canvasWorkspace';
 import {exampleProjects} from '../fixtures/examples';
 describe('Fullscreen Explore and Builder invariants',()=>{
  const project=exampleProjects()[0];
@@ -24,5 +24,14 @@ describe('Fullscreen Explore and Builder invariants',()=>{
   const found=searchComponents(project,'h-o03');
   expect(found.map(x=>x.id)).toContain('h-o03');
   expect(searchComponents(project,'h')).toEqual([]);
+ });
+ it('starts a phone diagram on a visible item, preferring the selected outlet',()=>{
+  const outlet=project.nodes.find(n=>n.kind==='outlet')!;
+  const other=project.nodes.find(n=>n.id!==outlet.id)!;
+  const visible=new Set([outlet.id,other.id]);
+  expect(phoneDiagramAnchor(project,visible,`Outlet: ${outlet.id}`,other.id)?.id).toBe(outlet.id);
+  expect(phoneDiagramAnchor(project,visible,'All zones',other.id)?.id).toBe(other.id);
+  expect(phoneDiagramAnchor(project,new Set([other.id]),'All zones',outlet.id)?.id).toBe(other.id);
+  expect(phoneDiagramAnchor(project,new Set(),'All zones',null)).toBeUndefined();
  });
 });

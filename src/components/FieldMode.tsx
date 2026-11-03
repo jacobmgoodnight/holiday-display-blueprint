@@ -12,6 +12,7 @@ export function FieldMode({project,onLocate,onTaskChange,onEdit,onExplore,onTask
  const [outlet,setOutlet]=useState('all');
  const [search,setSearch]=useState('');
  const target=outlets.find(n=>n.id===outlet);
+ const activeOutlet=target?.id||'all';
  const scope=useMemo(()=>target?new Set([target.id,...downstream(target.id,project.edges)]):new Set(project.nodes.map(n=>n.id)),[project,target]);
  const label=target?.name||'Whole system';
  const steps=useMemo(()=>wiringSequence(project,scope),[project,scope]);
@@ -30,7 +31,7 @@ export function FieldMode({project,onLocate,onTaskChange,onEdit,onExplore,onTask
   </div>
   {project.example&&<p className="field-example">Example plan only — select the real master before using this as an installation reference.</p>}
   <div className="field-outlets" role="group" aria-label="Choose field circuit">
-   <button className={outlet==='all'?'active':''} aria-pressed={outlet==='all'} onClick={()=>setOutlet('all')}>Whole system</button>
+   <button className={activeOutlet==='all'?'active':''} aria-pressed={activeOutlet==='all'} onClick={()=>setOutlet('all')}>Whole system</button>
    {outlets.map(o=><button key={o.id} className={outlet===o.id?'active':''} aria-pressed={outlet===o.id} onClick={()=>setOutlet(o.id)}>{o.name.match(/\bO\d+\b/i)?.[0]||o.name.slice(0,22)}<small>{o.name}</small></button>)}
   </div>
   <div className="field-progress">
@@ -48,7 +49,7 @@ export function FieldMode({project,onLocate,onTaskChange,onEdit,onExplore,onTask
      <button className="field-complete" onClick={()=>onTaskChange(next.id,true)}><Check size={18}/> Mark step complete</button>
      {next.nodeId&&<button className="field-locate" onClick={()=>onLocate(next.nodeId!)}><Eye size={16}/> Show wiring</button>}
     </div>
-   </div>:<div className="field-finished"><Check size={22}/> All recorded setup steps for this circuit are checked. Verify the real installation and electrical protections manually before energizing.</div>}
+   </div>:<div className="field-finished"><Check size={22}/> {steps.length?'All recorded setup steps for this circuit are checked. Verify the real installation and electrical protections manually before energizing.':'No setup steps are recorded for this selection yet.'}</div>}
   <div className="field-search">
    <label><Search size={18}/><input type="search" aria-label="Find any device in the entire project" placeholder="Find a decoration, cord or splitter…" value={search} onChange={e=>setSearch(e.target.value)}/></label>
    {search.trim().length>1&&<div className="field-search-results" role="list">

@@ -45,7 +45,7 @@ import {wireDescription} from './lib/wiringGuide';
 import {powerFlowLayout} from './lib/flowLayout';
 import {portName,renameOutputPort} from './lib/portLabels';
 import {insertIntoConnection,insertableKinds} from './lib/wiringBuilder';
-import {freeOutputPorts,searchComponents,workspaceCanEdit} from './lib/canvasWorkspace';
+import {freeOutputPorts,phoneDiagramAnchor,searchComponents,workspaceCanEdit} from './lib/canvasWorkspace';
 import {exampleProjects} from './fixtures/examples';
 import './styles.css';
 import './components/diagramStatus.css';
@@ -180,7 +180,13 @@ function AppContent(){
   return()=>document.removeEventListener('keydown',onKey);
  },[tab,diagramMode,workspaceEditable,graphHistory,project,cloud.status]);
 
- useEffect(()=>{if(fullscreen||tab!=='diagram'||diagramMode!=='map')return;const timer=setTimeout(()=>{void fitView({padding:.16,duration:160});},90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,layoutMode,pathOnly,diagramMode,fullscreen]);
+ useEffect(()=>{if(fullscreen||tab!=='diagram'||diagramMode!=='map'||!project)return;const timer=setTimeout(()=>{
+  if(window.innerWidth>=720){void fitView({padding:.16,duration:160});return;}
+  const anchor=phoneDiagramAnchor(project,visibleIds,view,selected);
+  if(!anchor)return;
+  const pos=layoutMode==='auto'?(autoPositions.get(anchor.id)||anchor.position):anchor.position;
+  setCenter(pos.x+105,pos.y+43,{zoom:.85,duration:160});
+ },90);return()=>clearTimeout(timer);},[view,tab,active,inspectorOpen,fitView,setCenter,layoutMode,pathOnly,diagramMode,fullscreen]);
  const update=useCallback((fn:(p:Project)=>Project)=>{setProjects(all=>all.map(p=>{if(p.id!==active)return p;const result=fn(p);return result===p?p:{...result,updatedAt:now()};}));},[active]);
  // These are local session commands, not synced revisions. Reject a stale graph.
  function commitGraphChange(next:Project,label:string){
