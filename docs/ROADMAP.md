@@ -1,10 +1,10 @@
 # Roadmap — Holiday Display Blueprint
 
-_Last reviewed: November 3, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
+_Last reviewed: November 4, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
 
 ## Recent development
 
-- **Property-photo planner:** add equipment directly and repeatedly on one private project photo, place existing items, draw visual light/cord routes, and connect an item through an explicitly chosen source and free output. Photo geometry is independent of the electrical diagram. Scaled measurement and multiple property photos remain future work.
+- **Property-photo planner:** up to eight named photo views share equipment without duplicating it; each retains its own markers, routes and optional scale. Zoom, filters, editable route points, in-place details and similar-item placement support planning. Optional approximate length estimates compare against known equipment or explicitly linked lighting; a visual bulb/icon preview and saved-power-path overlay do not change physical inventory or wiring. iPhone touch and offline behavior still require physical-device testing.
 - **Guided construction:** add and reuse equipment repeatedly, record cord/light details, leave output counts and feeds unknown, or connect an existing unconnected item using an explicitly chosen source and output.
 - **New-display start (merged in PR #26):** name a separate draft and choose its season and year; begin with a known source or equipment without an assigned source.
 - **Mobile workflow follow-up (merged in PR #25):** area selection opens the relevant checklist section, filtered progress and empty states reflect that area, phone diagrams start at a readable scale, and asynchronous workbook-photo review releases previews and cannot apply after it is closed. Existing task keys and project data are retained. Physical-device testing remains outstanding.
