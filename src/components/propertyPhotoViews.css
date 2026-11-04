@@ -1,0 +1,6 @@
+.property-views{background:#fff;border:1px solid #d5e4dc;border-radius:12px;padding:12px;margin:0 0 16px;display:grid;gap:9px}
+.property-views-row,.property-views-edit{display:flex;align-items:end;flex-wrap:wrap;gap:8px}
+.property-views label{display:grid;gap:4px;font-weight:600}
+.property-views select,.property-views input{max-width:100%;min-height:40px;padding:7px 9px;border:1px solid #a7bab0;border-radius:7px;background:white;color:inherit}
+.property-views button{min-height:40px}
+.property-views small{line-height:1.4;color:#4d6156}

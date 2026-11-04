@@ -82,4 +82,71 @@ describe('property photo planner',()=>{
   expect(Array.from(host.querySelectorAll('button')).some(b=>b.textContent==='Continue drawing')).toBe(true);
   await act(async()=>root.unmount());host.remove();
  });
+ it('filters equipment and toggles labels without changing saved placements',async()=>{
+  const project=exampleProjects()[0],item=project.nodes[0];const change=vi.fn();
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
+  await act(async()=>root.render(<PropertyPhotoView project={project} value={{photo:'data:image/jpeg;base64,AA',placements:{[item.id]:{x:.5,y:.5}}}} onChange={change}/>));
+  const marker=host.querySelector<HTMLButtonElement>(`[aria-label="Select ${item.name}"]`)!;
+  expect(marker.textContent).toContain(item.name);
+  await act(async()=>host.querySelector<HTMLInputElement>('.property-view-controls input')!.click());
+  expect(marker.textContent).not.toContain(item.name);expect(marker.getAttribute('aria-label')).toBe(`Select ${item.name}`);
+  const typeSelect=Array.from(host.querySelectorAll<HTMLSelectElement>('.property-filters select'))[1];
+  const other=project.nodes.find(n=>n.kind!==item.kind)!;
+  await act(async()=>{typeSelect.value=other.kind;typeSelect.dispatchEvent(new Event('change',{bubbles:true}));});
+  expect(host.querySelector(`[aria-label="Select ${item.name}"]`)).toBeNull();expect(change).not.toHaveBeenCalled();
+  await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Zoom in"]')!.click());
+  expect(host.querySelector<HTMLElement>('.property-image')!.style.width).toBe('125%');
+  await act(async()=>root.unmount());host.remove();
+ });
+ it('edits saved route points and preserves other route metadata',async()=>{
+  const project=exampleProjects()[0],item=project.nodes.find(n=>n.kind==='cord'||n.kind==='spt-1')!;
+  const change=vi.fn();
+  function Harness(){const [value,setValue]=useState<PropertyPhoto|undefined>({photo:'data:image/jpeg;base64,AA',placements:{},routes:{[item.id]:{kind:'cord',points:[{x:.25,y:.25},{x:.75,y:.75}],measuredFeet:20}}});return <PropertyPhotoView project={project} value={value} onChange={next=>{change(next);setValue(next);}}/>;}
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);await act(async()=>root.render(<Harness/>));
+  await act(async()=>Array.from(host.querySelectorAll<HTMLButtonElement>('.property-item-list button')).find(b=>b.textContent?.includes(item.name))!.click());
+  await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Edit route points')!.click());
+  await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Edit route point 2"]')!.click());
+  await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Move route point right"]')!.click());
+  await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Save route')!.click());
+  expect(change).toHaveBeenLastCalledWith(expect.objectContaining({routes:{[item.id]:expect.objectContaining({measuredFeet:20,points:[{x:.25,y:.25},{x:.76,y:.75}]})}}));
+  await act(async()=>root.unmount());host.remove();
+ });
+
+ it('captures calibration points without placing or wiring equipment',async()=>{
+  const project=exampleProjects()[0],snapshot=JSON.stringify(project),change=vi.fn();
+  function Harness(){const [value,setValue]=useState<PropertyPhoto|undefined>({photo:'data:image/jpeg;base64,AA',placements:{}});return <PropertyPhotoView project={project} value={value} onChange={next=>{change(next);setValue(next);}}/>;}
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);await act(async()=>root.render(<Harness/>));
+  const img=host.querySelector('img')!;Object.defineProperty(img,'naturalWidth',{value:200});Object.defineProperty(img,'naturalHeight',{value:100});await act(async()=>img.dispatchEvent(new Event('load',{bubbles:true})));
+  await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Set photo scale')!.click());
+  const image=host.querySelector<HTMLDivElement>('.property-image')!;image.getBoundingClientRect=()=>({left:0,top:0,width:200,height:100,right:200,bottom:100,x:0,y:0,toJSON(){}});
+  await act(async()=>image.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:20,clientY:50})));
+  await act(async()=>image.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:120,clientY:50})));
+  expect(host.textContent).toContain('2 of 2 points');expect(host.querySelectorAll('.property-routes circle')).toHaveLength(2);
+  const input=host.querySelector<HTMLInputElement>('.photo-calibration-controls input')!;
+  await act(async()=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(input,'10');input.dispatchEvent(new Event('input',{bubbles:true}));});
+  await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Save photo scale')!.click());
+  expect(change).toHaveBeenLastCalledWith(expect.objectContaining({placements:{},calibration:expect.objectContaining({knownFeet:10,aspectRatio:2})}));expect(JSON.stringify(project)).toBe(snapshot);
+  await act(async()=>root.unmount());host.remove();
+ });
+
+ it('reports filtered IDs to photo overlays and preserves a paused calibration draft',async()=>{
+  const project=exampleProjects()[0],item=project.nodes[0],other=project.nodes.find(n=>n.kind!==item.kind)!;
+  let setAdding:(next:boolean)=>void=()=>{};const unsaved=vi.fn();
+  function Harness(){const [value,setValue]=useState<PropertyPhoto|undefined>({photo:'data:image/jpeg;base64,AA',placements:{[item.id]:{x:.5,y:.5}}});const [adding,set]=useState(false);setAdding=set;return <PropertyPhotoView project={project} value={value} onChange={setValue} photoPlaceActive={adding} onUnsavedDraftChange={unsaved} svgOverlay={ids=><text data-testid="visible-ids">{[...ids].join(',')}</text>}/>;}
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);await act(async()=>root.render(<Harness/>));
+  expect(host.querySelector('[data-testid="visible-ids"]')!.textContent).toContain(item.id);
+  const typeSelect=Array.from(host.querySelectorAll<HTMLSelectElement>('.property-filters select'))[1];
+  await act(async()=>{typeSelect.value=other.kind;typeSelect.dispatchEvent(new Event('change',{bubbles:true}));});
+  expect(host.querySelector('[data-testid="visible-ids"]')!.textContent).not.toContain(item.id);
+  await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Set photo scale')!.click());
+  const image=host.querySelector<HTMLDivElement>('.property-image')!;image.getBoundingClientRect=()=>({left:0,top:0,width:200,height:100,right:200,bottom:100,x:0,y:0,toJSON(){}});
+  await act(async()=>image.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:20,clientY:50})));
+  expect(host.textContent).toContain('1 of 2 points');
+  await act(async()=>setAdding(true));
+  expect(host.textContent).toContain('Continue photo scale');expect(unsaved).toHaveBeenLastCalledWith(true);
+  await act(async()=>setAdding(false));await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Continue photo scale')!.click());
+  expect(host.textContent).toContain('1 of 2 points');
+  await act(async()=>root.unmount());host.remove();
+ });
+
 });

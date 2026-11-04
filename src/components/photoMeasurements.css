@@ -1,0 +1,7 @@
+.photo-measurements{margin:1rem 0;padding:1rem;border:1px solid #d5dfdb;border-radius:.75rem;background:#f7faf8;color:#233b30}
+.photo-measurements h3{margin:0 0 .5rem}
+.photo-measurements p{margin:.55rem 0;font-size:.9rem;line-height:1.4}
+.photo-measurements button{margin:.25rem .4rem .25rem 0}
+.photo-measurements label{display:block;font-size:.9rem;font-weight:600;margin:.5rem 0}
+.photo-measurements input{display:block;width:min(100%,12rem);margin-top:.25rem;padding:.45rem;border:1px solid #82998c;border-radius:.35rem}
+.photo-calibration-controls,.photo-route-measurement{margin-top:.65rem;padding-top:.65rem;border-top:1px solid #d5dfdb}
