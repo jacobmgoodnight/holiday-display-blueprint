@@ -1,0 +1,7 @@
+.fullscreen-connect-panel .connect-source-picker{flex:1 1 250px;min-width:0}
+.fullscreen-connect-panel .connect-source-picker select{flex:1;min-width:0;max-width:100%}
+.fullscreen-connect-panel select{min-height:44px}
+.fullscreen-connect-panel button{min-height:44px}
+.connect-other-actions{flex-basis:100%;font-size:11px;color:#587286}
+.connect-other-actions summary{padding:8px 0;cursor:pointer;font-weight:800}
+.connect-other-actions>div{display:flex;flex-wrap:wrap;gap:7px}
