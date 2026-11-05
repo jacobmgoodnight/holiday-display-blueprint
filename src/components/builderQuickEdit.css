@@ -5,13 +5,14 @@
 .bqe-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .builder-quick-edit .bqe-fields label,.builder-quick-edit .bqe-port-list label{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;font-size:10px;font-weight:800;color:#55778c}
 .bqe-fields .bqe-wide{grid-column:1/-1}
-.builder-quick-edit input,.builder-quick-edit select,.builder-quick-edit textarea{width:100%;max-width:100%;min-width:0;min-height:37px;background:#fff;border:1px solid #cbdde8;border-radius:8px;padding:8px;color:#2f546c;font:inherit;font-size:12px;font-weight:500}
+.builder-quick-edit input,.builder-quick-edit select,.builder-quick-edit textarea{width:100%;max-width:100%;min-width:0;min-height:44px;background:#fff;border:1px solid #cbdde8;border-radius:8px;padding:8px;color:#2f546c;font:inherit;font-size:16px;font-weight:500}
 .builder-quick-edit textarea{resize:vertical;min-height:55px;line-height:1.5}
 .bqe-actions{display:flex;flex-wrap:wrap;gap:6px}
-.fullscreen-builder .builder-quick-edit .bqe-actions button{flex:1;min-width:120px;min-height:41px}
+.fullscreen-builder .builder-quick-edit .bqe-actions button{flex:1;min-width:120px;min-height:44px}
 .fullscreen-builder .builder-quick-edit .bqe-actions .bqe-duplicate{background:#eaf5f1;border-color:#add7c6;color:#2e7658}
 .bqe-extra{min-width:0;border:1px solid #dae6ed;border-radius:9px;background:#f9fbfd}
-.bqe-extra summary{cursor:pointer;font-size:11px;font-weight:850;padding:9px 11px;color:#486e83}
+.bqe-extra summary{cursor:pointer;font-size:12px;font-weight:850;padding:13px 11px;color:#486e83}
+.bqe-details-fields{padding:10px}
 .bqe-extra .visual-icon-picker{border:0;border-top:1px solid #dae6ed;border-radius:0}
 .bqe-port-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px}
 .bqe-port-list small{grid-column:1/-1;font-size:10px;color:#70899a;line-height:1.4}

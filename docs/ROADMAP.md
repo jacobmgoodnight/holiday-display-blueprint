@@ -4,6 +4,8 @@ _Last reviewed: November 4, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Recent development
 
+- **Builder usability:** draw a new light or cord route directly on a property photo, with one unconnected item created when the route is saved; drag markers and find selected actions below the image. The standard diagram exposes Connect for an unconnected selection and requires an explicitly chosen source and output. Fullscreen Connect keeps its step visible, and Quick edit makes common fields prominent. Browser touch behavior has focused tests; physical-device validation remains outstanding.
+
 - **Property-photo planner:** up to eight named photo views share equipment without duplicating it; each retains its own markers, routes and optional scale. Zoom, filters, editable route points, in-place details and similar-item placement support planning. Optional approximate length estimates compare against known equipment or explicitly linked lighting; a visual bulb/icon preview and saved-power-path overlay do not change physical inventory or wiring. iPhone touch and offline behavior still require physical-device testing.
 - **Guided construction:** add and reuse equipment repeatedly, record cord/light details, leave output counts and feeds unknown, or connect an existing unconnected item using an explicitly chosen source and output.
 - **New-display start (merged in PR #26):** name a separate draft and choose its season and year; begin with a known source or equipment without an assigned source.

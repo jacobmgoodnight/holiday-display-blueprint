@@ -6,6 +6,49 @@ import {propertyPhotoPoint,type PropertyPhoto} from '../lib/propertyPhoto';
 import {exampleProjects} from '../fixtures/examples';
 
 describe('property photo planner',()=>{
+ it('moves a marker by dragging, commits once, and cancels interrupted drags',async()=>{
+  const project=exampleProjects()[0],item=project.nodes[0],snapshot=JSON.stringify(project),change=vi.fn();
+  function Harness(){const [value,setValue]=useState<PropertyPhoto|undefined>({photo:'data:image/jpeg;base64,AA',placements:{[item.id]:{x:.25,y:.25}}});return <PropertyPhotoView project={project} value={value} onChange={next=>{change(next);setValue(next);}}/>;}
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);await act(async()=>root.render(<Harness/>));
+  const image=host.querySelector<HTMLDivElement>('.property-image')!;image.getBoundingClientRect=()=>({left:0,top:0,width:200,height:100,right:200,bottom:100,x:0,y:0,toJSON(){}});
+  const marker=host.querySelector<HTMLButtonElement>(`[aria-label="Select ${item.name}"]`)!;
+  const pointer=(type:string,x:number,y:number)=>{const event=new MouseEvent(type,{bubbles:true,clientX:x,clientY:y,button:0});Object.defineProperties(event,{pointerId:{value:1},isPrimary:{value:true}});marker.dispatchEvent(event);};
+  await act(async()=>pointer('pointerdown',50,25));await act(async()=>pointer('pointermove',150,75));
+  expect(marker.style.left).toBe('75%');expect(change).not.toHaveBeenCalled();
+  await act(async()=>pointer('pointerup',150,75));expect(change).toHaveBeenCalledTimes(1);
+  expect(change).toHaveBeenLastCalledWith(expect.objectContaining({placements:{[item.id]:{x:.75,y:.75}}}));
+  expect(host.querySelector('.property-detail')!.compareDocumentPosition(host.querySelector('.property-browse')!)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  await act(async()=>pointer('pointerdown',150,75));await act(async()=>pointer('pointermove',100,50));await act(async()=>pointer('pointercancel',100,50));
+  expect(change).toHaveBeenCalledTimes(1);expect(marker.style.left).toBe('75%');expect(JSON.stringify(project)).toBe(snapshot);
+  await act(async()=>root.unmount());host.remove();
+ });
+ it('routes direct drawing taps to the draft without selecting or changing equipment',async()=>{
+  const project=exampleProjects()[0],item=project.nodes[0],change=vi.fn(),point=vi.fn(),select=vi.fn();
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
+  await act(async()=>root.render(<PropertyPhotoView project={project} value={{photo:'data:image/jpeg;base64,AA',placements:{[item.id]:{x:.5,y:.5}}}} onChange={change} directRoutePoints={[{x:.1,y:.2}]} onDirectRoutePoint={point} onSelectItem={select}/>));
+  const image=host.querySelector<HTMLDivElement>('.property-image')!;image.getBoundingClientRect=()=>({left:0,top:0,width:200,height:100,right:200,bottom:100,x:0,y:0,toJSON(){}});
+  expect(image.classList.contains('placing')).toBe(true);expect(host.querySelector('.property-route.direct')).not.toBeNull();
+  await act(async()=>image.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:100,clientY:75})));
+  expect(point).toHaveBeenCalledWith({x:.5,y:.75});expect(change).not.toHaveBeenCalled();expect(select).not.toHaveBeenCalled();
+  const marker=host.querySelector<HTMLButtonElement>(`[aria-label="Select ${item.name}"]`)!;
+  await act(async()=>marker.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:50,clientY:25})));
+  expect(point).toHaveBeenLastCalledWith({x:.25,y:.25});expect(select).not.toHaveBeenCalled();
+  await act(async()=>root.unmount());host.remove();
+ });
+ it('leaves a direct route draft intact when a mode change is declined',async()=>{
+  const base=exampleProjects()[0],item=base.nodes.find(n=>n.kind==='cord'||n.kind==='spt-1')!;
+  const project={...base,edges:[]},change=vi.fn(),connect=vi.fn(),gate=vi.fn(()=>false);
+  const confirm=vi.spyOn(window,'confirm').mockReturnValue(true);
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
+  await act(async()=>root.render(<PropertyPhotoView project={project} value={{photo:'data:image/jpeg;base64,AA',placements:{}}} selectedItemId={item.id} onChange={change} directRoutePoints={[{x:.1,y:.2}]} onPhotoModeChange={gate} onConnectItem={connect}/>));
+  const click=(name:string)=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent===name)!.click();
+  await act(async()=>click('Place on photo'));await act(async()=>click('Draw route'));await act(async()=>click('Set photo scale'));await act(async()=>click('Connect'));
+  expect(gate).toHaveBeenCalledTimes(4);expect(connect).not.toHaveBeenCalled();expect(change).not.toHaveBeenCalled();
+  expect(host.querySelector('.property-route-controls')).toBeNull();expect(host.querySelector('.photo-calibration-controls')).toBeNull();
+  await act(async()=>click('Remove property photo'));
+  expect(confirm).toHaveBeenLastCalledWith(expect.stringContaining('unfinished route'));expect(gate).toHaveBeenLastCalledWith({discardDirectRouteConfirmed:true});expect(change).not.toHaveBeenCalled();
+  confirm.mockRestore();await act(async()=>root.unmount());host.remove();
+ });
  it('stores bounded positions relative to the displayed image',()=>{
   const rect={left:20,top:50,width:200,height:100};
   expect(propertyPhotoPoint(70,125,rect)).toEqual({x:.25,y:.75});
