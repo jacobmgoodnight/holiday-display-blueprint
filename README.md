@@ -4,6 +4,8 @@
 
 [**Open the live app**](https://jacobmgoodnight.github.io/holiday-display-blueprint/) · [Wiring workflow](docs/WIRING_WORKFLOW.md) · [Roadmap](docs/ROADMAP.md)
 
+Holiday Display Blueprint is a local-first, mobile-friendly planner for Halloween and Christmas installations. Lay out lights and cords on property photos, document power connections, track reusable lighting inventory, and follow install checklists in the field. Optional encrypted sync helps keep approved plans available across devices.
+
 > **Safety and accuracy:** Bundled examples are illustrative only. Your actual Halloween/Christmas master plans stay private. A documented power-feed graph or **Verified as-installed** status is **not an electrical safety inspection or certification**.
 
 ## Starting a new display
