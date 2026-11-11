@@ -3,17 +3,19 @@ import type {Component,Zone} from '../lib/model';
 import {visualIcons} from '../lib/visualIcons';
 import './photoQuickEdit.css';
 
-type Props={item:Component;onSave:(id:string,changes:Pick<Component,'name'|'zone'|'color'|'notes'|'visualIcon'>)=>boolean;onAddSimilar:()=>void;onDirtyChange?:(dirty:boolean)=>void};
+type Props={item:Component;onSave:(id:string,changes:Pick<Component,'name'|'zone'|'color'|'notes'|'visualIcon'>)=>boolean;onAddSimilar:()=>void;onDirtyChange?:(dirty:boolean)=>void;openRequest?:number};
 const zones:Zone[]=['Front porch','Garage & driveway','Backyard','Other'];
 const details=(item:Component)=>JSON.stringify([item.name,item.zone,item.color||'',item.notes||'',item.visualIcon||'']);
 
 /** Edit descriptive fields deliberately, without touching an item's wiring. */
-export function PhotoQuickEdit({item,onSave,onAddSimilar,onDirtyChange}:Props){
+export function PhotoQuickEdit({item,onSave,onAddSimilar,onDirtyChange,openRequest}:Props){
  const [editing,setEditing]=useState(false),[baseline,setBaseline]=useState('');
  const [name,setName]=useState(''),[zone,setZone]=useState<Zone>(item.zone),[color,setColor]=useState(''),[notes,setNotes]=useState(''),[icon,setIcon]=useState(''),[error,setError]=useState('');
  useEffect(()=>{onDirtyChange?.(editing&&JSON.stringify([name,zone,color,notes,icon])!==baseline);},[editing,name,zone,color,notes,icon,baseline,onDirtyChange]);
  useEffect(()=>()=>onDirtyChange?.(false),[onDirtyChange]);
  const begin=()=>{setName(item.name);setZone(item.zone);setColor(item.color||'');setNotes(item.notes||'');setIcon(item.visualIcon||'');setBaseline(details(item));setError('');setEditing(true);};
+ // A new explicit request opens the editor without resetting any in-progress edit.
+ useEffect(()=>{if(openRequest&&!editing)begin();},[openRequest]);
  const save=(event:React.FormEvent)=>{
   event.preventDefault();
   if(details(item)!==baseline){setError('This item changed while you were editing. Cancel and reopen to review the latest details.');return;}

@@ -52,4 +52,32 @@ describe('session diagram history is guarded and preserves field evidence safely
   const next={...p,edges:[...p.edges,{id:'duplicate-port',source:p.edges[0].source,sourcePort:p.edges[0].sourcePort,target:'h-o03'}]};
   expect(()=>recordGraphStep(emptyGraphHistory(),p,next,'invalid')).toThrow(/invalid wiring/);
  });
+ it('undoes and redoes a photo marker move without changing the graph',()=>{
+  const base=exampleProjects()[0],photo={photo:'image',placements:{'h-light':{x:.1,y:.2}}};
+  const before={...base,propertyPhoto:photo};
+  const moved={...photo,placements:{'h-light':{x:.8,y:.4}}};
+  const after={...before,propertyPhoto:moved};
+  const history=recordGraphStep(emptyGraphHistory(),before,after,'move marker',{viewId:'main',before:photo,after:moved});
+  const undo=undoGraphStep(history,after);expect(undo.project.propertyPhoto).toEqual(photo);expect(undo.project.edges).toEqual(before.edges);
+  expect(redoGraphStep(undo.history,undo.project).project.propertyPhoto).toEqual(moved);
+  expect(()=>undoGraphStep(history,{...after,propertyPhoto:{...moved,placements:{}}})).toThrow(/Photo changed/);
+ });
+ it('undoes an item and its photo route atomically and redoes both',()=>{
+  const base=exampleProjects()[0],photo={photo:'image',placements:{}};
+  const before={...base,propertyPhoto:photo};
+  const node={...base.nodes[0],id:'new-test-item',kind:'decoration' as const,outputs:0,verified:false};
+  const nextPhoto={...photo,placements:{[node.id]:{x:.2,y:.3}},routes:{[node.id]:{kind:'lights' as const,points:[{x:.2,y:.3},{x:.6,y:.7}]}}};
+  const after={...before,nodes:[...before.nodes,node],propertyPhoto:nextPhoto};
+  const history=recordGraphStep(emptyGraphHistory(),before,after,'draw new item',{viewId:'main',before:photo,after:nextPhoto});
+  const undo=undoGraphStep(history,after);expect(undo.project.nodes.some(n=>n.id===node.id)).toBe(false);expect(undo.project.propertyPhoto).toEqual(photo);
+  const redo=redoGraphStep(undo.history,undo.project);expect(redo.project.nodes.some(n=>n.id===node.id)).toBe(true);expect(redo.project.propertyPhoto).toEqual(nextPhoto);
+ });
+ it('keeps photo history isolated to its selected view and refuses replaced photos',()=>{
+  const base=exampleProjects()[0],photo={photo:'side-image',placements:{}},changed={...photo,placements:{'h-light':{x:.5,y:.5}}};
+  const before={...base,propertyPhotoViews:[{id:'side',name:'Side',layout:photo}]};
+  const after={...before,propertyPhotoViews:[{id:'side',name:'Side',layout:changed}]};
+  const history=recordGraphStep(emptyGraphHistory(),before,after,'side edit',{viewId:'side',before:photo,after:changed});
+  const undo=undoGraphStep(history,after);expect(undo.project.propertyPhotoViews?.[0].layout).toEqual(photo);expect(undo.project.propertyPhoto).toEqual(base.propertyPhoto);
+  expect(()=>undoGraphStep(history,{...after,propertyPhotoViews:[{id:'side',name:'Side',layout:{...changed,photo:'new'}}]})).toThrow(/Photo changed/);
+ });
 });

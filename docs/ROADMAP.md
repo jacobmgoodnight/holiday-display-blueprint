@@ -4,6 +4,8 @@ _Last reviewed: November 4, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Recent development
 
+- **Photo and connection workflow:** shared session undo/redo includes photo annotations and atomic photo item creation; new routes offer contextual next actions. A connection overview lists unconnected equipment and recorded output availability, with explicit connection selection. Photo replacement clears session undo; device testing remains outstanding.
+
 - **Builder usability:** draw a new light or cord route directly on a property photo, with one unconnected item created when the route is saved; drag markers and find selected actions below the image. The standard diagram exposes Connect for an unconnected selection and requires an explicitly chosen source and output. Fullscreen Connect keeps its step visible, and Quick edit makes common fields prominent. Browser touch behavior has focused tests; physical-device validation remains outstanding.
 
 - **Property-photo planner:** up to eight named photo views share equipment without duplicating it; each retains its own markers, routes and optional scale. Zoom, filters, editable route points, in-place details and similar-item placement support planning. Optional approximate length estimates compare against known equipment or explicitly linked lighting; a visual bulb/icon preview and saved-power-path overlay do not change physical inventory or wiring. iPhone touch and offline behavior still require physical-device testing.
@@ -66,7 +68,7 @@ _Last reviewed: November 4, 2026. "Shipped" means code merged/deployed and CI-te
 ## Local change recovery
 
 - A separately stored browser-local restore-point list (IndexedDB v2 additive migration) lets you save up to eight complete manual project checkpoints, compare graph changes, download a snapshot, and restore after first preserving the current plan. Restore resets field checks and returns Draft.
-- Persisted cross-session edit history, complete undo of continuously edited text or dragged layouts, photos over restore limits, cloud-synced history, and multi-device deletion tombstones are still future work. Bounded session graph undo/redo now covers major structural operations and standard-inspector name/icon changes.
+- Persisted cross-session edit history, complete undo of continuously edited text or dragged layouts, photos over restore limits, cloud-synced history, and multi-device deletion tombstones are still future work. Bounded session undo/redo now covers major structural operations, standard-inspector name/icon changes and photo annotations.
 
 ## Highest-priority next improvements
 
