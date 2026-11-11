@@ -1,10 +1,12 @@
 import type {Component,Connection,Project,WiringEdit} from './model';
 import {now} from './model';
 import {downstream,validateGraph} from './graph';
+import {getPropertyPhotoViews,setPropertyPhotoLayout,type PropertyPhoto} from './propertyPhoto';
 
 /** Bounded, browser-session-only graph undo/redo. Not a cloud version history. */
 export type GraphFrame={nodes:Component[];edges:Connection[]};
-export type GraphStep={projectId:string;label:string;before:GraphFrame;after:GraphFrame};
+export type PhotoHistoryChange={viewId:string;before:PropertyPhoto;after:PropertyPhoto};
+export type GraphStep={projectId:string;label:string;before:GraphFrame;after:GraphFrame;photo?:PhotoHistoryChange};
 export type GraphHistory={past:GraphStep[];future:GraphStep[]};
 export const emptyGraphHistory=():GraphHistory=>({past:[],future:[]});
 const LIMIT=10;
@@ -14,17 +16,19 @@ const frame=(p:GraphFrame):GraphFrame=>structuredClone({nodes:p.nodes,edges:p.ed
 export const graphFingerprint=(p:GraphFrame)=>JSON.stringify({
  nodes:p.nodes.map(({verified:_verified,...n})=>n),edges:p.edges
 });
-export function recordGraphStep(history:GraphHistory,before:Project,after:Project,label:string):GraphHistory{
+export function recordGraphStep(history:GraphHistory,before:Project,after:Project,label:string,photo?:PhotoHistoryChange):GraphHistory{
  if(before.id!==after.id)throw Error('Cannot combine different projects in diagram history');
  const oldFrame=frame(before),newFrame=frame(after);
- if(graphFingerprint(oldFrame)===graphFingerprint(newFrame))return history;
- const errors=validateGraph(newFrame.nodes,newFrame.edges);
+ if(photo&&(photo.before.photo!==photo.after.photo||!getPropertyPhotoViews(before).some(v=>v.id===photo.viewId&&v.layout?.photo===photo.before.photo)))throw Error('Photo changed before this edit.');
+ const photoChanged=!!photo&&JSON.stringify(photo.before)!==JSON.stringify(photo.after);
+ if(graphFingerprint(oldFrame)===graphFingerprint(newFrame)&&!photoChanged)return history;
+ const errors=graphFingerprint(oldFrame)===graphFingerprint(newFrame)?[]:validateGraph(newFrame.nodes,newFrame.edges);
  if(errors.length)throw Error('Cannot record invalid wiring: '+errors[0].message);
- if(JSON.stringify([oldFrame,newFrame]).length>MAX_BYTES)throw Error('This diagram exceeds the safe session undo limit. Save a private restore point before making a larger change.');
+ if(JSON.stringify([oldFrame,newFrame,photoChanged?{before:{...photo!.before,photo:''},after:{...photo!.after,photo:''}}:null]).length>MAX_BYTES)throw Error('This diagram exceeds the safe session undo limit. Save a private restore point before making a larger change.');
  const recent=history.past.at(-1);
  // Never attach a new action onto history of a remotely replaced or separately edited graph.
  const past=recent&&recent.projectId===before.id&&graphFingerprint(recent.after)===graphFingerprint(oldFrame)?history.past:[];
- return {past:[...past,{projectId:before.id,label,before:oldFrame,after:newFrame}].slice(-LIMIT),future:[]};
+ return {past:[...past,{projectId:before.id,label,before:oldFrame,after:newFrame,...(photoChanged?{photo:structuredClone(photo!)}:{})}].slice(-LIMIT),future:[]};
 }
 function changedTopology(a:GraphFrame,b:GraphFrame){
  const am=new Map(a.nodes.map(n=>[n.id,n])),bm=new Map(b.nodes.map(n=>[n.id,n]));
@@ -87,7 +91,8 @@ export function undoGraphStep(history:GraphHistory,current:Project):{project:Pro
  if(!step)throw Error('No diagram change to undo in this browser session');
  if(step.projectId!==current.id||graphFingerprint(current)!==graphFingerprint(step.after))
   throw Error('Diagram changed since that edit, possibly from another device. Create a restore point or review the newer changes before undoing.');
- const project=restoreGraph(current,step.before);
+ let project=graphFingerprint(step.before)===graphFingerprint(step.after)?current:restoreGraph(current,step.before);
+ if(step.photo){const currentPhoto=getPropertyPhotoViews(current).find(v=>v.id===step.photo!.viewId)?.layout;if(JSON.stringify(currentPhoto)!==JSON.stringify(step.photo.after))throw Error('Photo changed since this edit. Review the newer changes before undoing.');project=setPropertyPhotoLayout(project,step.photo.viewId,structuredClone(step.photo.before));}
  return {project,history:{past:history.past.slice(0,-1),future:[...history.future,step].slice(-LIMIT)},label:step.label};
 }
 export function redoGraphStep(history:GraphHistory,current:Project):{project:Project;history:GraphHistory;label:string}{
@@ -95,6 +100,7 @@ export function redoGraphStep(history:GraphHistory,current:Project):{project:Pro
  if(!step)throw Error('No diagram change to redo in this browser session');
  if(step.projectId!==current.id||graphFingerprint(current)!==graphFingerprint(step.before))
   throw Error('Diagram changed since undo. Redo cannot replace newer changes.');
- const project=restoreGraph(current,step.after);
+ let project=graphFingerprint(step.before)===graphFingerprint(step.after)?current:restoreGraph(current,step.after);
+ if(step.photo){const currentPhoto=getPropertyPhotoViews(current).find(v=>v.id===step.photo!.viewId)?.layout;if(JSON.stringify(currentPhoto)!==JSON.stringify(step.photo.before))throw Error('Photo changed since undo. Redo cannot replace newer changes.');project=setPropertyPhotoLayout(project,step.photo.viewId,structuredClone(step.photo.after));}
  return {project,history:{past:[...history.past,step].slice(-LIMIT),future:history.future.slice(0,-1)},label:step.label};
 }
