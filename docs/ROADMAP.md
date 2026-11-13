@@ -4,6 +4,8 @@ _Last reviewed: November 4, 2026. "Shipped" means code merged/deployed and CI-te
 
 ## Recent development
 
+- **Diagram builder workflow:** a common-equipment palette starts guided additions; fullscreen Add stays open for repeated placement, Connect offers a destination picker after an explicit source/output choice, and Quick edit provides undoable directional moves in the saved manual layout. Wiring validation and rewire confirmation remain unchanged.
+
 - **Photo and connection workflow:** shared session undo/redo includes photo annotations and atomic photo item creation; new routes offer contextual next actions. A connection overview lists unconnected equipment and recorded output availability, with explicit connection selection. Photo replacement clears session undo; device testing remains outstanding.
 
 - **Builder usability:** draw a new light or cord route directly on a property photo, with one unconnected item created when the route is saved; drag markers and find selected actions below the image. The standard diagram exposes Connect for an unconnected selection and requires an explicitly chosen source and output. Fullscreen Connect keeps its step visible, and Quick edit makes common fields prominent. Browser touch behavior has focused tests; physical-device validation remains outstanding.

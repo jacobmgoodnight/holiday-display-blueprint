@@ -7,6 +7,7 @@ export type QuickAddOptions={sourceId:string;port:number;kind:Kind;name?:string;
 export function quickAddConnected(project:Project,options:QuickAddOptions):Project{
  const source=project.nodes.find(x=>x.id===options.sourceId);
  if(!source)throw Error('Select an existing power source');
+ if(source.outputsUnknown)throw Error('Record the actual output count before connecting.');
  if(!Number.isInteger(options.port)||options.port<0||options.port>=source.outputs)throw Error('Select a real output on this source');
  if(project.edges.some(e=>e.source===source.id&&e.sourcePort===options.port))throw Error('This output is already occupied');
  if(options.kind==='outlet')throw Error('An outlet cannot receive another power feed');

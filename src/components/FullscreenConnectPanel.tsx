@@ -1,3 +1,4 @@
+import {useEffect,useState} from 'react';
 import {Link2,Trash2,Unplug} from 'lucide-react';
 import type {Component,Project} from '../lib/model';
 import {freeOutputPorts} from '../lib/canvasWorkspace';
@@ -14,6 +15,7 @@ export type FullscreenConnectPanelProps={
  onBeginSource:(id:string)=>void;
  onPortChange:(port:number|null)=>void;
  onCancel:()=>void;
+ onChooseTarget?:(id:string)=>void;
  onDisconnect:()=>void;
  onRemove:()=>void;
 };
@@ -26,7 +28,9 @@ function sourceStatus(project:Project,node:Component){
 }
 
 /** Select the physical source and socket explicitly; the parent validates the final connection. */
-export function FullscreenConnectPanel({project,selectedNode,sourceId,sourcePort,layoutMode,onLayoutChange,onBeginSource,onPortChange,onCancel,onDisconnect,onRemove}:FullscreenConnectPanelProps){
+export function FullscreenConnectPanel({project,selectedNode,sourceId,sourcePort,layoutMode,onLayoutChange,onBeginSource,onPortChange,onCancel,onChooseTarget,onDisconnect,onRemove}:FullscreenConnectPanelProps){
+ const [targetId,setTargetId]=useState('');
+ useEffect(()=>setTargetId(''),[sourceId,sourcePort]);
  const source=project.nodes.find(node=>node.id===sourceId);
  const ports=source&&!sourceStatus(project,source)?freeOutputPorts(project,source.id):[];
  const selectedStatus=selectedNode?sourceStatus(project,selectedNode):'';
@@ -34,7 +38,7 @@ export function FullscreenConnectPanel({project,selectedNode,sourceId,sourcePort
   ?!source?'Source is no longer available. Cancel and choose a different source.'
    :!ports.length?'This source has no available confirmed outputs. Cancel and choose a different source.'
    :sourcePort===null||!ports.includes(sourcePort)?'2. Choose the actual output on the source.'
-   :'3. Tap the item receiving power on the diagram.'
+   :'3. Tap the receiving item on the diagram, or choose it below.'
   :!selectedNode?'1. Choose the item that provides power, or tap it on the diagram.'
   :selectedNode.outputsUnknown?'This item’s output count is unknown. Use Quick edit to record the actual count first.'
   :selectedNode.outputs===0?'This item has no recorded outputs. Choose a source with an available output.'
@@ -56,6 +60,8 @@ export function FullscreenConnectPanel({project,selectedNode,sourceId,sourcePort
   {sourceId&&<>
    <span className="builder-help">Source: {source?.name||'Unavailable'}</span>
    <label>Source output <select aria-label="Builder source output" value={sourcePort??''} disabled={!ports.length} onChange={e=>onPortChange(e.target.value===''?null:Number(e.target.value))}><option value="">Choose an output…</option>{ports.map(port=><option key={port} value={port}>{portName(source!,port)}</option>)}</select></label>
+   {onChooseTarget&&<label className="connect-target-picker">Receiving item <select aria-label="Builder receiving item" value={targetId} onChange={e=>setTargetId(e.target.value)}><option value="">Choose an item…</option>{project.nodes.filter(node=>node.id!==sourceId&&node.kind!=='outlet').map(node=>{const existing=project.edges.find(edge=>edge.target===node.id);return <option key={node.id} value={node.id}>{node.name} · {node.zone}{existing?' — already connected':''}</option>;})}</select></label>}
+   {onChooseTarget&&<button className="builder-primary" disabled={!targetId||sourcePort===null||!ports.includes(sourcePort)} onClick={()=>onChooseTarget(targetId)}>Connect selected item</button>}
    <button onClick={onCancel}>Cancel connection</button>
   </>}
   {!sourceId&&selectedNode&&<details className="connect-other-actions"><summary>More actions for {selectedNode.name}</summary><div>

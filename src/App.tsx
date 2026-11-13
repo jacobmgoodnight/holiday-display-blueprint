@@ -13,6 +13,7 @@ import {InspectorIdentity} from './components/InspectorIdentity';
 import {VisualIconPicker} from './components/VisualIconPicker';
 import {ComponentPhotoGallery} from './components/ComponentPhotoGallery';
 import {BuilderQuickEdit} from './components/BuilderQuickEdit';
+import {QuickEquipmentPalette} from './components/QuickEquipmentPalette';
 import {FullscreenConnectPanel} from './components/FullscreenConnectPanel';
 import {duplicateEquipment} from './lib/duplicateEquipment';
 import {quickAddConnected} from './lib/quickAdd';
@@ -370,7 +371,7 @@ function AppContent(){
   if(!freeOutputPorts(project,source.id).includes(quickAddPort)){setMessage('That output is already occupied. Pick another free port.');return;}
   try{
    const next=quickAddConnected(project,{sourceId:source.id,port:quickAddPort,kind:addKind,name:builderName,visualIcon:builderIcon});
-   commitGraphChange(next,'add and connect item');
+   if(!commitGraphChange(next,'add and connect item'))return;
    setBuilderName('');setBuilderIcon(undefined);setQuickAddPort(null);
    setTrace('downstream');
    setMessage('Item added to '+source.name+' / '+portName(source,quickAddPort)+'. New connection is unverified.');
@@ -397,11 +398,17 @@ function AppContent(){
   const count=project.nodes.filter(n=>n.zone===zone).length;
   const position=layoutMode==='manual'?screenToFlowPosition({x:window.innerWidth/2,y:window.innerHeight/2}):{x:110+(count%4)*215,y:100+Math.floor(count/4)*120};
   const {project:next,node:n}=addUnconnectedItem(project,{kind:addKind,zone,position,name:builderName,visualIcon:builderIcon,outletOutputs:builderOutletOutputs?Number(builderOutletOutputs):undefined});
-  commitGraphChange(next,'add item');
+  if(!commitGraphChange(next,'add item'))return false;
   if(project.nodes.length===0)setFocusRequest(prev=>({id:n.id,seq:(prev?.seq||0)+1}));
   setSelected(n.id);setTrace('none');setBuilderName('');setBuilderIcon(undefined);setBuilderOutletOutputs('');
   setMessage(n.kind==='outlet'?'Power source added. Select its actual output to add the next connected item.':'Added an unverified item. Choose an existing upstream power source to connect it.');
   return true;
+ }
+ function moveBuilderItem(dx:number,dy:number){
+  if(!project||!selected||layoutMode!=='manual'||!workspaceEditable)return;
+  const item=project.nodes.find(node=>node.id===selected);if(!item)return;
+  const next={...project,nodes:project.nodes.map(node=>node.id===selected?{...node,position:{x:node.position.x+dx,y:node.position.y+dy}}:node)};
+  if(commitGraphChange(next,'move diagram item'))setMessage(`Moved ${item.name} on the diagram.`);
  }
  function chooseBuilderSource(sourceId:string){
   if(!project)return;
@@ -606,6 +613,7 @@ function AppContent(){
         <button className={diagramMode==='audit'?'active':''} aria-pressed={diagramMode==='audit'} onClick={()=>{if(confirmPhotoNavigation())setDiagramMode('audit');}}><AlertTriangle size={17}/> Needs verification</button>
       </div>
       {diagramMode==='map'&&<div className="diagram-toolbar"><div className="tool-title"><CircuitBoard size={18}/><strong>Electrical graph</strong><span>Auto layout or your saved positions</span></div><div className="mobile-diagram-actions" role="group" aria-label="Diagram quick actions"><button type="button" onClick={()=>{setFullscreen(true);setFullMode('explore');setBuilderSource(null);setFullToolsOpen(false)}}><Maximize2 size={16}/> View</button><button type="button" onClick={openFinder}><Search size={16}/> Find</button><button type="button" onClick={()=>startAdding()}><Plus size={16}/> Add</button><button type="button" aria-expanded={showMobileDiagramTools} aria-controls="mobile-diagram-extra-tools" onClick={()=>setShowMobileDiagramTools(v=>!v)}><SlidersHorizontal size={16}/> {showMobileDiagramTools?'Less':'More'}</button></div><div id="mobile-diagram-extra-tools" className={`tool-actions ${showMobileDiagramTools?'mobile-tools-open':''}`}><div className="diagram-history-actions" role="group" aria-label="Diagram undo and redo"><button type="button" className="button secondary" disabled={!graphHistory.past.length||graphHistory.past.at(-1)?.projectId!==project.id||cloud.status==='conflict'} onClick={()=>stepGraph('undo')} title="Undo last graph change (Ctrl/Cmd+Z)"><RotateCcw size={15}/> Undo</button><button type="button" className="button secondary" disabled={!graphHistory.future.length||graphHistory.future.at(-1)?.projectId!==project.id||cloud.status==='conflict'} onClick={()=>stepGraph('redo')} title="Redo last graph change (Ctrl/Cmd+Shift+Z)"><RotateCw size={15}/> Redo</button></div><label className="layout-picker">Layout<select aria-label="Diagram arrangement" value={layoutMode} onChange={e=>setLayoutMode(e.target.value as 'auto'|'manual')}><option value="auto">Auto power flow</option><option value="manual">My saved positions</option></select></label><button className="button secondary" onClick={()=>{setFullscreen(true);setFullMode('explore');setBuilderSource(null);setFullSearch('');setFullToolsOpen(false)}}><Maximize2 size={16}/> Fullscreen</button><button className="button secondary finder-open" onClick={openFinder}><Search size={15}/> Find</button><button className={`button secondary ${pathOnly?'path-isolated':''}`} disabled={!selected} aria-pressed={pathOnly} onClick={()=>setPathOnly(x=>!x)}>{pathOnly?'Show circuit':'Path only'}</button><button className="button primary" onClick={()=>startAdding()}><Plus size={16}/> Add equipment</button>{selectedNode&&selectedNode.kind!=='outlet'&&!project.edges.some(e=>e.target===selectedNode.id)&&<button className="button secondary" onClick={()=>startDiagramConnect(selectedNode.id)}><Link2 size={15}/> Connect selected</button>}<button className="icon-button" aria-label="Toggle inspector" onClick={()=>setInspectorOpen(s=>!s)}><BookOpen size={19}/></button></div></div>}
+      {diagramMode==='map'&&!fullscreen&&<div className="diagram-equipment-bar"><strong>Add to diagram</strong><QuickEquipmentPalette onChange={kind=>startAdding(kind)}/></div>}
       {diagramMode==='map'&&!fullscreen&&diagramConnectTarget&&<div id="diagram-connection-panel"><PhotoConnect surface="diagram" project={project} targetId={diagramConnectTarget} sourceId={diagramConnectSource} onSourceChange={id=>{setDiagramConnectSource(id);setGuidedError('');}} onSetOutputs={setPhotoOutputs} error={guidedError} onCancel={()=>{setDiagramConnectTarget(null);setDiagramConnectSource('');setGuidedError('');}} onConnect={(source,port)=>{if(!guidedConnect(diagramConnectTarget,source,port))return false;setDiagramConnectTarget(null);setDiagramConnectSource('');setMessage('Connection recorded. Verify it in the field.');return true;}}/></div>}
       {diagramMode==='map'&&!fullscreen&&<ConnectionOverview project={project} onConnect={id=>{setSelected(id);startDiagramConnect(id);}} onLocate={jumpToNode}/>}
       {diagramMode==='map'&&reusable.length>0&&<div className="reuse-strip"><Copy size={14}/><span>Reuse equipment from other seasons</span><select aria-label="Existing equipment" value={reuseId} onChange={e=>setReuseId(e.target.value)}><option value="">Select reusable item</option>{reusable.map(n=><option key={n.assetId||n.id} value={n.assetId||n.id}>{n.name} · {n.from}</option>)}</select><button className="button secondary" onClick={reuseComponent} disabled={!reuseId}>Add to this plan</button></div>}
@@ -673,10 +681,11 @@ function AppContent(){
           <div className="builder-tabs" role="group" aria-label="Builder action">
            {(['wire','add','insert','edit'] as const).map(t=><button key={t} className={builderPanel===t?'active':''} aria-pressed={builderPanel===t} onClick={()=>{setBuilderPanel(t);setBuilderSource(null);setBuilderPort(null);setShowInsertPreview(false)}}>{({wire:'Connect',add:'Add item',insert:'Insert on wire',edit:'Quick edit'})[t]}</button>)}
           </div>
-          {builderPanel==='wire'&&<FullscreenConnectPanel project={project} selectedNode={selectedNode} sourceId={builderSource} sourcePort={builderPort} layoutMode={layoutMode} onLayoutChange={setLayoutMode} onBeginSource={chooseBuilderSource} onPortChange={setBuilderPort} onCancel={()=>{setBuilderSource(null);setBuilderPort(null);}} onDisconnect={()=>{if(selectedNode)changePowerFeed(selectedNode.id,null);}} onRemove={()=>{if(selectedNode)removeComponent(selectedNode.id);}}/>}
+          {builderPanel==='wire'&&<FullscreenConnectPanel project={project} selectedNode={selectedNode} sourceId={builderSource} sourcePort={builderPort} layoutMode={layoutMode} onLayoutChange={setLayoutMode} onBeginSource={chooseBuilderSource} onPortChange={setBuilderPort} onChooseTarget={selectBuilderTarget} onCancel={()=>{setBuilderSource(null);setBuilderPort(null);}} onDisconnect={()=>{if(selectedNode)changePowerFeed(selectedNode.id,null);}} onRemove={()=>{if(selectedNode)removeComponent(selectedNode.id);}}/>}
           {builderPanel==='add'&&<div className="builder-add-composer">
+           <QuickEquipmentPalette value={addKind} onChange={kind=>{setAddKind(kind);setBuilderIcon(undefined);}}/>
            <p className="quick-add-note">{!project.nodes.length?'Name your first item and choose where it belongs. You can add its details later.':<><strong>Quick Add:</strong> Tap a powered item on the diagram, select an unused output below, then add and connect in one step. Or add an item without wiring.</>}</p>
-           {selectedNode?.outputs?<>
+           {selectedNode?.outputs&&!selectedNode.outputsUnknown?<>
             <div className="quick-source-ports"><strong>Connect from {selectedNode.name}:</strong>
              {freeOutputPorts(project,selectedNode.id).map(port=><button key={port} className={quickAddPort===port?'selected':''} aria-pressed={quickAddPort===port} onClick={()=>setQuickAddPort(port)}>{portName(selectedNode,port)}</button>)}
              {!freeOutputPorts(project,selectedNode.id).length&&<small>No unused outputs on this item</small>}
@@ -689,8 +698,8 @@ function AppContent(){
            {addKind==='outlet'&&<label className="builder-area-label">Known outputs <select aria-label="Number of known outputs" value={builderOutletOutputs} onChange={e=>setBuilderOutletOutputs(e.target.value)}><option value="">Choose a count</option>{Array.from({length:16},(_,i)=><option value={i+1} key={i+1}>{i+1}</option>)}</select></label>}
            {project.nodes.length>0&&<details className="builder-optional-icon"><summary>Choose an icon (optional)</summary><VisualIconPicker compact season={project.season} kind={addKind} value={builderIcon} onChange={setBuilderIcon}/></details>}
            <div className="quick-add-actions">
-            {project.nodes.length>0&&<button className="builder-primary" disabled={!selectedNode?.outputs||quickAddPort===null||addKind==='outlet'||!freeOutputPorts(project,selectedNode?.id||'').includes(quickAddPort)} onClick={quickAddItem}><Plus size={16}/> Add & connect</button>}
-            <button className={!project.nodes.length?'builder-primary':undefined} disabled={!builderZone||(addKind==='outlet'&&!builderOutletOutputs)} onClick={()=>{const addingOutlet=addKind==='outlet';if(addBuilderItem()){if(addingOutlet){setAddKind('decoration');setBuilderPanel('add');}else setBuilderPanel('wire');}}}><Plus size={15}/> {addKind==='outlet'?'Add power source':'Add unconnected'}</button>
+            {project.nodes.length>0&&<button className="builder-primary" disabled={!selectedNode?.outputs||!!selectedNode.outputsUnknown||quickAddPort===null||addKind==='outlet'||!freeOutputPorts(project,selectedNode?.id||'').includes(quickAddPort)} onClick={quickAddItem}><Plus size={16}/> Add & connect</button>}
+            <button className={!project.nodes.length?'builder-primary':undefined} disabled={!builderZone||(addKind==='outlet'&&!builderOutletOutputs)} onClick={()=>{addBuilderItem();}}><Plus size={15}/> {addKind==='outlet'?'Add power source':'Add unconnected'}</button>
            </div>
           </div>}
           {builderPanel==='insert'&&<div className="builder-insert">
@@ -714,7 +723,7 @@ function AppContent(){
             <button className="builder-primary" onClick={insertBuilderLink}><Check size={16}/> Confirm insertion</button>
            </div>}
           </div>}
-          {builderPanel==='edit'&&<BuilderQuickEdit component={selectedNode} season={project.season}
+          {builderPanel==='edit'&&<BuilderQuickEdit component={selectedNode} season={project.season} layoutMode={layoutMode} onMove={moveBuilderItem} onEnableManual={()=>setLayoutMode('manual')}
            onPatch={fields=>{if(selectedNode)patchComponent(selectedNode.id,fields)}}
            onPortLabel={(port,label)=>{if(selectedNode)applyPortLabel(selectedNode.id,port,label)}}
            onPhotos={()=>{if(selectedNode)setGalleryId(selectedNode.id)}}

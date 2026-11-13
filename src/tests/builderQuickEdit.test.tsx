@@ -64,3 +64,17 @@ describe('quick edit usability',()=>{
   expect(html).toContain('<option value="16">16</option>');
  });
 });
+
+ it('offers an explicit switch to manual positions and accessible movement buttons',async()=>{
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host),onMove=vi.fn(),onEnableManual=vi.fn();
+  const component=exampleProjects()[0].nodes[0];
+  const props={component,season:'Halloween' as const,onPatch:vi.fn(),onPortLabel:vi.fn(),onPhotos:vi.fn(),onDuplicate:vi.fn(),onMove,onEnableManual};
+  await act(async()=>root.render(<BuilderQuickEdit {...props} layoutMode="auto"/>));
+  expect(host.querySelector('[aria-label="Move item left"]')).toBeNull();
+  await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Use manual positions')!.click());
+  expect(onEnableManual).toHaveBeenCalledOnce();expect(onMove).not.toHaveBeenCalled();
+  await act(async()=>root.render(<BuilderQuickEdit {...props} layoutMode="manual"/>));
+  await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="Move item right"]')!.click());
+  expect(onMove).toHaveBeenCalledExactlyOnceWith(40,0);
+  await act(async()=>root.unmount());host.remove();
+ });
