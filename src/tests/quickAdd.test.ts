@@ -26,6 +26,14 @@ describe('Quick Add at a physical output',()=>{
   expect(()=>quickAddConnected(original,{sourceId:occupied.source,port:999,kind:'cord'})).toThrow(/real output/);
   expect(()=>quickAddConnected(original,{sourceId:occupied.source,port:1,kind:'outlet'})).toThrow();
  });
+ it('rejects a source whose output count is unknown even if an old count is present',()=>{
+  const source=original.nodes.find(n=>n.id==='h-split')!;
+  const project={...original,nodes:original.nodes.map(n=>n.id===source.id?{...n,outputsUnknown:true}:n)};
+  const taken=new Set(project.edges.filter(e=>e.source===source.id).map(e=>e.sourcePort));
+  const port=Array.from({length:source.outputs},(_,i)=>i).find(i=>!taken.has(i))!;
+  expect(()=>quickAddConnected(project,{sourceId:source.id,port,kind:'decoration'})).toThrow(/actual output count/);
+  expect(project.nodes).toHaveLength(original.nodes.length);expect(project.edges).toEqual(original.edges);
+ });
  it('suggests seasonal icons without changing electrical kinds',()=>{
   expect(getVisualIcon('skelly')?.emoji).toBe('💀');
   expect(getVisualIcon('roof-c9')?.label).toContain('Roofline');

@@ -80,4 +80,11 @@ describe('session diagram history is guarded and preserves field evidence safely
   const undo=undoGraphStep(history,after);expect(undo.project.propertyPhotoViews?.[0].layout).toEqual(photo);expect(undo.project.propertyPhoto).toEqual(base.propertyPhoto);
   expect(()=>undoGraphStep(history,{...after,propertyPhotoViews:[{id:'side',name:'Side',layout:{...changed,photo:'new'}}]})).toThrow(/Photo changed/);
  });
+ it('undoes and redoes a diagram movement without changing wiring or field checks',()=>{
+  const p=exampleProjects()[0];const first=p.nodes[0];
+  const next={...p,nodes:p.nodes.map(n=>n.id===first.id?{...n,position:{x:n.position.x+40,y:n.position.y}}:n)};
+  const history=recordGraphStep(emptyGraphHistory(),p,next,'move diagram item');
+  const undo=undoGraphStep(history,next);expect(undo.project.nodes[0].position).toEqual(first.position);expect(undo.project.edges).toEqual(p.edges);expect(undo.project.checklist).toEqual(p.checklist);expect(undo.project.status).toBe(p.status);
+  expect(redoGraphStep(undo.history,undo.project).project.nodes[0].position).toEqual(next.nodes[0].position);
+ });
 });

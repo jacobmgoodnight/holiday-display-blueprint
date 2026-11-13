@@ -5,3 +5,5 @@
 .connect-other-actions{flex-basis:100%;font-size:11px;color:#587286}
 .connect-other-actions summary{padding:8px 0;cursor:pointer;font-weight:800}
 .connect-other-actions>div{display:flex;flex-wrap:wrap;gap:7px}
+
+.fullscreen-connect-panel .connect-target-picker{flex:1 1 250px;min-width:0}.fullscreen-connect-panel .connect-target-picker select{max-width:100%;min-width:0}

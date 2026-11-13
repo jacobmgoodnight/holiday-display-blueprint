@@ -50,4 +50,19 @@ describe('fullscreen connection steps',()=>{
   expect(render(unknown)).toContain('Use Quick edit to record the actual count');
   expect(render(full)).toContain('All outputs on this item are occupied');
  });
+ it('connects a chosen destination only after a source output is explicitly selected',async()=>{
+  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);const callbacks=handlers(),onChooseTarget=vi.fn();
+  const render=(port:number|null)=><FullscreenConnectPanel project={project} sourceId="source" sourcePort={port} layoutMode="auto" {...callbacks} onChooseTarget={onChooseTarget}/>;
+  await act(async()=>root.render(render(null)));
+  const picker=host.querySelector<HTMLSelectElement>('[aria-label="Builder receiving item"]')!;
+  expect(picker.value).toBe('');expect(picker.querySelector('option[value="source"]')).toBeNull();
+  await act(async()=>{picker.value='leaf';picker.dispatchEvent(new Event('change',{bubbles:true}));});
+  const button=()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='Connect selected item')!;
+  expect(button().disabled).toBe(true);expect(onChooseTarget).not.toHaveBeenCalled();
+  await act(async()=>root.render(render(1)));expect(picker.value).toBe('');
+  await act(async()=>{picker.value='leaf';picker.dispatchEvent(new Event('change',{bubbles:true}));});
+  expect(picker.selectedOptions[0].textContent).toContain('already connected');
+  await act(async()=>button().click());expect(onChooseTarget).toHaveBeenCalledExactlyOnceWith('leaf');
+  await act(async()=>root.unmount());host.remove();
+ });
 });
