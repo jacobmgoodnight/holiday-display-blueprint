@@ -1,8 +1,10 @@
 # Roadmap — Holiday Display Blueprint
 
-_Last reviewed: November 4, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
+_Last reviewed: November 14, 2026. "Shipped" means code merged/deployed and CI-tested, **not** field-verified installation._
 
 ## Recent development
+
+- **Canvas-first wiring workspace (pending merge and deployed CI):** the Wiring diagram tab now opens on the diagram instead of seven stacked toolbars. One row holds the Wiring / Property photo / Install steps / Needs checking views, a Showing scope and an Import / export menu. Selecting an item opens one panel with **Power in** (Plug into… / Change… / Unplug) and **Power out** (one row per recorded output, with Plug something in on each free output); selecting a wire offers Unplug and a previewed, confirmed insertion. Full-screen Builder shows the same panel as a side column or phone bottom sheet. This **replaces** the separate Builder tabs (Connect, Add item, Insert on wire, Quick edit), the standard inspector's source dropdown that pre-selected a first free output, the Connect two components form, the reuse strip and the stats cards; earlier entries below that mention those controls describe superseded UI. Graph validation, explicit output selection, rewire confirmation, Draft resets and session undo are unchanged. Items show Not plugged in / free-output tags; wide screens keep names legible instead of always fitting everything; the first item on an empty diagram no longer opens at maximum zoom; Escape closes the photo card. Verified with unit tests, a production build and a scripted desktop/phone browser walk-through; **physical iPhone/Safari testing is still outstanding.**
 
 - **Diagram builder workflow:** a common-equipment palette starts guided additions; fullscreen Add stays open for repeated placement, Connect offers a destination picker after an explicit source/output choice, and Quick edit provides undoable directional moves in the saved manual layout. Wiring validation and rewire confirmation remain unchanged.
 

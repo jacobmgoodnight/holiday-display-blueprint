@@ -1,0 +1,224 @@
+/* Canvas-first wiring workspace. Loaded last so it settles the older stacked-toolbar rules. */
+
+/* The phone menu button has nothing to open on a wide screen, where the sidebar is always visible. */
+@media(min-width:901px){.topbar .mobile-header-menu{display:none!important}}
+
+/* Grouped "more actions" menu */
+.action-menu-grouped{width:290px;max-height:calc(100dvh - 110px);overflow:auto}
+.menu-heading{margin:9px 11px 3px;font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#8b9aa8}
+.menu-heading:first-child{margin-top:5px}
+
+/* View tabs, scope and import/export in one row */
+.wiring-viewbar{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;margin-bottom:12px}
+.wiring-viewbar .diagram-mode-switch{padding:0;border:0;background:none;gap:6px}
+.wiring-viewbar .diagram-mode-switch button{min-height:40px;padding:8px 13px;background:#fff}
+.wiring-viewbar .diagram-mode-switch button.active{background:#243f55}
+.viewbar-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#fbe3d2;color:#99501c;font-size:11px;font-weight:800}
+.diagram-mode-switch button.active .viewbar-count{background:#ffffff2e;color:#fff}
+.viewbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.viewbar-scope{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:#61798c}
+.viewbar-scope select{min-height:40px;max-width:230px;padding:8px 10px;border:1px solid #d8e4ee;border-radius:9px;background:#fff;color:#2e455a;font-size:12px;font-weight:700}
+.viewbar-more{position:relative}
+.viewbar-more>.button{min-height:40px}
+.viewbar-menu{top:46px;z-index:100}
+.viewbar-menu button:last-child{color:#34495a}
+
+/* Workspace: the diagram fills the screen, the panel sits beside it */
+.wiring-layout{border:1px solid #e5ebf1;border-radius:13px;grid-template-rows:minmax(0,1fr);height:clamp(520px,calc(100dvh - 232px),1100px);min-height:0}
+.wiring-layout .diagram-card{height:100%;min-height:0}
+.wiring-layout .canvas-wrap{min-height:0}
+.wiring-layout .inspector{height:100%;max-height:none;min-height:0;overflow:auto}
+@media(min-width:1300px){.wiring-layout:not(.diagram-wide):not(.diagram-fullscreen){grid-template-columns:minmax(0,1fr) 350px}}
+
+.wiring-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border-bottom:1px solid #e9eef3;background:#fff}
+.wiring-toolbar .button{min-height:38px}
+.wiring-toolbar-gap{flex:1}
+.wiring-toolbar .layout-picker select{min-height:38px;padding:7px 8px;border:1px solid #dce4ec;border-radius:8px;background:#fff;color:#2e455a;font-size:11px;font-weight:700}
+.wiring-search{position:relative;display:flex;align-items:center;gap:7px;flex:0 1 240px;min-width:150px;min-height:38px;padding:0 10px;border:1px solid #dce4ec;border-radius:9px;background:#f8fafc;color:#6f8496}
+.wiring-search input{flex:1;min-width:0;border:0;background:none;font-size:12px;color:#22384b}
+.wiring-search:focus-within{border-color:#86b5d9;background:#fff}
+.wiring-search input:focus-visible{outline:none}
+.wiring-search-results{position:absolute;top:calc(100% + 5px);left:0;right:0;min-width:230px;z-index:25;display:grid;gap:2px;padding:6px;border:1px solid #dbe5ec;border-radius:10px;background:#fff;box-shadow:0 12px 30px #0d263829;max-height:300px;overflow:auto}
+.wiring-search-results button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 9px;border-radius:7px;background:none;text-align:left;color:#22384b;font-size:12px}
+.wiring-search-results button:hover{background:#f2f6f9}
+.wiring-search-results small{color:#7b8c9b;font-size:10px}
+.wiring-search-results p{margin:6px 8px;color:#7b8c9b;font-size:11px}
+
+.wiring-layout .canvas-footer{gap:12px;flex-wrap:wrap;color:#607589}
+.canvas-hint{flex:1;min-width:220px;font-weight:650;color:#516a7f;font-size:11px}
+.canvas-counts{display:inline-flex;align-items:center;gap:6px;color:#6b9186}
+
+/* Overlays on the canvas */
+.canvas-banner{position:absolute;z-index:12;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:9px;max-width:calc(100% - 20px);padding:9px 10px 9px 13px;border:1px solid #9fcab4;border-radius:11px;background:#f1faf5f5;color:#1f5a41;font-size:12px;box-shadow:0 6px 20px #163a2a26}
+.canvas-banner svg{flex-shrink:0}
+.canvas-banner button{flex-shrink:0;min-height:34px;padding:6px 11px;border:1px solid #b9d7c7;border-radius:8px;background:#fff;color:#27624a;font-weight:800;font-size:11px}
+.canvas-banner-fullscreen{top:136px;z-index:16}
+.canvas-empty{position:absolute;z-index:6;inset:0;margin:auto;width:min(410px,calc(100% - 28px));height:fit-content;padding:22px;border:1px dashed #b9cbd8;border-radius:14px;background:#fffffff0;text-align:center}
+.canvas-empty strong{display:block;font-size:16px;color:#1f3447}
+.canvas-empty p{margin:7px 0 15px;color:#62788b;font-size:13px}
+.canvas-empty>div{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* Node status at a glance */
+.flow-node-unplugged{border-style:dashed;border-color:#dfae78}
+.node-unplugged-tag{position:absolute;bottom:-10px;right:10px;padding:3px 6px;border-radius:5px;background:#fdeedd;color:#9a5a1e;font-size:8px;font-weight:800}
+.node-port-count.node-port-free{background:#e2f3ea;color:#2c7254}
+
+/* Panel content shared by the side panel and the full-screen sheet */
+.power-section{margin:10px 12px;padding:11px 12px;border:1px solid #d9e5ec;border-radius:11px;background:#fff}
+.power-section h4{display:flex;align-items:center;gap:7px;margin:0 0 7px;font-size:12px;letter-spacing:0;color:#24415a}
+.power-section h4 small{margin-left:auto;font-size:10px;font-weight:700;color:#6f8496}
+.power-plain{margin:0;font-size:12px;color:#40566a;line-height:1.5}
+.power-missing{color:#9a5a1e;font-weight:700}
+.power-link{padding:0;background:none;color:#1f6fa8;font-weight:800;font-size:12px;text-align:left;text-decoration:underline;text-underline-offset:2px}
+.power-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.power-actions button,.power-unknown button,.panel-secondary,.panel-unplugged li>button:last-child{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:7px 12px;border:1px solid #cddfe8;border-radius:8px;background:#f7fafc;color:#35607c;font-weight:800;font-size:12px}
+.panel-primary,.power-actions button.panel-primary{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 14px;border:1px solid #296a56;border-radius:8px;background:#296a56;color:#fff;font-weight:800;font-size:12px}
+.panel-danger{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 12px;border:1px solid #e7c6ba;border-radius:8px;background:#fff5f2;color:#a04a38;font-weight:800;font-size:12px}
+.power-outputs{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.power-outputs li{display:flex;align-items:center;justify-content:space-between;gap:9px;min-height:40px;padding:4px 4px 4px 10px;border:1px solid #e6edf2;border-radius:8px;background:#fafcfd}
+.power-output-name{font-size:11px;font-weight:800;color:#5a7083;flex-shrink:0}
+.power-outputs .power-link{padding:8px 6px;text-align:right;overflow:hidden;text-overflow:ellipsis}
+.power-plug-in{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:5px 10px;border:1px solid #9fcab4;border-radius:7px;background:#eef8f2;color:#22654a;font-weight:800;font-size:11px}
+.power-plug-in:hover{background:#dff1e7}
+.power-unknown{display:grid;gap:8px}
+.power-unknown label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:#587286}
+.power-unknown select{flex:1;min-height:38px;border:1px solid #d5e1e9;border-radius:8px;padding:6px 8px;background:#fff}
+
+.plug-in-panel,.wire-panel{display:grid;gap:11px;padding:13px}
+.plug-in-panel fieldset,.wire-panel fieldset{margin:0;padding:0;border:0;display:grid;gap:8px;min-width:0}
+.plug-in-panel legend,.wire-panel legend{padding:0;margin-bottom:7px;font-size:12px;font-weight:800;color:#24415a}
+.plug-in-where{margin:0;padding:9px 11px;border-radius:9px;background:#eef6fb;color:#2b4d66;font-size:12px}
+.panel-segments{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;border-radius:9px;background:#edf2f6}
+.panel-segments button{min-height:36px;padding:6px;border-radius:7px;background:none;color:#587286;font-weight:800;font-size:11px}
+.panel-segments button.active{background:#fff;color:#1f3447;box-shadow:0 1px 4px #1c33471f}
+.plug-in-types{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.plug-in-types button,.plug-in-existing button{display:flex;align-items:center;gap:7px;width:100%;min-height:44px;padding:8px 10px;border:1px solid #d6e2ea;border-radius:9px;background:#fff;color:#2c465b;font-weight:750;font-size:12px;text-align:left}
+.plug-in-types button.selected,.plug-in-existing button.selected{border-color:#549b73;background:#e6f5ec;color:#174b32}
+.plug-in-existing{display:grid;gap:5px;max-height:230px;overflow:auto}
+.plug-in-existing button{justify-content:space-between}
+.plug-in-existing small{color:#7b8c9b;font-size:10px;font-weight:650}
+.plug-in-other,.plug-in-name,.wire-panel label{display:grid;gap:5px;font-size:11px;font-weight:800;color:#587286}
+.plug-in-other select,.plug-in-name input,.wire-panel select,.wire-panel input{min-height:40px;padding:7px 9px;border:1px solid #d5e1e9;border-radius:8px;background:#fff;font-size:13px;color:#1f3447}
+.plug-in-name small{font-weight:600;color:#8393a2}
+.panel-actions{display:flex;gap:8px;flex-wrap:wrap}
+.panel-actions .panel-primary{flex:1}
+.panel-error{margin:0;padding:8px 10px;border-radius:8px;background:#fff1ec;color:#a04a38;font-size:12px}
+.panel-note{color:#7b8c9b;font-size:11px;line-height:1.45}
+.wire-ends{display:flex;align-items:stretch;gap:7px;color:#7b8c9b}
+.wire-ends svg{align-self:center;flex-shrink:0}
+.wire-ends button{flex:1;min-width:0;display:grid;gap:3px;padding:9px 10px;border:1px solid #d6e2ea;border-radius:9px;background:#fff;text-align:left;color:#1f3447;font-size:12px}
+.wire-ends small{color:#7b8c9b;font-size:10px;font-weight:700}
+.wire-ends strong{overflow:hidden;text-overflow:ellipsis}
+.wire-step{margin:0;font-size:11px;font-weight:700;color:#607589}
+.wire-insert{padding:12px!important;border:1px solid #d9e5ec!important;border-radius:11px;background:#fafcfd}
+.wire-insert p{margin:0;font-size:12px;color:#587286}
+.wire-preview{display:grid;gap:4px;padding:10px;border-radius:9px;background:#f0f7f3;font-size:12px;color:#254a3a}
+.wire-preview strong{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#4d7c66}
+.wire-preview small{margin:5px 0;color:#58745f;line-height:1.45}
+
+.inspector .photo-connect{margin:12px}
+.inspector .photo-connect-current{margin:0 0 8px;padding:8px 10px;border-radius:8px;background:#fff6e8;color:#7a5225;font-size:12px}
+.inspector-quick-actions .quick-action-danger{color:#a04a38;border-color:#e7c6ba;background:#fff8f6}
+.panel-move{display:grid;gap:7px;margin:10px 12px;padding:11px 12px;border:1px solid #d9e5ec;border-radius:11px;font-size:12px;color:#24415a}
+.panel-move>div{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.panel-move button{min-height:38px;border:1px solid #cddfe8;border-radius:8px;background:#f7fafc;color:#35607c;font-weight:800;font-size:11px}
+.panel-move small{color:#7b8c9b;line-height:1.4}
+
+.panel-overview{display:grid;gap:13px;padding:13px}
+.panel-howto{margin:0;padding:0 0 0 19px;display:grid;gap:7px;font-size:12px;line-height:1.45;color:#4a6276}
+.panel-howto strong{color:#1f3447}
+.panel-add{display:grid;gap:7px;font-size:12px;color:#24415a}
+.panel-add .quick-equipment-palette{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+.panel-add .quick-equipment-palette button{flex:1 1 calc(50% - 6px);min-height:40px;border:1px solid #d6e2ea;border-radius:9px;background:#fff;color:#2c465b;font-weight:750;font-size:12px}
+.panel-unplugged h4{display:flex;align-items:center;gap:7px;margin:0 0 7px;font-size:12px;letter-spacing:0;color:#9a5a1e}
+.panel-unplugged h4 span{padding:2px 7px;border-radius:9px;background:#fdeedd;font-size:10px}
+.panel-unplugged ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.panel-unplugged li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 4px 10px;border:1px solid #f1e0cb;border-radius:8px;background:#fffaf3}
+.panel-unplugged small{display:block;margin-top:6px;color:#8393a2;font-size:11px}
+.inspector .connection-overview{margin:0 13px 13px}
+.inspector .connection-overview-grid{grid-template-columns:1fr}
+
+/* Full-screen Builder: the same panel as a side column (wide) or bottom sheet (phone) */
+.fullscreen-sheet{position:absolute;left:12px;right:12px;bottom:13px;display:flex;flex-direction:column;max-height:48dvh;border:1px solid #cfdfe9;border-radius:12px;background:#fffffff7;box-shadow:0 5px 22px #122c423b;overflow:hidden}
+.sheet-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px}
+.sheet-bar>small{flex:1;min-width:190px;color:#587286;font-size:11px;font-weight:650;line-height:1.4}
+.sheet-bar .layout-picker select{min-height:38px;max-width:150px;padding:6px 8px;border:1px solid #d0e1eb;border-radius:8px;background:#fff;font-size:11px;font-weight:700;color:#2e455a}
+.sheet-add{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:8px 13px;border-radius:8px;background:#296a56;color:#fff;font-weight:800;font-size:12px}
+.diagram-fullscreen .fullscreen-sheet .sheet-panel{display:block!important;flex:1;min-height:0;max-height:none;height:auto;overflow:auto;overscroll-behavior:contain;border:0;border-top:1px solid #e3ebf1;background:#fff}
+@media(min-width:1000px){
+ .fullscreen-sheet{left:auto;width:380px;max-height:calc(100dvh - 150px)}
+ .fullscreen-sheet:not(.sheet-open){width:auto;max-width:560px}
+}
+
+@media(max-width:900px){
+ .viewbar-more>.button span{display:none}
+}
+@media(max-width:720px){
+ .wiring-viewbar{gap:8px;margin-bottom:9px}
+ .wiring-viewbar .diagram-mode-switch{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:4px}
+ .wiring-viewbar .diagram-mode-switch button{flex-direction:column;gap:3px;min-height:52px;padding:6px 2px;font-size:10px;position:relative}
+ .wiring-viewbar .diagram-mode-switch .viewbar-count{position:absolute;top:3px;right:3px;min-width:17px;height:17px;font-size:9px;padding:0 4px}
+ .viewbar-right{width:100%;flex-wrap:nowrap}
+ .viewbar-scope{flex:1;min-width:0}
+ .viewbar-scope select{flex:1;min-width:0;max-width:none}
+ .wiring-layout:not(.diagram-fullscreen){height:auto;border-radius:11px}
+ .wiring-layout:not(.diagram-fullscreen) .diagram-card{height:min(66dvh,600px);flex:none}
+ .wiring-layout:not(.diagram-fullscreen) .inspector{height:auto;overflow:visible}
+ .wiring-toolbar{padding:8px;gap:6px}
+ .wiring-toolbar-gap{display:none}
+ .wiring-toolbar .diagram-history-actions{width:auto;display:flex}
+ .wiring-toolbar .diagram-history-actions .button{min-height:38px;font-size:11px}
+ .wiring-search{order:5;flex:1 1 100%}
+ .wiring-layout .canvas-footer{padding:8px 10px}
+ .canvas-counts{display:none}
+ .canvas-banner{left:8px;right:8px;transform:none;font-size:11px}
+ .canvas-banner-fullscreen{top:calc(max(4px,env(safe-area-inset-top,0px)) + 106px)}
+ .fullscreen-sheet{left:6px;right:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 6px);max-height:46dvh}
+ .sheet-bar{padding:6px;gap:6px}
+ .sheet-bar>small{flex-basis:100%;font-size:10px}
+ .plug-in-existing{max-height:160px}
+}
+@media(max-height:530px) and (orientation:landscape){
+ .fullscreen-sheet{left:auto;right:5px;bottom:5px;top:86px;width:min(340px,46vw);max-height:none}
+ .fullscreen-sheet:not(.sheet-open){top:auto;width:auto;max-width:60vw}
+ .sheet-bar>small{display:none}
+}
+@media print{
+ .wiring-viewbar,.wiring-toolbar,.canvas-banner,.canvas-empty,.mobile-selected-item,.more-menu-dismiss{display:none!important}
+ .wiring-layout{height:auto!important;border:0!important}
+ .node-unplugged-tag,.node-port-count{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* Refinements after first browser pass */
+.wiring-toolbar{flex-wrap:nowrap}
+.wiring-toolbar .diagram-history-actions .button span{display:none}
+.wiring-toolbar .diagram-history-actions .button{min-width:38px}
+.wiring-toolbar .button,.wiring-toolbar .layout-picker{flex-shrink:0}
+.wiring-layout .canvas-footer{flex-wrap:nowrap}
+.canvas-hint{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.canvas-counts,.wiring-layout .photo-action{flex-shrink:0;white-space:nowrap}
+.inspector .trace-buttons{flex-wrap:wrap}
+@media(min-width:1000px){.toast-fullscreen{top:auto;bottom:22px;right:auto;left:22px}}
+@media(max-width:1100px){.wiring-toolbar{flex-wrap:wrap}}
+@media(max-width:720px){
+ .wiring-toolbar .diagram-history-actions{display:flex;width:auto}
+ .canvas-hint{white-space:normal}
+ .wiring-layout .photo-action{display:none}
+}
+.panel-add .quick-equipment-palette button{gap:7px}
+@media(max-width:720px){
+ .sheet-bar .diagram-history-actions{display:flex;width:auto}
+ .sheet-bar .diagram-history-actions .button span{display:none}
+ .sheet-bar .diagram-history-actions .button{min-width:38px;min-height:38px}
+ .sheet-bar .layout-picker select{max-width:128px}
+}
+.inspector .photo-connect h4{font-size:14px;letter-spacing:0}
+.inspector .photo-connect p,.inspector .photo-connect label,.inspector .photo-connect legend{font-size:12px}
+.inspector .photo-connect select{font-size:13px;min-height:40px}
+.inspector .photo-connect-heading button{font-size:12px;min-height:36px;padding:6px 10px}
+.inspector .photo-connect-submit{font-size:13px;min-height:42px}
+@media(min-width:1000px){
+ .toast.toast-fullscreen{top:auto;bottom:22px;left:22px;right:auto}
+ .sheet-bar .layout-picker select{max-width:200px}
+}
+@media(max-width:720px){.sheet-panel .inspector-identity-help{display:none}}
