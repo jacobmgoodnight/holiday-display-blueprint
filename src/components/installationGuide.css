@@ -61,17 +61,7 @@
 @media print{
  @page{size:auto;margin:12mm}
  body:has(.install-guide){background:white!important}
- body:has(.install-guide) .topbar,
- body:has(.install-guide) .leftbar,
- body:has(.install-guide) .page-head,
- body:has(.install-guide) .stats,
- body:has(.install-guide) .circuit-shortcuts,
- body:has(.install-guide) .diagram-mode-switch,
- body:has(.install-guide) .notice-row,
- body:has(.install-guide) .mobile-tabbar,
- body:has(.install-guide) .toast,
- body:has(.install-guide) .transfer-banner,
- body:has(.install-guide) .transfer-backdrop{display:none!important}
+ body:has(.install-guide) .topbar,body:has(.install-guide) .leftbar,body:has(.install-guide) .stats,body:has(.install-guide) .circuit-shortcuts,body:has(.install-guide) .diagram-mode-switch,body:has(.install-guide) .notice-row,body:has(.install-guide) .mobile-tabbar,body:has(.install-guide) .toast,body:has(.install-guide) .transfer-banner,body:has(.install-guide) .transfer-backdrop{display:none!important}
  body:has(.install-guide) .workspace,body:has(.install-guide) .content{margin:0!important;padding:0!important;width:100%!important;max-width:none!important;display:block!important}
  body:has(.install-guide) .install-guide{display:block!important;color:#172a36!important;border:0!important;background:#fff!important;margin:0!important}
  body:has(.install-guide) .ig-intro{border-bottom:2px solid #bfcdd8!important;padding:0 0 9px!important}

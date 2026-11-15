@@ -28,6 +28,8 @@ On the **Wiring diagram** tab, **Add item** opens the guided form; an empty diag
 
 With nothing selected the panel shows a **Wiring overview**: the items that are not plugged in yet (each with **Plug into…**), the collapsed **Connection overview** of recorded occupied, available or unknown outputs, and the **Where does it plug in?** finder. Diagram items also carry **Not plugged in** and **1 of 2 free** tags. These report the recorded plan, not electrical capacity or field verification.
 
+With a photo loaded, the photo comes first and the planning tools sit beside it on a wide screen or below it on a phone.
+
 **Wiring diagram → Property photo** lets you select a type and area, then tap the photo to add and place several unconnected items. Choose **Stop adding** to select markers, or select existing equipment to place or move it. New sources retain an unknown output count until explicitly recorded. Select a light strand or cord and use **Draw route** to tap points, undo points, and save a visual route; use **Edit route points** for later corrections. Zoom and pan the photo, filter the item list and toggle marker names. **Edit details here** edits the selected item and **Place another like this** makes a separate, unconnected asset. Save drafts before leaving the planner.
 
 Select an unconnected item and choose **Connect**. Tap a source marker or choose a source from the list, record its actual output count if unknown, and choose an available output before saving. Occupied ports and invalid sources are shown; no existing connection is silently replaced. The normal graph validation and field-review rules apply. **Preview lights & power path** can show saved connections between placed markers; its schematic lines do not represent physical cord routes. Light bulbs, spacing and decoration icons are illustrations and do not change stock or wiring.
@@ -38,7 +40,7 @@ In **Measurements & materials**, tap the endpoints of a known reference distance
 
 ## Phone navigation and fewer taps
 
-On a phone, use the four bottom tabs to move between Home, Diagram, Tasks and Inventory. The menu is for import/export/backup and less frequent tools. Home defaults to the whole system instead of an arbitrary first outlet. Choose O01/O02/O03 only when focusing on one circuit. The detailed wiring guide is collapsed until requested, and Install checklist opens Tasks directly.
+On a phone, use the four bottom tabs to move between Home, Diagram, Tasks and Inventory. Home opens with four tiles — items on the diagram, not plugged in yet, install steps checked, things still to check — and each one opens the matching screen. The menu is for import/export/backup and less frequent tools. Home defaults to the whole system instead of an arbitrary first outlet. Choose O01/O02/O03 only when focusing on one circuit. The detailed wiring guide is collapsed until requested, and Install checklist opens Tasks directly.
 
 On the Wiring diagram tab, a phone shows four compact view tabs (**Wiring**, **Property photo**, **Install steps**, **Needs checking**), a **Showing** list for one outlet or area, and the diagram with **Add item**, undo/redo, **Full screen** and **Find an item…**. Tap an item to see its name with **Plug into…** (if it has no source), **Details** and **Photos**; Details jumps to the same item panel beneath the diagram. **Full screen → Builder** shows that panel as a bottom sheet over a larger diagram.
 
@@ -49,6 +51,12 @@ On Tasks, the next incomplete phase and area are expanded first. Select **Workin
 **Wiring diagram → Import / export → Match workbook photos** opens the separate photo review screen. Select a local .xlsx workbook and review each embedded image, its original worksheet/anchor row where supported, and the equipment record to attach it to. The default for every image is **Skip**. Choose the component and photo purpose; only approved selections are compressed and appended to private galleries. No workbook images or filenames are published to GitHub, and no electrical links are created. Existing photos remain, capped at eight per component. Diagrams/screenshots without a meaningful component match should remain skipped.
 
 **Install/Teardown** now uses three expandable phases and groups checkboxes by display area. Choosing an area opens its next unfinished section and shows area-specific phase counts; an empty area is identified as such. Steps without a recognized area remain accessible under Other. **Find in checklist** opens and scrolls to the next step; changing projects or modes resets the view, not the saved checkmarks. Old task IDs, notes and attached photos are reused; finished tasks are not reset. Install: position, connect downstream first, then attend final power-on tests. Teardown: power off, unplug, then pack and document storage. Look at the next unchecked step or filter by area; use **Diagram** to see the real recorded connection. The separate field-verification audit remains available, but distracting new node-level check badges were removed.
+
+## Equipment storage records
+
+**Inventory → Equipment** lists what you own (house outlets are power sources and are left out). Search by name, bin or note, filter by area, or tick **Only items without a storage spot** when packing up. Tap a row to record where it is stored, its condition, how many, notes and repair history right there; **Show on wiring diagram** jumps to the item. These edits never change wiring, outputs or field-check status, and a condition is only recorded when you choose one. **Download list (CSV)** exports every component, including outlets.
+
+On **Needs checking**, each finding is one compact row with **Locate** and **Mark field-checked** side by side; the latest recorded wiring change and its **Reverse last feed change** button now sit below the list.
 
 ## Photos and stock-change records
 

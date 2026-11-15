@@ -6,7 +6,7 @@
 @media(max-width:720px){
  /* Keep editable text at iOS's readable size when the keyboard opens. */
  .app-shell input:not([type="checkbox"]):not([type="radio"]),.app-shell textarea{font-size:16px}
- .page-head-field{display:none}
+ 
  .field-mode .field-head{margin-top:7px}
  .field-mode .field-head-actions{grid-template-columns:1fr 1fr}
  .field-mode .field-tasks-shortcut{grid-column:1/-1;background:#e6f4ed;border-color:#a8d8c4;color:#246a4d;min-height:48px;font-size:13px}

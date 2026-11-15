@@ -14,7 +14,9 @@ Open **Menu → New display** on a phone, or **More actions → New display** on
 
 Choose a type such as an extension cord, light strand, splitter or decoration, and choose its area. Add items one after another; enter known details or leave output counts unknown until you can check. You can leave a feed unconnected, choose its actual source and output while adding, or use **Connect an existing item** later. Reuse equipment from another display without copying its old power connections. New connections remain unverified.
 
-Choose **Diagram → Property photo**, or start with a photo from an empty display. Choose **Draw lights** or **Draw cord**, select an area, tap at least two points along the route and save to create the item and its visual route together. You can also choose an equipment type and area and tap the photo to place items repeatedly. New items have no power connection, and their output counts remain unknown until you record them. Tap a marker to see its actions directly below the photo, drag it to move it, or use fine-tune controls. Find unplaced items under **Browse equipment**.
+Choose **Wiring diagram → Property photo**, or start with a photo from an empty display. Choose **Draw lights** or **Draw cord**, select an area, tap at least two points along the route and save to create the item and its visual route together. You can also choose an equipment type and area and tap the photo to place items repeatedly. New items have no power connection, and their output counts remain unknown until you record them. Tap a marker to see its actions directly below the photo, drag it to move it, or use fine-tune controls. Find unplaced items under **Browse equipment**.
+
+Once a photo is loaded, the photo is the first thing on the page. On a wide screen the planning tools (undo, draw a run, add items, preview, browse equipment, measurements) sit in a column beside it; on a phone they follow below it, and the page scrolls back to the photo when you choose something to place or draw.
 
 Select a light strand or cord and choose **Draw route**; tap points along its path and save. Use **Edit route points** to adjust an existing route, with touch, mouse or keyboard controls. Zoom, pan, search, filter and hide marker names to work on a crowded view. Select **Edit details here** to rename an item or **Place another like this** to add a separate unconnected item. To record wiring, select an unconnected item and choose **Connect**, then tap or choose its actual power source, record its output count if unknown, and explicitly select an available output. Connections remain unverified. Existing wiring and compatibility validation still apply.
 
@@ -34,6 +36,8 @@ Under **Measurements & materials**, mark the ends of a known distance and enter 
 Edits save locally in IndexedDB. The header reports **Saving locally**, **Saved locally**, or **Local save failed** with a retry; a separate cloud status reports encrypted sync. Online synchronization occurs while the app is open, not while a closed browser runs in the background.
 
 ## Mobile-first daily use
+
+**Home** starts with four tiles for the selected display: items on the wiring diagram, items not plugged in yet, install steps checked, and things still to check. Each tile opens the matching screen. The tiles count what is recorded; they do not certify anything. The large marketing headings above each screen have been removed so every tab starts with its own content.
 
 On an iPhone, **Home** now opens on the **whole display** instead of silently choosing just the first outlet. The oversized detailed wiring tree starts collapsed; open it only when you need the full source reference. **Install checklist** is one tap away, while **Fullscreen diagram** and **Edit wiring** remain accessible. The mobile bottom navigation is the primary way to switch Home, Diagram, Tasks and Inventory; the side menu focuses on tools, backups and less frequent actions.
 
@@ -140,7 +144,7 @@ Phone navigation is now **Home / Diagram / Inventory / Tasks**. Tasks has Instal
 | **Wiring** | Graph-based outlets → cords/splitters/C9 strands → decorations; auto power-flow or saved manual layout; per-outlet focus, source tracing, and guided “Where does this plug in?” changes |
 | **Install & Teardown** | Numbered generated tasks, shared checkboxes/notes/photos, downstream-first connection plan, printable outlet-specific guides |
 | **Needs checking** (verification audit) | Unconnected or unverified items, unknown cord lengths/load values, optional photos/connector reminders; no fabricated ratings |
-| **Inventory** | Shared physical-item IDs, conditions, storage bins, repair notes and CSV export |
+| **Inventory** | Equipment list with search, area and missing-storage filters; tap a row to record its storage spot, condition, quantity, notes and repair history in place, or jump to it on the wiring diagram. House outlets are not listed as stored equipment. CSV download. |
 | **Data tools** | Private JSON backup/restore and read-only Excel reference export; source-aware workbook import creates separate draft data, **not** an automatic merge |
 
 ### Safe changes and recovery
