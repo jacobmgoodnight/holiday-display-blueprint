@@ -45,24 +45,16 @@
 .photo-lightbox{position:fixed;inset:0;z-index:1000;background:#04121ff4;display:flex;align-items:center;justify-content:center;padding:15px}
 .photo-lightbox img{max-height:94dvh;max-width:95vw;object-fit:contain}
 .photo-lightbox button{position:absolute;right:18px;top:18px;background:#f5f9fd;color:#294c66;border:0;border-radius:9px;padding:9px}
-.quick-source-ports{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0}
-.quick-source-ports>strong{font-size:11px;color:#436781}
-.quick-source-ports button{min-height:39px}
-.quick-source-ports button.selected{background:#2c775e;color:#fff;border-color:#2c775e}
-.quick-add-note{font-size:10px;color:#6e8797;line-height:1.5;margin:3px 0}
-.quick-add-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.quick-add-actions button{flex:1}
-.builder-add-composer{display:grid;gap:8px;max-width:100%}
-.builder-add-composer>.visual-icon-picker{max-height:190px;overflow-y:auto}
+
 .inspector-photo-button{display:flex;align-items:center;gap:7px;justify-content:center;width:calc(100% - 24px);margin:10px 12px;padding:10px;border-radius:8px;background:#eef6f9;border:1px solid #cfdfea;color:#376784;font-size:11px;font-weight:800}
 .inspector-icon-picker{margin:10px 12px}
 @media(max-width:720px){
  .component-photo-backdrop{padding:6px;align-items:flex-end}
  .component-photo-card{max-height:94dvh;border-radius:16px 16px 8px 8px}
  .photo-card-content{padding:10px}
- .builder-add-composer>.visual-icon-picker{max-height:145px}
+ 
  .visual-icon-suggested,.visual-icon-grid{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
  .visual-icon-suggested button small,.visual-icon-grid button small{font-size:8px}
- .quick-source-ports{gap:5px}
- .quick-source-ports button{font-size:10px}
+ 
+ 
 }

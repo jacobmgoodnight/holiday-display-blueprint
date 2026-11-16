@@ -4,7 +4,9 @@ import {downstream} from '../lib/graph';
 import {portName} from '../lib/portLabels';
 import './photoConnect.css';
 
-type Props={project:Project;targetId:string;sourceId:string;onSourceChange:(id:string)=>void;onConnect:(sourceId:string,port:number)=>boolean;onSetOutputs?:(id:string,count:number)=>boolean;onCancel:()=>void;error?:string;surface?:'photo'|'diagram'};
+type Props={project:Project;targetId:string;sourceId:string;onSourceChange:(id:string)=>void;onConnect:(sourceId:string,port:number)=>boolean;onSetOutputs?:(id:string,count:number)=>boolean;onCancel:()=>void;error?:string;surface?:'photo'|'diagram';
+ /** Only the diagram's explicit Change… action may replace an existing feed; the caller still confirms it. */
+ allowRewire?:boolean};
 
 /** Explain ineligible sources instead of silently changing the user's choice. */
 export function photoConnectionSourceReason(project:Project,targetId:string,sourceId:string):string|undefined{
@@ -19,7 +21,7 @@ export function photoConnectionSourceReason(project:Project,targetId:string,sour
 }
 
 /** The graph is only changed after an explicit source, free output, and confirmation. */
-export function PhotoConnect({project,targetId,sourceId,onSourceChange,onConnect,onSetOutputs,onCancel,error,surface='photo'}:Props){
+export function PhotoConnect({project,targetId,sourceId,onSourceChange,onConnect,onSetOutputs,onCancel,error,surface='photo',allowRewire=false}:Props){
  const [port,setPort]=useState<number|undefined>();
  const [outputCount,setOutputCount]=useState('');
  useEffect(()=>{setPort(undefined);setOutputCount('');},[targetId,sourceId]);
@@ -28,17 +30,20 @@ export function PhotoConnect({project,targetId,sourceId,onSourceChange,onConnect
  const reason=sourceId?photoConnectionSourceReason(project,targetId,sourceId):undefined;
  const ports=source?Array.from({length:source.outputs},(_,index)=>({index,edge:project.edges.find(e=>e.source===source.id&&e.sourcePort===index)})):[];
  const selectedPort=ports.find(p=>p.index===port&&!p.edge);
- const canConnect=!!target&&target.kind!=='outlet'&&!existing&&!!source&&!reason&&!!selectedPort;
+ const rewiring=allowRewire&&!!existing;
+ const currentSource=existing?project.nodes.find(n=>n.id===existing.source):undefined;
+ const canConnect=!!target&&target.kind!=='outlet'&&(!existing||allowRewire)&&!!source&&!reason&&!!selectedPort;
  return <section className="photo-connect" aria-label="Connect equipment">
-  <div className="photo-connect-heading"><h4>Connect {target?.name||'item'}</h4><button type="button" onClick={onCancel}>Cancel</button></div>
-  {!target?<p role="alert">This item is no longer in the display.</p>:target.kind==='outlet'?<p>An outlet cannot receive a power connection.</p>:existing?<p>This item already has a recorded connection. Use item details to change it.</p>:<>
+  <div className="photo-connect-heading"><h4>{rewiring?'Change where':'Choose where'} {target?.name||'item'} plugs in</h4><button type="button" onClick={onCancel}>Cancel</button></div>
+  {!target?<p role="alert">This item is no longer in the display.</p>:target.kind==='outlet'?<p>An outlet cannot receive a power connection.</p>:existing&&!allowRewire?<p>This item already has a recorded connection. Use item details to change it.</p>:<>
+   {rewiring&&<p className="photo-connect-current">Now plugged into <strong>{currentSource?.name||'a missing item'}</strong> · {currentSource?portName(currentSource,existing!.sourcePort):`Output ${existing!.sourcePort+1}`}. Changing it resets this branch to Draft.</p>}
    <p>Tap its power source on the {surface}, or choose one below. Then select the actual output.</p>
    <label>Power source <select aria-label={surface==='photo'?'Photo connection power source':'Diagram connection power source'} value={sourceId} onChange={e=>onSourceChange(e.target.value)}><option value="">Choose a source…</option>{project.nodes.map(n=>{const why=photoConnectionSourceReason(project,targetId,n.id);return <option key={n.id} value={n.id}>{n.name} · {n.zone}{why?' — unavailable':''}</option>;})}</select></label>
    {reason&&<p className="photo-connect-reason" role="status">{reason}</p>}
    {source?.outputsUnknown&&onSetOutputs&&<div className="photo-connect-count"><label>Record actual outputs <select aria-label="Actual number of outputs" value={outputCount} onChange={e=>setOutputCount(e.target.value)}><option value="">Choose a number…</option>{source.kind!=='outlet'&&<option value="0">0</option>}{Array.from({length:16},(_,i)=><option key={i+1} value={i+1}>{i+1}</option>)}</select></label><small>Count the physical outputs on this item. You will still choose a specific output for the connection.</small><button type="button" disabled={outputCount===''} onClick={()=>{if(outputCount!==''&&onSetOutputs(source.id,Number(outputCount))){setOutputCount('');setPort(undefined);}}}>Save output count</button></div>}
-   {source&&ports.length>0&&<fieldset><legend>Which output on {source.name}?</legend><div className="photo-connect-ports">{ports.map(({index,edge})=>{const occupant=edge&&project.nodes.find(n=>n.id===edge.target);return <button type="button" key={index} disabled={!!edge||!!reason} aria-pressed={port===index&&!edge&&!reason} onClick={()=>setPort(index)}>{portName(source,index)}<small>{edge?`Occupied${occupant?` by ${occupant.name}`:''}`:'Available'}</small></button>;})}</div></fieldset>}
+   {source&&ports.length>0&&<fieldset><legend>Which output on {source.name}?</legend><div className="photo-connect-ports">{ports.map(({index,edge})=>{const occupant=edge&&project.nodes.find(n=>n.id===edge.target);return <button type="button" key={index} disabled={!!edge||!!reason} aria-pressed={port===index&&!edge&&!reason} onClick={()=>setPort(index)}>{portName(source,index)}<small>{edge?(edge.target===targetId?'Plugged in here now':`Occupied${occupant?` by ${occupant.name}`:''}`):'Available'}</small></button>;})}</div></fieldset>}
    {error&&<p className="photo-connect-reason" role="alert">{error}</p>}
-   <button type="button" className="photo-connect-submit" disabled={!canConnect} onClick={()=>{if(canConnect&&port!==undefined)onConnect(sourceId,port);}}>Save connection</button>
+   <button type="button" className="photo-connect-submit" disabled={!canConnect} onClick={()=>{if(canConnect&&port!==undefined)onConnect(sourceId,port);}}>{rewiring?'Change connection':'Save connection'}</button>
    <small className="photo-connect-note">Choose the physical output you will use. This connection is saved as unverified.</small>
   </>}
  </section>;
